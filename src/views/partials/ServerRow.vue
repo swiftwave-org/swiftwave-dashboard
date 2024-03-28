@@ -4,6 +4,7 @@ import Badge from '@/views/components/Badge.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { ref } from 'vue'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   server: {
@@ -12,6 +13,7 @@ const props = defineProps({
   }
 })
 
+const router = useRouter()
 const actionsBtnRef = ref(null)
 const actionsMenuRef = ref(null)
 const onClickActions = () => {
@@ -19,6 +21,10 @@ const onClickActions = () => {
     return
   }
   if (actionsMenuRef.value === null) {
+    return
+  }
+  if (actionsMenuRef.value.style.display === 'block') {
+    actionsMenuRef.value.style.display = 'none'
     return
   }
   const rect = actionsBtnRef.value.$el.getBoundingClientRect()
@@ -47,6 +53,17 @@ const openWebConsole = () => {
   const width = window.innerWidth * 0.6
   const url = `${getHttpBaseUrl()}/console?server=${props.server.id}`
   window.open(url, '', `popup,height=${height},width=${width}`)
+}
+
+const openLogsPage = () => {
+  const url = router.resolve({
+    name: 'Server Logs',
+    query: {
+      id: props.server.id,
+      name: props.server.hostname
+    }
+  }).href
+  window.open(url, '_blank')
 }
 </script>
 
@@ -86,7 +103,7 @@ const openWebConsole = () => {
       </FilledButton>
     </TableRow>
     <TableRow align="right" flex>
-      <FilledButton type="secondary" slim ref="actionsBtnRef" :click="onClickActions">
+      <FilledButton type="ghost" slim ref="actionsBtnRef" :click="onClickActions">
         <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />&nbsp;&nbsp;&nbsp;Show Actions
       </FilledButton>
     </TableRow>
@@ -95,7 +112,7 @@ const openWebConsole = () => {
   <div class="z-1 actions-menu" ref="actionsMenuRef" @click="closeMenu">
     <ul>
       <li @click="openWebConsole"><font-awesome-icon icon="fa-solid fa-terminal" />&nbsp;&nbsp;&nbsp;Web Console</li>
-      <li><font-awesome-icon icon="fa-solid fa-book" />&nbsp;&nbsp;&nbsp;View Logs</li>
+      <li @click="openLogsPage"><font-awesome-icon icon="fa-solid fa-book" />&nbsp;&nbsp;&nbsp;View Logs</li>
     </ul>
   </div>
 </template>

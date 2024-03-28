@@ -155,6 +155,11 @@ const router = createRouter({
       path: '/servers',
       name: 'Servers',
       component: () => import('@/views/pages/ServerManagement.vue')
+    },
+    {
+      path: '/server/logs',
+      name: 'Server Logs',
+      component: () => import('@/views/pages/ServerLogs.vue')
     }
   ]
 })
