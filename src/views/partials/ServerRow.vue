@@ -86,7 +86,7 @@ const openWebConsole = () => {
       </FilledButton>
     </TableRow>
     <TableRow align="right" flex>
-      <FilledButton type="primary" slim ref="actionsBtnRef" :click="onClickActions">
+      <FilledButton type="secondary" slim ref="actionsBtnRef" :click="onClickActions">
         <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />&nbsp;&nbsp;&nbsp;Show Actions
       </FilledButton>
     </TableRow>
