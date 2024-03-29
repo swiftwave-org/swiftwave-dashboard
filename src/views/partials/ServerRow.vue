@@ -6,6 +6,10 @@ import { computed, ref } from 'vue'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
 import { useRouter } from 'vue-router'
 import SetupServerModal from '@/views/partials/SetupServerModal.vue'
+import EnableServerProxyModal from '@/views/partials/EnableServerProxyModal.vue'
+import { useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import { useToast } from 'vue-toastification'
 
 const props = defineProps({
   server: {
@@ -20,9 +24,11 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const toast = useToast()
 const actionsBtnRef = ref(null)
 const actionsMenuRef = ref(null)
 const setupModalRef = ref(null)
+const enableProxyModalRef = ref(null)
 const onClickActions = () => {
   if (actionsBtnRef.value === null || actionsBtnRef.value.$el === null) {
     return
@@ -79,6 +85,40 @@ const setupServer = () => {
     setupModalRef.value.openModal()
   }
 }
+const enableProxy = () => {
+  if (enableProxyModalRef.value) {
+    enableProxyModalRef.value.openModal()
+  }
+}
+
+const {
+  mutate: disableProxyRaw,
+  onError: disableProxyError,
+  onDone: disableProxyDone
+} = useMutation(gql`
+  mutation DisableProxy($serverId: Uint!) {
+    disableProxyOnServer(id: $serverId)
+  }
+`)
+
+disableProxyError((error) => {
+  toast.error(error.message)
+})
+
+disableProxyDone((val) => {
+  if (val.data.disableProxyOnServer) {
+    toast.success(
+      'Proxy has been disabled on the requested server\nThis can take upto 5 minutes to reflect in the system'
+    )
+    props.refetchServers()
+  }
+})
+
+const disableProxy = () => {
+  disableProxyRaw({
+    serverId: props.server.id
+  })
+}
 </script>
 
 <template>
@@ -87,8 +127,11 @@ const setupServer = () => {
     ref="setupModalRef"
     :server-id="server.id"
     :server-ip="server.ip"
-    :key="server.id" />
-  <tr :key="server.id">
+    :key="server.id + '_setup_server_modal'" />
+
+  <EnableServerProxyModal ref="enableProxyModalRef" :server-id="server.id" :key="server.id + '_enable_proxy'" />
+
+  <tr :key="server.id + '_server_row'">
     <TableRow align="left">
       <div class="flex flex-col text-sm font-medium text-gray-900">
         {{ server.ip }}
@@ -146,6 +189,12 @@ const setupServer = () => {
   <div class="z-1 actions-menu" ref="actionsMenuRef" @click="closeMenu">
     <ul>
       <li @click="openWebConsole"><font-awesome-icon icon="fa-solid fa-terminal" />&nbsp;&nbsp;&nbsp;Web Console</li>
+      <li v-if="server.proxyEnabled && !isSetupRequired" @click="disableProxy">
+        <font-awesome-icon icon="fa-solid fa-diagram-project" />&nbsp;&nbsp;&nbsp;Disable Ingress Proxy
+      </li>
+      <li v-if="!server.proxyEnabled && !isSetupRequired" @click="enableProxy">
+        <font-awesome-icon icon="fa-solid fa-diagram-project" />&nbsp;&nbsp;&nbsp;Enable Ingress Proxy
+      </li>
     </ul>
   </div>
 </template>

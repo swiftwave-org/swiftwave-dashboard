@@ -28,6 +28,7 @@ import {
   faCodeBranch,
   faCopy,
   faCubesStacked,
+  faDiagramProject,
   faEllipsisVertical,
   faEye,
   faEyeSlash,
@@ -137,7 +138,8 @@ library.add(
   faArrowsRotate,
   faClipboard,
   faArrowRotateRight,
-  faFileLines
+  faFileLines,
+  faDiagramProject
 )
 
 // Environment variables

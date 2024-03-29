@@ -230,7 +230,7 @@ const publicSSHKey = computed(() => fetchPublicSSHKeyResult.value?.publicSSHKey 
 
 <template>
   <teleport to="body">
-    <ModalDialog :close-modal="closeModal" :is-open="isModalOpen" :key="serverId" width="2xl">
+    <ModalDialog :close-modal="closeModal" :is-open="isModalOpen" :key="serverId + '_setup_server_modal'" width="2xl">
       <template v-slot:header>Setup Server - {{ serverIp }}</template>
       <template v-slot:body>
         <div class="mt-6">
