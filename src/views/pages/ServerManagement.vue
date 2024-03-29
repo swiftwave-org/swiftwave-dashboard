@@ -61,7 +61,17 @@ const openCreateServerModal = () => {
       <template v-slot:title>Registered Servers</template>
       <template v-slot:subtitle>Take control of your servers</template>
       <template v-slot:buttons>
-        <FilledButton type="primary" :click="openCreateServerModal">Add Server</FilledButton>
+        <FilledButton type="primary" :click="openCreateServerModal">
+          <font-awesome-icon icon="fa-solid fa-plus" />
+          &nbsp;&nbsp; Add Server
+        </FilledButton>
+        <FilledButton type="ghost" :click="refetchServers">
+          <font-awesome-icon
+            icon="fa-solid fa-arrows-rotate"
+            :class="{
+              'animate-spin ': isServersLoading
+            }" />&nbsp;&nbsp; Refresh List
+        </FilledButton>
       </template>
     </PageBar>
 
@@ -83,7 +93,7 @@ const openCreateServerModal = () => {
           No servers found.<br />
           Click on the "Add Server" button to setup a new server.
         </TableMessage>
-        <TableMessage v-if="isServersLoading"> Loading deployed applications...</TableMessage>
+        <TableMessage v-if="isServersLoading"> Loading server list...</TableMessage>
       </template>
       <template v-slot:body>
         <ServerRow v-for="server in servers" :key="server.id" :server="server" :refetch-servers="refetchServers" />
