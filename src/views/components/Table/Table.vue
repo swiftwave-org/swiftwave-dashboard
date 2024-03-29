@@ -13,17 +13,3 @@
     <slot name="message"></slot>
   </div>
 </template>
-
-<style scoped>
-.scrollbox::-webkit-scrollbar {
-  width: 9px;
-}
-
-.scrollbox::-webkit-scrollbar-track {
-  @apply rounded-full bg-gray-200;
-}
-
-.scrollbox::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-primary-500;
-}
-</style>

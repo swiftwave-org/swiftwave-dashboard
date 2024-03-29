@@ -2,20 +2,27 @@
 import TableRow from '@/views/components/Table/TableRow.vue'
 import Badge from '@/views/components/Badge.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
 import { useRouter } from 'vue-router'
+import SetupServerModal from '@/views/partials/SetupServerModal.vue'
 
 const props = defineProps({
   server: {
     type: Object,
     required: true
+  },
+  refetchServers: {
+    type: Function,
+    required: false,
+    default: () => {}
   }
 })
 
 const router = useRouter()
 const actionsBtnRef = ref(null)
 const actionsMenuRef = ref(null)
+const setupModalRef = ref(null)
 const onClickActions = () => {
   if (actionsBtnRef.value === null || actionsBtnRef.value.$el === null) {
     return
@@ -65,9 +72,22 @@ const openLogsPage = () => {
   }).href
   window.open(url, '_blank')
 }
+
+const isSetupRequired = computed(() => props.server.status === 'needs_setup' || props.server.status === 'preparing')
+const setupServer = () => {
+  if (setupModalRef.value) {
+    setupModalRef.value.openModal()
+  }
+}
 </script>
 
 <template>
+  <SetupServerModal
+    :refetch-server="refetchServers"
+    ref="setupModalRef"
+    :server-id="server.id"
+    :server-ip="server.ip"
+    :key="server.id" />
   <tr :key="server.id">
     <TableRow align="left">
       <div class="flex flex-col text-sm font-medium text-gray-900">
@@ -79,27 +99,41 @@ const openLogsPage = () => {
       {{ server.user }}
     </TableRow>
     <TableRow align="center">
-      <Badge v-if="server.swarmMode === 'manager'" type="success">Manager</Badge>
-      <Badge v-else-if="server.swarmMode === 'worker'" type="warning">Worker</Badge>
+      <Badge v-if="server.swarmMode === 'manager' && !isSetupRequired" type="success">Manager</Badge>
+      <Badge v-else-if="server.swarmMode === 'worker' && !isSetupRequired" type="warning">Worker</Badge>
+      <span v-else></span>
     </TableRow>
     <TableRow align="center">
-      <Badge v-if="server.scheduleDeployments" type="success">Enabled</Badge>
-      <Badge v-else type="danger">Disabled</Badge>
+      <Badge v-if="server.scheduleDeployments && !isSetupRequired" type="success">Enabled</Badge>
+      <Badge v-else-if="!isSetupRequired" type="danger">Disabled</Badge>
+      <span v-else></span>
     </TableRow>
     <TableRow align="center">
-      <Badge v-if="server.proxyEnabled && server.proxyType === 'active'" type="success">Active</Badge>
-      <Badge v-if="server.proxyEnabled && server.proxyType === 'backup'" type="warning">Backup</Badge>
-      <Badge v-if="!server.proxyEnabled" type="danger">Disabled</Badge>
+      <Badge v-if="server.proxyEnabled && server.proxyType === 'active' && !isSetupRequired" type="success"
+        >Active
+      </Badge>
+      <Badge v-else-if="server.proxyEnabled && server.proxyType === 'backup' && !isSetupRequired" type="warning"
+        >Backup
+      </Badge>
+      <Badge v-else-if="!server.proxyEnabled && !isSetupRequired" type="danger">Disabled</Badge>
+      <span v-else></span>
     </TableRow>
     <TableRow align="center">
       <Badge v-if="server.status === 'online'" type="success">Online</Badge>
       <Badge v-else-if="server.status === 'offline'" type="danger">Offline</Badge>
       <Badge v-else-if="server.status === 'preparing'" type="warning">Preparing</Badge>
-      <Badge v-else-if="server.status === 'needs_setup'" type="secondary">Need to Setup</Badge>
+      <FilledButton v-else-if="server.status === 'needs_setup'" type="primary" :click="setupServer" slim>
+        <font-awesome-icon icon="fa-solid fa-wrench" />&nbsp;&nbsp;&nbsp;Setup Server
+      </FilledButton>
     </TableRow>
     <TableRow align="center" flex>
       <FilledButton type="primary" slim>
         <font-awesome-icon icon="fa-solid fa-chart-column" />&nbsp;&nbsp;&nbsp;Analytics
+      </FilledButton>
+    </TableRow>
+    <TableRow align="center" flex>
+      <FilledButton type="primary" slim :click="openLogsPage">
+        <font-awesome-icon icon="fa-solid fa-book" />&nbsp;&nbsp;&nbsp;View Logs
       </FilledButton>
     </TableRow>
     <TableRow align="right" flex>
@@ -112,7 +146,6 @@ const openLogsPage = () => {
   <div class="z-1 actions-menu" ref="actionsMenuRef" @click="closeMenu">
     <ul>
       <li @click="openWebConsole"><font-awesome-icon icon="fa-solid fa-terminal" />&nbsp;&nbsp;&nbsp;Web Console</li>
-      <li @click="openLogsPage"><font-awesome-icon icon="fa-solid fa-book" />&nbsp;&nbsp;&nbsp;View Logs</li>
     </ul>
   </div>
 </template>

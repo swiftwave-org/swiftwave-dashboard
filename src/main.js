@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
   faArrowDown,
   faArrowRight,
+  faArrowRotateRight,
   faArrowsRotate,
   faArrowUpRightFromSquare,
   faBook,
@@ -22,6 +23,7 @@ import {
   faCircleDown,
   faCircleStop,
   faCircleXmark,
+  faClipboard,
   faCloud,
   faCodeBranch,
   faCopy,
@@ -30,6 +32,7 @@ import {
   faEye,
   faEyeSlash,
   faFile,
+  faFileLines,
   faFingerprint,
   faGear,
   faGlobe,
@@ -131,7 +134,10 @@ library.add(
   faChartColumn,
   faTerminal,
   faBook,
-  faArrowsRotate
+  faArrowsRotate,
+  faClipboard,
+  faArrowRotateRight,
+  faFileLines
 )
 
 // Environment variables

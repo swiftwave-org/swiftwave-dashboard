@@ -3,18 +3,21 @@ import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import PageBar from '@/views/components/PageBar.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import ServerRow from '@/views/partials/ServerRow.vue'
+import CreateServerModal from '@/views/partials/CreateServerModal.vue'
 
 const toast = useToast()
+const createServerModal = ref(null)
 
 const {
   result: serversResult,
   loading: isServersLoading,
+  refetch: refetchServers,
   onError: onServersError
 } = useQuery(
   gql`
@@ -44,16 +47,21 @@ onServersError((err) => {
 })
 
 const servers = computed(() => serversResult.value?.servers ?? [])
+const openCreateServerModal = () => {
+  if (createServerModal.value) createServerModal.value.openModal()
+}
 </script>
 
 <template>
+  <!-- Modal to create server  -->
+  <CreateServerModal :callback-on-create="refetchServers" ref="createServerModal" />
   <section class="mx-auto w-full max-w-7xl">
     <!-- Top Page bar   -->
     <PageBar>
       <template v-slot:title>Registered Servers</template>
       <template v-slot:subtitle>Take control of your servers</template>
       <template v-slot:buttons>
-        <FilledButton type="primary">Add Server</FilledButton>
+        <FilledButton type="primary" :click="openCreateServerModal">Add Server</FilledButton>
       </template>
     </PageBar>
 
@@ -67,6 +75,7 @@ const servers = computed(() => serversResult.value?.servers ?? [])
         <TableHeader align="center">Proxy</TableHeader>
         <TableHeader align="center">Status</TableHeader>
         <TableHeader align="center">Analytics</TableHeader>
+        <TableHeader align="center">Logs</TableHeader>
         <TableHeader align="right">Actions</TableHeader>
       </template>
       <template v-slot:message>
@@ -77,7 +86,7 @@ const servers = computed(() => serversResult.value?.servers ?? [])
         <TableMessage v-if="isServersLoading"> Loading deployed applications...</TableMessage>
       </template>
       <template v-slot:body>
-        <ServerRow v-for="server in servers" :key="server.id" :server="server" />
+        <ServerRow v-for="server in servers" :key="server.id" :server="server" :refetch-servers="refetchServers" />
       </template>
     </Table>
   </section>

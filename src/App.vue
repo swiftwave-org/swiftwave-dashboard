@@ -33,11 +33,24 @@ onMounted(() => {
   <NotAvailableOnMobile />
 </template>
 
-<style scoped>
+<style>
 .app {
   display: flex;
   flex-direction: row;
   height: 100vh;
   width: 100vw;
+}
+
+.scrollbox::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.scrollbox::-webkit-scrollbar-track {
+  @apply rounded-full bg-gray-200;
+}
+
+.scrollbox::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-primary-500;
 }
 </style>
