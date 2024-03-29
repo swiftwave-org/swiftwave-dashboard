@@ -8,6 +8,8 @@ import { ApolloClient, ApolloLink, createHttpLink, InMemoryCache, split } from '
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
+  faAngleDown,
+  faAngleUp,
   faArrowDown,
   faArrowRight,
   faArrowRotateRight,
@@ -139,7 +141,9 @@ library.add(
   faClipboard,
   faArrowRotateRight,
   faFileLines,
-  faDiagramProject
+  faDiagramProject,
+  faAngleDown,
+  faAngleUp
 )
 
 // Environment variables

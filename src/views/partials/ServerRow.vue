@@ -85,12 +85,15 @@ const setupServer = () => {
     setupModalRef.value.openModal()
   }
 }
+
+// Enable proxy
 const enableProxy = () => {
   if (enableProxyModalRef.value) {
     enableProxyModalRef.value.openModal()
   }
 }
 
+// Disable proxy
 const {
   mutate: disableProxyRaw,
   onError: disableProxyError,
@@ -116,6 +119,66 @@ disableProxyDone((val) => {
 
 const disableProxy = () => {
   disableProxyRaw({
+    serverId: props.server.id
+  })
+}
+
+// Demote swarm node to worker
+const {
+  mutate: demoteToWorkerRaw,
+  onError: demoteToWorkerError,
+  onDone: demoteToWorkerDone
+} = useMutation(gql`
+  mutation DemoteToWorker($serverId: Uint!) {
+    demoteServerToWorker(id: $serverId)
+  }
+`)
+
+demoteToWorkerError((error) => {
+  toast.error(error.message)
+})
+
+demoteToWorkerDone((val) => {
+  if (val.data.demoteServerToWorker) {
+    toast.success('Server has been demoted to worker node\nThis can take upto 5 minutes to reflect in the system')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to demote server to worker')
+  }
+})
+
+const demoteToWorker = () => {
+  demoteToWorkerRaw({
+    serverId: props.server.id
+  })
+}
+
+// Promote swarm node to manager
+const {
+  mutate: promoteToManagerRaw,
+  onError: promoteToManagerError,
+  onDone: promoteToManagerDone
+} = useMutation(gql`
+  mutation PromoteToManager($serverId: Uint!) {
+    promoteServerToManager(id: $serverId)
+  }
+`)
+
+promoteToManagerError((error) => {
+  toast.error(error.message)
+})
+
+promoteToManagerDone((val) => {
+  if (val.data.promoteServerToManager) {
+    toast.success('Server has been promoted to manager node\nThis can take upto 5 minutes to reflect in the system')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to promote server to manager')
+  }
+})
+
+const promoteToManager = () => {
+  promoteToManagerRaw({
     serverId: props.server.id
   })
 }
@@ -194,6 +257,12 @@ const disableProxy = () => {
       </li>
       <li v-if="!server.proxyEnabled && !isSetupRequired" @click="enableProxy">
         <font-awesome-icon icon="fa-solid fa-diagram-project" />&nbsp;&nbsp;&nbsp;Enable Ingress Proxy
+      </li>
+      <li v-if="server.swarmMode === 'manager' && !isSetupRequired" @click="demoteToWorker">
+        <font-awesome-icon icon="fa-solid fa-angle-down" />&nbsp;&nbsp;&nbsp;Demote to Swarm Worker
+      </li>
+      <li v-if="server.swarmMode === 'worker' && !isSetupRequired" @click="promoteToManager">
+        <font-awesome-icon icon="fa-solid fa-angle-up" />&nbsp;&nbsp;&nbsp;Promote to Swarm Manager
       </li>
     </ul>
   </div>
