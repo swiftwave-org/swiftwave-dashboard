@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
   faArrowDown,
   faArrowRight,
+  faArrowsRotate,
   faArrowUpRightFromSquare,
   faBook,
   faBox,
@@ -129,7 +130,8 @@ library.add(
   faEllipsisVertical,
   faChartColumn,
   faTerminal,
-  faBook
+  faBook,
+  faArrowsRotate
 )
 
 // Environment variables

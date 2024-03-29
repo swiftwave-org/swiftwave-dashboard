@@ -43,8 +43,9 @@ const isDisabled = computed(() => {
       'bg-warning-600 hover:bg-warning-600/80 focus-visible:outline-warning-600': type === 'warning',
       'bg-danger-600 hover:bg-danger-600/80 focus-visible:outline-danger-600': type === 'danger',
       'bg-info-600 hover:bg-info-600/80 focus-visible:outline-info-600': type === 'info',
-      'bg-secondary-100 text-black hover:bg-secondary-200 focus-visible:outline-secondary-400': type === 'ghost',
-      'text-white': type !== 'ghost',
+      'text-black-500 bg-secondary-100 font-medium hover:bg-secondary-200 focus-visible:outline-secondary-400':
+        type === 'ghost',
+      'font-semibold text-white': type !== 'ghost',
       'cursor-not-allowed opacity-50': disabled,
       'hover:bg-[type]-600/80': !disabled,
       'cursor-progress': loading,
@@ -54,7 +55,7 @@ const isDisabled = computed(() => {
       'rounded-md': !rounded
     }"
     :disabled="isDisabled"
-    class="flex items-center justify-center px-3 font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+    class="flex items-center justify-center px-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     type="button"
     @click="click">
     <!--    spinner -->

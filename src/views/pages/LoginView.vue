@@ -25,7 +25,7 @@ const login = async () => {
       await router.push(router.currentRoute.value.query.redirect)
       return
     }
-    await router.push({ name: 'Applications' })
+    window.open(router.resolve({ name: 'Applications' }).href, '_self')
   }
 }
 </script>
