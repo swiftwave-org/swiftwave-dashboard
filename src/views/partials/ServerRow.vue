@@ -51,6 +51,9 @@ const onClickActions = () => {
 }
 
 const closeMenu = () => {
+  if (!actionsMenuRef.value) {
+    return
+  }
   actionsMenuRef.value.style.display = 'none'
 }
 
@@ -58,6 +61,9 @@ const closeMenu = () => {
 window.addEventListener('resize', closeMenu)
 // on click outside close the menu
 window.addEventListener('click', (e) => {
+  if (!actionsMenuRef.value || !actionsBtnRef.value.$el) {
+    return
+  }
   if (!actionsBtnRef.value.$el.contains(e.target)) {
     closeMenu()
   }
