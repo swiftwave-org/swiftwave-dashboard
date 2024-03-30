@@ -10,6 +10,7 @@ import EnableServerProxyModal from '@/views/partials/EnableServerProxyModal.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
+import SetupResourceMonitoring from '@/views/partials/SetupResourceMonitoring.vue'
 
 const props = defineProps({
   server: {
@@ -29,6 +30,7 @@ const actionsBtnRef = ref(null)
 const actionsMenuRef = ref(null)
 const setupModalRef = ref(null)
 const enableProxyModalRef = ref(null)
+const setupResourceMonitoringModalRef = ref(null)
 const onClickActions = () => {
   if (actionsBtnRef.value === null || actionsBtnRef.value.$el === null) {
     return
@@ -182,6 +184,13 @@ const promoteToManager = () => {
     serverId: props.server.id
   })
 }
+
+// Setup resource monitoring
+const setupResourceMonitoring = () => {
+  if (setupResourceMonitoringModalRef.value) {
+    setupResourceMonitoringModalRef.value.openModal()
+  }
+}
 </script>
 
 <template>
@@ -192,7 +201,12 @@ const promoteToManager = () => {
     :server-ip="server.ip"
     :key="server.id + '_setup_server_modal'" />
 
-  <EnableServerProxyModal ref="enableProxyModalRef" :server-id="server.id" :key="server.id + '_enable_proxy'" />
+  <EnableServerProxyModal ref="enableProxyModalRef" :server-id="server.id" :key="server.id + '_enable_proxy_modal'" />
+  <SetupResourceMonitoring
+    ref="setupResourceMonitoringModalRef"
+    :server-id="server.id"
+    :key="server.id + '_setup_resource_monitoring_modal'"
+    :open-web-console="openWebConsole" />
 
   <tr :key="server.id + '_server_row'">
     <TableRow align="left">
@@ -263,6 +277,9 @@ const promoteToManager = () => {
       </li>
       <li v-if="server.swarmMode === 'worker' && !isSetupRequired" @click="promoteToManager">
         <font-awesome-icon icon="fa-solid fa-angle-up" />&nbsp;&nbsp;&nbsp;Promote to Swarm Manager
+      </li>
+      <li v-if="!isSetupRequired" @click="setupResourceMonitoring">
+        <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Setup Resource Monitoring
       </li>
     </ul>
   </div>

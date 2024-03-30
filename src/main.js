@@ -19,6 +19,7 @@ import {
   faBox,
   faCalendarDays,
   faChartColumn,
+  faChartSimple,
   faChevronDown,
   faChevronRight,
   faCircleCheck,
@@ -143,7 +144,8 @@ library.add(
   faFileLines,
   faDiagramProject,
   faAngleDown,
-  faAngleUp
+  faAngleUp,
+  faChartSimple
 )
 
 // Environment variables
