@@ -1,4 +1,6 @@
 <script setup>
+import { formatTimestampHumannize } from '@/vendor/utils.js'
+
 defineProps({
   title: {
     type: String,
@@ -8,9 +10,10 @@ defineProps({
     type: Array,
     required: true
   },
-  stops: {
-    type: Array,
-    required: true
+  toolbar: {
+    type: Boolean,
+    required: false,
+    default: true
   },
   yAxisFormatter: {
     type: Function,
@@ -28,14 +31,20 @@ defineProps({
       height="200"
       type="area"
       :options="{
+        tooltip: {
+          x: {
+            formatter: formatTimestampHumannize
+          }
+        },
         animations: {
+          enabled: false,
           initialAnimation: {
             enabled: false
           }
         },
         chart: {
           toolbar: {
-            show: true
+            show: toolbar
           }
         },
         zoom: {

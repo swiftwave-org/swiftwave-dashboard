@@ -7,7 +7,7 @@ import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import AreaChartTimeSeries from '@/views/components/AreaChartTimeSeries.vue'
-import { humanizeMemoryGB, humanizeNetworkSpeed } from '@/vendor/utils.js'
+import { humanizeDiskGB, humanizeMemoryGB, humanizeNetworkSpeed } from '@/vendor/utils.js'
 
 const router = useRouter()
 const toast = useToast()
@@ -17,9 +17,11 @@ const serverInfo = reactive({
   ip: ''
 })
 
+const statsTimeframe = ref('last_1_hour')
 const cpuUsageSeries = ref([])
 const memoryUsageSeries = ref([])
 const networkUsageSeries = ref([])
+const diskUsageSeries = ref([])
 
 // Fetch server info
 const {
@@ -46,7 +48,7 @@ onServerInfoResult((result) => {
   serverInfo.id = result.data.server.id
   serverInfo.hostname = result.data.server.hostname
   serverInfo.ip = result.data.server.ip
-  loadServerAnalytics()
+  fetchAllAnalytics()
 })
 
 onServerInfoError((error) => {
@@ -70,8 +72,8 @@ const {
   onError: onServerAnalyticsError
 } = useLazyQuery(
   gql`
-    query ($id: Uint!) {
-      serverResourceAnalytics(id: $id, timeframe: last_7_days) {
+    query ($id: Uint!, $timeframe: ServerResourceAnalyticsTimeframe!) {
+      serverResourceAnalytics(id: $id, timeframe: $timeframe) {
         cpu_usage_percent
         memory_total_gb
         memory_used_gb
@@ -83,7 +85,8 @@ const {
     }
   `,
   {
-    id: serverInfo.id
+    id: serverInfo.id,
+    timeframe: statsTimeframe
   }
 )
 onServerAnalyticsError((error) => {
@@ -144,47 +147,140 @@ const loadServerAnalytics = () => {
     refetchServerAnalyticsRaw()
   }
 }
+
+// Fetch server disk usage
+const {
+  load: loadServerDiskUsageRaw,
+  refetch: refetchServerDiskUsageRaw,
+  loading: isServerDiskUsageLoading,
+  onResult: onServerDiskUsageResult,
+  onError: onServerDiskUsageError
+} = useLazyQuery(
+  gql`
+    query ($id: Uint!) {
+      serverDiskUsage(id: $id) {
+        disks {
+          path
+          total_gb
+          used_gb
+          timestamp
+        }
+      }
+    }
+  `,
+  {
+    id: serverInfo.id
+  }
+)
+
+onServerDiskUsageResult((result) => {
+  if (!result.data.serverDiskUsage) {
+    return
+  }
+  let diskUsageStatMap = {}
+  result.data.serverDiskUsage.forEach((record) => {
+    record.disks.forEach((d) => {
+      if (!diskUsageStatMap[d.path]) {
+        diskUsageStatMap[d.path] = {
+          total_gb: [],
+          used_gb: []
+        }
+      }
+      diskUsageStatMap[d.path].total_gb.push([new Date(d.timestamp).getTime(), d.total_gb])
+      diskUsageStatMap[d.path].used_gb.push([new Date(d.timestamp).getTime(), d.used_gb])
+    })
+  })
+  let diskUsageStatTemp = {}
+  for (const [key, value] of Object.entries(diskUsageStatMap)) {
+    diskUsageStatTemp[key] = [
+      {
+        name: 'Total',
+        data: value.total_gb
+      },
+      {
+        name: 'Used',
+        data: value.used_gb
+      }
+    ]
+  }
+  diskUsageSeries.value = diskUsageStatTemp
+  diskUsageStatTemp = null
+  diskUsageStatMap = null
+})
+
+onServerDiskUsageError((error) => {
+  toast.error(error)
+})
+
+const loadServerDiskUsage = () => {
+  if (loadServerDiskUsageRaw() === false) {
+    refetchServerDiskUsageRaw()
+  }
+}
+
+// Combined
+const fetchAllAnalytics = () => {
+  loadServerAnalytics()
+  loadServerDiskUsage()
+}
 </script>
 
 <template>
-  <section class="mx-auto w-full max-w-7xl">
+  <section class="mx-auto max-h-[100vh] w-full max-w-7xl overflow-y-hidden">
     <div v-if="isServerInfoLoading" class="w-full font-medium italic">Fetching server info...</div>
-    <div v-else class="flex w-full flex-col">
+    <div v-else class="flex h-full w-full flex-col">
       <!-- Top Page bar   -->
       <PageBar>
         <template v-slot:title>Server {{ serverInfo.hostname }} ({{ serverInfo.ip }})</template>
         <template v-slot:subtitle>Monitor the resource analytics of your server</template>
         <template v-slot:buttons>
-          <FilledButton type="primary" :click="loadServerAnalytics" :loading="isServerAnalyticsLoading"
-            >Refresh Stats
+          <select
+            class="block rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            v-model="statsTimeframe"
+            @change="loadServerAnalytics">
+            <option value="last_1_hour">Last 1 hour</option>
+            <option value="last_24_hours">Last 24 hours</option>
+            <option value="last_7_days">Last 7 days</option>
+            <option value="last_30_days">Last 30 days</option>
+          </select>
+          <FilledButton
+            type="primary"
+            :click="fetchAllAnalytics"
+            :loading="isServerAnalyticsLoading || isServerDiskUsageLoading">
+            Refresh Stats
           </FilledButton>
         </template>
       </PageBar>
-      <div class="mt-5 flex w-full flex-col gap-4">
+      <div class="scrollbox mt-5 flex max-h-full w-full flex-col gap-5 overflow-y-auto overflow-x-clip pr-2">
         <!--  Cpu usage series  -->
         <AreaChartTimeSeries
           title="CPU Usage"
           :series="cpuUsageSeries"
-          :stops="[0, 100]"
           :y-axis-formatter="
             (val) => {
               return val + ' %'
             }
           " />
-        <div class="my-2"></div>
         <!--  Memory usage series  -->
-        <AreaChartTimeSeries
-          title="Memory Usage"
-          :series="memoryUsageSeries"
-          :stops="[0, 100]"
-          :y-axis-formatter="humanizeMemoryGB" />
-        <div class="my-2"></div>
+        <AreaChartTimeSeries title="Memory Usage" :series="memoryUsageSeries" :y-axis-formatter="humanizeMemoryGB" />
         <!--  Network usage series  -->
         <AreaChartTimeSeries
           title="Network Usage"
           :series="networkUsageSeries"
-          :stops="[0, 100]"
           :y-axis-formatter="humanizeNetworkSpeed" />
+        <!--    Disk usage    -->
+        <div class="w-full">
+          <p class="text-base font-medium">Disk Usage (Last 24 hours)</p>
+          <div class="mt-2 grid w-full grid-cols-2 gap-4">
+            <div v-for="(diskUsage, diskPath) in diskUsageSeries" :key="diskPath" class="w-full">
+              <AreaChartTimeSeries
+                :title="diskPath"
+                :series="diskUsage"
+                :toolbar="false"
+                :y-axis-formatter="humanizeDiskGB" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

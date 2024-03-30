@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 const getGitProvideFromGitRepoUrl = (gitRepoUrl) => {
   if (gitRepoUrl.includes('github')) {
     return 'github'
@@ -69,6 +71,20 @@ function humanizeMemoryGB(value) {
   }
 }
 
+function humanizeDiskGB(value) {
+  /**
+   * Convert a float value representing gigabytes (GB) to a human-readable format.
+   * If the value is less than 1, it returns the value in megabytes (MB).
+   * Otherwise, it returns the value in gigabytes (GB).
+   */
+  if (value < 1) {
+    const mbValue = value * 1024
+    return `${mbValue.toFixed(2)} MB`
+  } else {
+    return `${value.toFixed(2)} GB`
+  }
+}
+
 function humanizeNetworkSpeed(kbps) {
   /**
    * Convert a float value representing network speed in kilobits per second (kbps)
@@ -85,6 +101,13 @@ function humanizeNetworkSpeed(kbps) {
   }
 }
 
+function formatTimestampHumannize(timestamp) {
+  /**
+   * Convert a timestamp to a human-readable date and time string.
+   */
+  return moment(new Date(timestamp)).format('Do MMMM YYYY - h:mm:ss a')
+}
+
 export {
   getGitProvideFromGitRepoUrl,
   getGitRepoOwnerFromGitRepoUrl,
@@ -94,5 +117,7 @@ export {
   getHttpBaseUrl,
   preventSpaceInput,
   humanizeMemoryGB,
-  humanizeNetworkSpeed
+  humanizeNetworkSpeed,
+  humanizeDiskGB,
+  formatTimestampHumannize
 }
