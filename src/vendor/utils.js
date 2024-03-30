@@ -55,6 +55,36 @@ const preventSpaceInput = (event) => {
   }
 }
 
+function humanizeMemoryGB(value) {
+  /**
+   * Convert a float value representing gigabytes (GB) to a human-readable format.
+   * If the value is less than 1, it returns the value in megabytes (MB).
+   * Otherwise, it returns the value in gigabytes (GB).
+   */
+  if (value < 1) {
+    const mbValue = value * 1024
+    return `${mbValue.toFixed(2)} MB`
+  } else {
+    return `${value.toFixed(2)} GB`
+  }
+}
+
+function humanizeNetworkSpeed(kbps) {
+  /**
+   * Convert a float value representing network speed in kilobits per second (kbps)
+   * to a human-readable format (kbps, Mbps, or Gbps).
+   */
+  if (kbps < 1000) {
+    return `${kbps.toFixed(2)} kbps`
+  } else if (kbps < 1000000) {
+    const mbps = kbps / 1000
+    return `${mbps.toFixed(2)} Mbps`
+  } else {
+    const gbps = kbps / 1000000
+    return `${gbps.toFixed(2)} Gbps`
+  }
+}
+
 export {
   getGitProvideFromGitRepoUrl,
   getGitRepoOwnerFromGitRepoUrl,
@@ -62,5 +92,7 @@ export {
   getGraphQlHttpBaseUrl,
   getGraphQlWsBaseUrl,
   getHttpBaseUrl,
-  preventSpaceInput
+  preventSpaceInput,
+  humanizeMemoryGB,
+  humanizeNetworkSpeed
 }

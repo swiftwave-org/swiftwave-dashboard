@@ -191,6 +191,16 @@ const setupResourceMonitoring = () => {
     setupResourceMonitoringModalRef.value.openModal()
   }
 }
+
+// Open analytics page
+const openAnalyticsPage = () => {
+  router.push({
+    name: 'Server Analytics',
+    query: {
+      id: props.server.id
+    }
+  })
+}
 </script>
 
 <template>
@@ -247,7 +257,7 @@ const setupResourceMonitoring = () => {
       </FilledButton>
     </TableRow>
     <TableRow align="center" flex>
-      <FilledButton type="primary" slim>
+      <FilledButton type="primary" slim :click="openAnalyticsPage">
         <font-awesome-icon icon="fa-solid fa-chart-column" />&nbsp;&nbsp;&nbsp;Analytics
       </FilledButton>
     </TableRow>

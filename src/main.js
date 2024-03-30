@@ -71,6 +71,7 @@ import {
 
 import { useAuthStore } from '@/store/auth.js'
 import Toast from 'vue-toastification'
+import VueApexCharts from 'vue3-apexcharts'
 
 import App from './App.vue'
 import router from './router'
@@ -237,6 +238,7 @@ app.use(Toast, {
   icon: true,
   rtl: false
 })
+app.use(VueApexCharts)
 app.directive('debounce', vueDebounce({ lock: true }))
 app.mount('#app')
 

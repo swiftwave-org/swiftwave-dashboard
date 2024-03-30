@@ -160,6 +160,11 @@ const router = createRouter({
       path: '/server/logs',
       name: 'Server Logs',
       component: () => import('@/views/pages/ServerLogs.vue')
+    },
+    {
+      path: '/server/analytics',
+      name: 'Server Analytics',
+      component: () => import('@/views/pages/ServerAnalytics.vue')
     }
   ]
 })
