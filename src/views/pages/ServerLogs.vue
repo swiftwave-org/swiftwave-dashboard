@@ -52,7 +52,7 @@ const serverLogsResult = computed(() => {
 
 watch(serverLogsResult, (logs) => {
   if (logs.length > 0) {
-    selectServerLog(logs[0])
+    if (logId.value === 0) selectServerLog(logs[0])
   }
 })
 
