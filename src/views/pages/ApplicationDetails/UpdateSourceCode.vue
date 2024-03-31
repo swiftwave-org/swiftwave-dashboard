@@ -95,7 +95,7 @@ const {
 )
 
 const fetchGitBranches = () => {
-  if (stateRef.gitRepoUrl === '') {
+  if (!stateRef.gitRepoUrl) {
     return
   }
   let gitRepoUrl = stateRef.gitRepoUrl.trim()
@@ -128,15 +128,17 @@ onFetchGitBranchesError((err) => {
 function prefillDetails() {
   if (applicationExistingDetailsResult.value && applicationExistingDetailsResult.value.application) {
     stateRef.command = applicationExistingDetailsResult.value.application.command
-    stateRef.gitRepoUrl =
-      applicationExistingDetailsResult.value.application.latestDeployment.gitProvider +
-      '.com/' +
-      applicationExistingDetailsResult.value.application.latestDeployment.repositoryOwner +
-      '/' +
-      applicationExistingDetailsResult.value.application.latestDeployment.repositoryName
-    stateRef.gitBranch = applicationExistingDetailsResult.value.application.latestDeployment.repositoryBranch
-    stateRef.gitCredentialID = applicationExistingDetailsResult.value.application.latestDeployment.gitCredentialID
-    stateRef.codePath = applicationExistingDetailsResult.value.application.latestDeployment.codePath
+    if (applicationExistingDetailsResult.value.application.latestDeployment.upstreamType === 'git') {
+      stateRef.gitRepoUrl =
+        applicationExistingDetailsResult.value.application.latestDeployment.gitProvider +
+        '.com/' +
+        applicationExistingDetailsResult.value.application.latestDeployment.repositoryOwner +
+        '/' +
+        applicationExistingDetailsResult.value.application.latestDeployment.repositoryName
+      stateRef.gitBranch = applicationExistingDetailsResult.value.application.latestDeployment.repositoryBranch
+      stateRef.gitCredentialID = applicationExistingDetailsResult.value.application.latestDeployment.gitCredentialID
+      stateRef.codePath = applicationExistingDetailsResult.value.application.latestDeployment.codePath
+    }
     stateRef.isDockerConfigurationGenerated = true
     stateRef.detectedServiceName = 'Taken from existing deployment'
     stateRef.dockerFile = applicationExistingDetailsResult.value.application.latestDeployment.dockerfile
