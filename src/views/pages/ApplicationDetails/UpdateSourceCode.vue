@@ -288,7 +288,6 @@ const generateConfiguration = () => {
     stateRef.detectedServiceName = "😅 You don't need configuration for docker image"
     stateRef.isDockerConfigurationGenerated = true
   } else {
-    stateRef.gitRepoUrl = stateRef.gitRepoUrl.trim().replace('https://', '').replace('http://', '')
     let gitCredentialID = parseInt(stateRef.gitCredentialID.toString())
     generateConfigurationVariables.value.input = {
       sourceType: applicationSourceType.value,

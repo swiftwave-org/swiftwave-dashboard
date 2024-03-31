@@ -1,6 +1,19 @@
 import moment from 'moment'
 
+const cleanupGitRepoUrl = (gitRepoUrl) => {
+  if (gitRepoUrl.endsWith('.git')) {
+    gitRepoUrl = gitRepoUrl.slice(0, -4)
+  }
+  gitRepoUrl = gitRepoUrl.replace('https://', '')
+  gitRepoUrl = gitRepoUrl.replace('http://', '')
+  if (gitRepoUrl.endsWith('/')) {
+    gitRepoUrl = gitRepoUrl.slice(0, -1)
+  }
+  return gitRepoUrl
+}
+
 const getGitProvideFromGitRepoUrl = (gitRepoUrl) => {
+  gitRepoUrl = cleanupGitRepoUrl(gitRepoUrl)
   if (gitRepoUrl.includes('github')) {
     return 'github'
   } else if (gitRepoUrl.includes('gitlab')) {
@@ -11,6 +24,7 @@ const getGitProvideFromGitRepoUrl = (gitRepoUrl) => {
 }
 
 const getGitRepoOwnerFromGitRepoUrl = (gitRepoUrl) => {
+  gitRepoUrl = cleanupGitRepoUrl(gitRepoUrl)
   const gitRepoUrlParts = gitRepoUrl.split('/')
   if (gitRepoUrlParts.length < 2) {
     return null
@@ -19,6 +33,7 @@ const getGitRepoOwnerFromGitRepoUrl = (gitRepoUrl) => {
 }
 
 const getGitRepoNameFromGitRepoUrl = (gitRepoUrl) => {
+  gitRepoUrl = cleanupGitRepoUrl(gitRepoUrl)
   const gitRepoUrlParts = gitRepoUrl.split('/')
   if (gitRepoUrlParts.length < 2) {
     return null
