@@ -34,6 +34,7 @@ const authStore = useAuthStore()
 const toast = useToast()
 
 const sourceCodeFileFieldRef = ref(null)
+const availableGitBranches = ref([])
 const stateRef = reactive({
   command: '',
   sourceCodeFile: '',
@@ -117,6 +118,58 @@ const {
 const gitCredentials = computed(() => gitCredentialList.value?.gitCredentials ?? [])
 
 onGitCredentialListError((err) => toast.error(err.message))
+
+// Fetch git branches
+const {
+  load: fetchGitBranchesRaw,
+  refetch: refetchGitBranchesRaw,
+  loading: fetchingGitBranches,
+  onError: onFetchGitBranchesError,
+  onResult: onFetchGitBranchesResult,
+  variables: fetchGitBranchesVariables
+} = useLazyQuery(
+  gql`
+    query ($input: GitBranchesQueryInput!) {
+      gitBranches(input: $input)
+    }
+  `,
+  null,
+  {
+    fetchPolicy: 'no-cache',
+    nextFetchPolicy: 'no-cache'
+  }
+)
+
+const fetchGitBranches = () => {
+  if (stateRef.gitRepoUrl === '') {
+    return
+  }
+  let gitRepoUrl = stateRef.gitRepoUrl.trim()
+  if (gitRepoUrl.includes('https://') === false && gitRepoUrl.includes('http://') === false) {
+    gitRepoUrl = 'https://' + gitRepoUrl
+  }
+  fetchGitBranchesVariables.value = {
+    input: {
+      gitCredentialId: stateRef.gitCredentialID,
+      repositoryUrl: gitRepoUrl
+    }
+  }
+  if (fetchGitBranchesRaw() === false) {
+    refetchGitBranchesRaw()
+  }
+}
+
+onFetchGitBranchesResult((d) => {
+  if (d.data && d.data.gitBranches) {
+    availableGitBranches.value = d.data.gitBranches
+    toast.success('Available branches fetched')
+  }
+})
+onFetchGitBranchesError((err) => {
+  toast.error(err.message)
+  availableGitBranches.value = []
+  stateRef.gitBranch = ''
+})
 
 const HTTP_BASE_URL = getHttpBaseUrl()
 
@@ -284,8 +337,34 @@ const openCreateImageRegistryCredentialModal = computed(
       <!--  Git as Source  -->
       <div v-if="applicationSourceType === 'git'" class="w-full">
         <p class="text-xl font-medium">Git Repository Information</p>
-        <!-- Git Repository URL -->
+
+        <!-- Git Credentials -->
         <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700" for="git_credential"
+            >Pick Git Credential (Optional)</label
+          >
+          <div class="mt-1">
+            <select
+              id="git_credential"
+              v-model="stateRef.gitCredentialID"
+              @change="fetchGitBranches"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option selected value="0">No Credential</option>
+              <option v-for="credential in gitCredentials" :key="credential.id" :value="credential.id">
+                {{ credential.name }}
+              </option>
+            </select>
+          </div>
+          <p class="mt-2 flex items-center text-sm">
+            Need to add credential for private repo ?
+            <a @click="openCreateGitCredentialModal" class="ml-1.5 cursor-pointer font-bold text-primary-600"
+              >Click Here</a
+            >
+          </p>
+        </div>
+
+        <!-- Git Repository URL -->
+        <div class="mt-4">
           <label class="block text-sm font-medium text-gray-700" for="git_repo_url"
             >Git Repository URL<span class="text-red-600"> *</span></label
           >
@@ -297,8 +376,8 @@ const openCreateImageRegistryCredentialModal = computed(
               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               name="name"
               placeholder="Enter Git Repository URL"
-              type="text" />
-
+              type="text"
+              v-debounce:1000ms="fetchGitBranches" />
             <p class="mt-1 text-xs text-gray-800">* Only GitHub & GitLab supported</p>
           </div>
         </div>
@@ -306,17 +385,21 @@ const openCreateImageRegistryCredentialModal = computed(
         <!-- Git Branch -->
         <div class="mt-4">
           <label class="block text-sm font-medium text-gray-700" for="name"
-            >Git Branch<span class="text-red-600"> *</span></label
-          >
+            >Git Branch<span class="text-red-600"> *</span>
+            <span class="ml-2 italic" v-if="fetchingGitBranches"
+              ><font-awesome-icon icon="fa-solid fa-spinner" class="animate-spin" />&nbsp;&nbsp;Fetching...</span
+            >
+          </label>
           <div class="mt-1">
-            <input
-              id="name"
+            <select
+              id="git_credential"
               v-model="stateRef.gitBranch"
-              autocomplete="off"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              name="name"
-              placeholder="Name of branch"
-              type="text" />
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option selected disabled value="">Select Branch</option>
+              <option v-for="branch in availableGitBranches" :key="branch" :value="branch">
+                {{ branch }}
+              </option>
+            </select>
           </div>
         </div>
 
@@ -336,30 +419,6 @@ const openCreateImageRegistryCredentialModal = computed(
               * You need to specify this if your code is not in root directory of git
             </p>
           </div>
-        </div>
-
-        <!-- Git Credentials -->
-        <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700" for="git_credential"
-            >Pick Git Credential (Optional)</label
-          >
-          <div class="mt-1">
-            <select
-              id="git_credential"
-              v-model="stateRef.gitCredentialID"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-              <option selected value="0">No Credential</option>
-              <option v-for="credential in gitCredentials" :key="credential.id" :value="credential.id">
-                {{ credential.name }}
-              </option>
-            </select>
-          </div>
-          <p class="mt-2 flex items-center text-sm">
-            Need to add credential for private repo ?
-            <a @click="openCreateGitCredentialModal" class="ml-1.5 cursor-pointer font-bold text-primary-600"
-              >Click Here</a
-            >
-          </p>
         </div>
       </div>
 

@@ -18,6 +18,7 @@ const setSourceType = (type) => {
 
 <template>
   <TabPanel :key="1" class="flex h-full flex-col items-center justify-center space-y-6">
+    <p class="text-center text-lg font-medium text-gray-500">Select the source of your application</p>
     <div class="flex flex-row items-center justify-center space-x-6">
       <!--  Docker Image  -->
       <div

@@ -5,7 +5,6 @@ import { TabPanel } from '@headlessui/vue'
 import { ref } from 'vue'
 import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { debounce } from 'lodash'
 
 defineProps({
   finalApplicationNameAndMoveToNextTab: {
@@ -44,7 +43,7 @@ onIsExistApplicationNameResult((result) => {
   }
 })
 
-const isExistApplicationNameCheck = debounce(() => {
+const isExistApplicationNameCheck = () => {
   if (newApplicationName.value === '') {
     isExistApplicationName.value = true
     return
@@ -52,12 +51,13 @@ const isExistApplicationNameCheck = debounce(() => {
   newApplicationName.value = newApplicationName.value.replace(/[^a-zA-Z0-9]/g, '')
   isExistApplicationVariables.value.name = newApplicationName.value
   isExistApplicationLoad()
-}, 500)
+}
 </script>
 
 <template>
-  <TabPanel :key="0" class="mt-5 flex h-full w-full max-w-md flex-col justify-center">
-    <div class="mt-1">
+  <TabPanel :key="0" class="mt-12 flex w-full max-w-md flex-col p-6">
+    <img src="@/assets/images/deploy-app-image.png" class="mx-auto w-3/4" alt="deploy-app-image" />
+    <div class="mt-8">
       <label class="block text-sm font-medium text-gray-700" for="application_name"> Application Name </label>
       <div class="mt-1">
         <input
@@ -67,7 +67,7 @@ const isExistApplicationNameCheck = debounce(() => {
           @keydown="preventSpaceInput"
           autocomplete="off"
           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-          v-on:input="isExistApplicationNameCheck" />
+          v-debounce:1000ms="isExistApplicationNameCheck" />
       </div>
       <div
         v-if="
