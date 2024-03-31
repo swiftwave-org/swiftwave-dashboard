@@ -224,6 +224,7 @@ onWakeApplicationError((error) => {
                   name: 'Application Details Ingress Rules',
                   params: { id: $route.params.id }
                 }"
+                class="font-semibold text-info-600"
                 >Add ingress rules
               </RouterLink>
               if you want to expose the application to the internet)</i
