@@ -239,6 +239,9 @@ const fetchAllAnalytics = () => {
             v-model="statsTimeframe"
             @change="loadServerAnalytics">
             <option value="last_1_hour">Last 1 hour</option>
+            <option value="last_3_hours">Last 3 hours</option>
+            <option value="last_6_hours">Last 6 hours</option>
+            <option value="last_12_hours">Last 12 hours</option>
             <option value="last_24_hours">Last 24 hours</option>
             <option value="last_7_days">Last 7 days</option>
             <option value="last_30_days">Last 30 days</option>
@@ -260,7 +263,8 @@ const fetchAllAnalytics = () => {
             (val) => {
               return val + ' %'
             }
-          " />
+          "
+          :y-axis-minimum-max="100" />
         <!--  Memory usage series  -->
         <AreaChartTimeSeries title="Memory Usage" :series="memoryUsageSeries" :y-axis-formatter="humanizeMemoryGB" />
         <!--  Network usage series  -->

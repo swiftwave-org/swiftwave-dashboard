@@ -19,6 +19,11 @@ defineProps({
     type: Function,
     required: false,
     default: (value) => value
+  },
+  yAxisMinimumMax: {
+    type: Number,
+    default: 0,
+    required: false
   }
 })
 </script>
@@ -58,6 +63,7 @@ defineProps({
         },
         yaxis: {
           tickAmount: 1,
+          max: (val) => Math.max(val, yAxisMinimumMax),
           labels: {
             show: true,
             formatter: yAxisFormatter
