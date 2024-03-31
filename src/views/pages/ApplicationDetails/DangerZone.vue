@@ -5,6 +5,7 @@ import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
+import Divider from '@/views/components/Divider.vue'
 
 const router = useRouter()
 const toast = useToast()
@@ -139,6 +140,9 @@ const openWebConsole = () => {
 </script>
 
 <template>
+  <div class="mt-3 w-full rounded-md border border-warning-200 bg-warning-100 p-2">
+    Use the below options with caution. These actions are non-reversible.
+  </div>
   <div class="mt-3 flex flex-col items-start">
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
@@ -149,6 +153,8 @@ const openWebConsole = () => {
       </div>
       <FilledButton type="primary" @click="openWebConsole"> Open Web Console</FilledButton>
     </div>
+
+    <Divider />
 
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
@@ -171,11 +177,9 @@ const openWebConsole = () => {
         Click to Rebuild
       </FilledButton>
     </div>
-
-    <hr class="my-4 w-full border-gray-200" />
-    <p class="font-medium text-danger-500">Do you like to delete this application ?</p>
-    <p class="font-bold">This action cannot be undone</p>
-    <p>This action will remove these stuffs-</p>
+    <Divider />
+    <p class="font-bold text-danger-500">Do you like to delete this application ?</p>
+    <p class="mt-2">This action will remove these stuffs-</p>
     <ul class="list-inside list-disc">
       <li>Application</li>
       <li>Related Deployments</li>
@@ -185,8 +189,9 @@ const openWebConsole = () => {
       <li>Uploaded Source Code</li>
     </ul>
 
-    <div class="mt-3 w-full rounded-md bg-danger-100 p-2">
-      <b>Note :</b> You need to delete all the ingress rules pointed to this application manually.
+    <div class="mt-3 w-full rounded-md border border-danger-200 bg-danger-100 p-2">
+      <b>Note :</b> You need to delete all the ingress rules pointed to this application manually before deleting this
+      application.
     </div>
 
     <FilledButton
