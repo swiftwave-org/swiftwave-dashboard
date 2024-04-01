@@ -59,6 +59,7 @@ import {
   faServer,
   faSkullCrossbones,
   faSpinner,
+  faStop,
   faStore,
   faTerminal,
   faTrash,
@@ -148,7 +149,8 @@ library.add(
   faAngleDown,
   faAngleUp,
   faChartSimple,
-  faSpinner
+  faSpinner,
+  faStop
 )
 
 // Environment variables

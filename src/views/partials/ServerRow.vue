@@ -207,6 +207,74 @@ const openAnalyticsPage = () => {
     }
   })
 }
+
+// Disable deployment on server
+const {
+  mutate: disableDeploymentOnServerRaw,
+  onError: disableDeploymentOnServerError,
+  onDone: disableDeploymentOnServerDone
+} = useMutation(gql`
+  mutation DisableDeploymentOnServer($serverId: Uint!) {
+    disableProxyOnServer(id: $serverId)
+  }
+`)
+
+disableDeploymentOnServerError((error) => {
+  toast.error(error.message)
+})
+
+disableDeploymentOnServerDone((val) => {
+  if (val.data.disableProxyOnServer) {
+    toast.success('Deployments have been disabled on the requested server')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to disable deployments on server')
+  }
+})
+
+const disableDeploymentOnServer = () => {
+  const confirmation = confirm(
+    'Are you sure that you want to disable deployments on this server ?\n All deployments will be moved to other servers.'
+  )
+  if (confirmation) {
+    disableDeploymentOnServerRaw({
+      serverId: props.server.id
+    })
+  }
+}
+
+// Enable deployment on server
+const {
+  mutate: enableDeploymentOnServerRaw,
+  onError: enableDeploymentOnServerError,
+  onDone: enableDeploymentOnServerDone
+} = useMutation(gql`
+  mutation EnableDeploymentOnServer($serverId: Uint!) {
+    allowDeploymentOnServer(id: $serverId)
+  }
+`)
+
+enableDeploymentOnServerError((error) => {
+  toast.error(error.message)
+})
+
+enableDeploymentOnServerDone((val) => {
+  if (val.data.enableProxyOnServer) {
+    toast.success('Deployments have been enabled on the requested server')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to enable deployments on server')
+  }
+})
+
+const enableDeploymentOnServer = () => {
+  const confirmation = confirm('Are you sure that you want to enable deployments on this server ?')
+  if (confirmation) {
+    enableDeploymentOnServerRaw({
+      serverId: props.server.id
+    })
+  }
+}
 </script>
 
 <template>
@@ -296,6 +364,12 @@ const openAnalyticsPage = () => {
       </li>
       <li v-if="!isSetupRequired" @click="setupResourceMonitoring">
         <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Setup Resource Monitoring
+      </li>
+      <li v-if="server.scheduleDeployments && !isSetupRequired" @click="disableDeploymentOnServer">
+        <font-awesome-icon icon="fa-solid fa-stop" />&nbsp;&nbsp;&nbsp;Disable Deployment on Server
+      </li>
+      <li v-if="!server.scheduleDeployments && !isSetupRequired" @click="enableDeploymentOnServer">
+        <font-awesome-icon icon="fa-solid fa-play" />&nbsp;&nbsp;&nbsp;Enable Deployment on Server
       </li>
     </ul>
   </div>
