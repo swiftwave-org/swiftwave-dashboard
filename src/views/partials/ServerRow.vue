@@ -215,7 +215,7 @@ const {
   onDone: disableDeploymentOnServerDone
 } = useMutation(gql`
   mutation DisableDeploymentOnServer($serverId: Uint!) {
-    disableProxyOnServer(id: $serverId)
+    restrictDeploymentOnServer(id: $serverId)
   }
 `)
 
@@ -224,7 +224,7 @@ disableDeploymentOnServerError((error) => {
 })
 
 disableDeploymentOnServerDone((val) => {
-  if (val.data.disableProxyOnServer) {
+  if (val.data.restrictDeploymentOnServer) {
     toast.success('Deployments have been disabled on the requested server')
     props.refetchServers()
   } else {
@@ -259,7 +259,7 @@ enableDeploymentOnServerError((error) => {
 })
 
 enableDeploymentOnServerDone((val) => {
-  if (val.data.enableProxyOnServer) {
+  if (val.data.allowDeploymentOnServer) {
     toast.success('Deployments have been enabled on the requested server')
     props.refetchServers()
   } else {
