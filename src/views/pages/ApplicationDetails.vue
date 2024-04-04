@@ -282,32 +282,32 @@ onWakeApplicationError((error) => {
         </div>
       </div>
     </div>
+    <div class="mt-5 flex w-full flex-row gap-5">
+      <!--  Vertical navbar for links    -->
+      <ApplicationDetailsNavbar />
 
-    <hr class="mt-2" />
-
-    <!--  Horizontal navbar for links    -->
-    <ApplicationDetailsNavbar class="mb-4 mt-4" />
-
-    <!--  Nested Router View  -->
-    <RouterView />
-
-    <!--  Update Config Notify bar  -->
-    <div
-      v-if="applicationUpdater.isConfigurationUpdated"
-      class="mt-4 flex flex-row items-center justify-end gap-2 rounded-md border border-gray-300 p-2">
-      <span class="mr-4 font-medium">You have updated some of the configuration</span>
-      <FilledButton
-        :click="applicationUpdater.applyConfigurationChanges"
-        :loading="applicationUpdater.isDeployRequestSubmitting"
-        type="primary">
-        Apply Changes
-      </FilledButton>
-      <FilledButton
-        :click="applicationUpdater.cancelConfigurationChanges"
-        :disabled="applicationUpdater.isDeployRequestSubmitting"
-        type="secondary">
-        Cancel
-      </FilledButton>
+      <div class="w-full">
+        <!--  Nested Router View  -->
+        <RouterView />
+        <!--  Update Config Notify bar  -->
+        <div
+          v-if="applicationUpdater.isConfigurationUpdated"
+          class="mt-4 flex flex-row items-center justify-end gap-2 rounded-md border border-gray-300 p-2">
+          <span class="mr-4 font-medium">You have updated some of the configuration</span>
+          <FilledButton
+            :click="applicationUpdater.applyConfigurationChanges"
+            :loading="applicationUpdater.isDeployRequestSubmitting"
+            type="primary">
+            Apply Changes
+          </FilledButton>
+          <FilledButton
+            :click="applicationUpdater.cancelConfigurationChanges"
+            :disabled="applicationUpdater.isDeployRequestSubmitting"
+            type="secondary">
+            Cancel
+          </FilledButton>
+        </div>
+      </div>
     </div>
   </section>
 </template>

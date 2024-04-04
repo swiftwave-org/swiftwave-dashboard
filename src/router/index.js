@@ -97,12 +97,22 @@ const router = createRouter({
         {
           path: 'danger_zone',
           name: 'Application Details Danger Zone',
-          component: () => import('@/views/pages/ApplicationDetails/DangerZone.vue')
+          component: () => import('@/views/pages/ApplicationDetails/Destroy.vue')
+        },
+        {
+          path: 'manage',
+          name: 'Application Details Manage',
+          component: () => import('@/views/pages/ApplicationDetails/Manage.vue')
         },
         {
           path: 'webhook_ci',
           name: 'Application Details Webhook CI',
           component: () => import('@/views/pages/ApplicationDetails/WebhookCI.vue')
+        },
+        {
+          path: 'resource_stats',
+          name: 'Application Details Resource Stats',
+          component: () => import('@/views/pages/ApplicationDetails/ResourceStats.vue')
         }
       ]
     },

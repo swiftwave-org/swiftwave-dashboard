@@ -1,101 +1,108 @@
-<script setup>
-</script>
+<script setup></script>
 
 <template>
-  <div class="flex flex-row flex-wrap select-none">
-    <RouterLink :to="{
-      name: 'Application Details Deployments',
-      params: { id: $route.params.id }
-    }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Deployments
-      </div>
+  <div class="navbar">
+    <RouterLink
+      class="nav-element"
+      :to="{
+        name: 'Application Details Deployments',
+        params: { id: $route.params.id }
+      }">
+      Deployments
     </RouterLink>
     <RouterLink
+      class="nav-element"
+      :to="{
+        name: 'Application Details Resource Stats',
+        params: { id: $route.params.id }
+      }">
+      Resource Analytics
+    </RouterLink>
+    <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Runtime Logs',
         params: { id: $route.params.id }
       }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Runtime Logs
-      </div>
+      Runtime Logs
     </RouterLink>
     <RouterLink
+      class="nav-element"
+      :to="{
+        name: 'Application Details Manage',
+        params: { id: $route.params.id }
+      }">
+      Manage & Access
+    </RouterLink>
+    <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Ingress Rules',
         params: { id: $route.params.id }
       }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Ingress Rules
-      </div>
+      Ingress Rules
     </RouterLink>
     <RouterLink
-      :to="{
-        name: 'Application Details Update Source',
-        params: { id: $route.params.id }
-      }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Update Source Code
-      </div>
-    </RouterLink>
-    <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Environment Variables',
         params: { id: $route.params.id }
       }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Environment Variables
-      </div>
+      Environment Variable
     </RouterLink>
     <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Persistent Volumes',
         params: { id: $route.params.id }
       }">
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Persistent Volumes
-      </div>
+      Persistent Volumes
     </RouterLink>
     <RouterLink
+      class="nav-element"
+      :to="{
+        name: 'Application Details Update Source',
+        params: { id: $route.params.id }
+      }">
+      Update Source
+    </RouterLink>
+    <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Deployment Config',
         params: { id: $route.params.id }
-      }"
-    >
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Deployment Configuration
-      </div>
+      }">
+      Deployment Config
     </RouterLink>
     <RouterLink
+      class="nav-element"
       :to="{
         name: 'Application Details Webhook CI',
         params: { id: $route.params.id }
-      }"
-    >
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        Webhook CI
-      </div>
+      }">
+      Webhook CI
     </RouterLink>
     <RouterLink
+      class="nav-element !text-red-500"
       :to="{
         name: 'Application Details Danger Zone',
         params: { id: $route.params.id }
-      }"
-    >
-      <div  class="px-3 py-2 border border-black text-sm font-medium hover:bg-gray-200 min-w-max">
-        <font-awesome-icon icon="fa-solid fa-skull-crossbones" />
-        Danger Zone
-      </div>
+      }">
+      Destroy
     </RouterLink>
   </div>
 </template>
 
 <style scoped>
-.router-link-exact-active {
-  @apply bg-amber-300;
+.navbar {
+  @apply flex h-min select-none flex-col flex-wrap gap-1 rounded-md border border-secondary-300 p-1.5;
 }
 
-.router-link-exact-active :hover {
-  @apply bg-amber-300;
+.nav-element {
+  @apply min-w-max rounded-md px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100;
+}
+
+.router-link-exact-active {
+  @apply bg-secondary-100 font-medium text-black;
 }
 </style>
