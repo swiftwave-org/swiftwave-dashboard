@@ -95,7 +95,7 @@
 
 <style scoped>
 .navbar {
-  @apply flex h-min select-none flex-col flex-wrap gap-1 rounded-md border border-secondary-300 p-1.5;
+  @apply flex h-min select-none flex-col flex-wrap gap-1 rounded-lg border border-secondary-200 p-1.5;
 }
 
 .nav-element {
