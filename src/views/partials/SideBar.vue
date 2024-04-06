@@ -185,18 +185,24 @@ onMounted(() => {
                 <font-awesome-icon icon="fa-solid fa-users" />
                 <span class="mx-2 text-sm font-medium">Manage Users</span>
               </RouterLink>
-              <div
-                class="flex transform cursor-pointer items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
-                @click="openChangePasswordModal">
-                <font-awesome-icon icon="fa-solid fa-key" />
-                <span class="mx-2 text-sm font-medium">Change Password</span>
-              </div>
+              <RouterLink
+                class="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
+                to="/logs">
+                <font-awesome-icon icon="fa-solid fa-file-waveform" />
+                <span class="mx-2 text-sm font-medium">System Logs</span>
+              </RouterLink>
               <RouterLink
                 class="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
                 to="/setup?update=1">
                 <font-awesome-icon icon="fa-solid fa-wrench" />
                 <span class="mx-2 text-sm font-medium">System Configuration</span>
               </RouterLink>
+              <div
+                class="flex transform cursor-pointer items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
+                @click="openChangePasswordModal">
+                <font-awesome-icon icon="fa-solid fa-key" />
+                <span class="mx-2 text-sm font-medium">Change Password</span>
+              </div>
               <a
                 class="flex transform cursor-pointer items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
                 @click="logoutWithConfirmation">

@@ -37,6 +37,7 @@ import {
   faEyeSlash,
   faFile,
   faFileLines,
+  faFileWaveform,
   faFingerprint,
   faGear,
   faGlobe,
@@ -150,7 +151,8 @@ library.add(
   faAngleUp,
   faChartSimple,
   faSpinner,
-  faStop
+  faStop,
+  faFileWaveform
 )
 
 // Environment variables
