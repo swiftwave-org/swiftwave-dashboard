@@ -199,19 +199,17 @@ onWakeApplicationError((error) => {
           <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'">Source-code uploaded manually</p>
         </div>
         <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
-          <font-awesome-icon icon="fa-solid fa-gear" />
-          <p v-if="applicationDetails.deploymentMode === 'global'">Global Deployment</p>
-          <p v-else-if="applicationDetails.deploymentMode === 'replicated'">
-            Replicated Deployment (expected {{ applicationDetails.replicas }} instance of the application)
-          </p>
-        </div>
-        <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
           <font-awesome-icon icon="fa-solid fa-globe" />
           <p v-if="isIngressRulesAvailable" class="max-w-[40vw]">
             <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
               <span v-if="index !== 0">, </span>
-              <span
-                >{{ ingressRule.protocol }}://{{ ingressRule.domain?.name ?? 'server_ip' }}:{{ ingressRule.port }}</span
+              <a
+                :href="
+                  ingressRule.protocol + '://' + ingressRule.domain?.name ??
+                  'server_ip' + ':' + ingressRule.port.toString()
+                "
+                target="_blank"
+                >{{ ingressRule.protocol }}://{{ ingressRule.domain?.name ?? 'server_ip' }}:{{ ingressRule.port }}</a
               >
             </span>
           </p>
@@ -234,10 +232,9 @@ onWakeApplicationError((error) => {
       </div>
       <!--   right side   -->
       <div class="flex flex-col items-end">
-        <p class="w-full text-center text-xl font-medium">Realtime Info</p>
         <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
           <p v-if="applicationDetails.isSleeping" class="font-semibold text-blue-600">
-            <font-awesome-icon icon="fa-solid fa-moon" />
+            <font-awesome-icon icon="fa-solid fa-bed" />
             Sleeping
           </p>
           <p v-else-if="realtimeInfo.InfoFound" class="text-center">
@@ -282,7 +279,7 @@ onWakeApplicationError((error) => {
         </div>
       </div>
     </div>
-    <div class="mt-5 flex w-full flex-row gap-5">
+    <div class="mt-8 flex w-full flex-row gap-5">
       <!--  Vertical navbar for links    -->
       <ApplicationDetailsNavbar />
 

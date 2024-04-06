@@ -47,7 +47,7 @@ const viewApplicationDetails = () => {
     <TableRow v-else-if="application.isSleeping" align="center">
       <Badge type="warning">
         <div class="flex flex-row items-center gap-1.5">
-          <font-awesome-icon icon="fa-solid fa-moon" />
+          <font-awesome-icon icon="fa-solid fa-bed" />
           Sleeping
         </div>
       </Badge>
