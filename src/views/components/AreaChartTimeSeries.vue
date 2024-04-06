@@ -63,6 +63,7 @@ defineProps({
         },
         yaxis: {
           tickAmount: 1,
+          min: 0,
           max: (val) => Math.max(val, yAxisMinimumMax),
           labels: {
             show: true,
