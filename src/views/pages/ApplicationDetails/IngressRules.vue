@@ -25,13 +25,13 @@ const refetchIngressRules = () => {
 <template>
   <!-- Create Ingress Rule Modal -->
   <CreateIngressRuleModal ref="newIngressRuleModalRef" :callback-on-create="refetchIngressRules" />
+  <!-- Table -->
+  <IngressRuleList ref="ingressRuleListRef" :application-id="router.currentRoute.value.params.id" />
   <!-- More actions  -->
-  <div class="mt-1 flex items-center justify-center gap-3">
+  <div class="mt-4 flex items-center justify-center gap-3">
     Expose your application to the world
     <FilledButton slim type="primary" :click="openNewIngressRuleModal">Add Ingress Rule</FilledButton>
   </div>
-  <!-- Table -->
-  <IngressRuleList class="mt-4" ref="ingressRuleListRef" :application-id="router.currentRoute.value.params.id" />
 </template>
 
 <style scoped></style>

@@ -396,7 +396,7 @@ const openCreateImageRegistryCredentialModal = computed(
   <CreateImageRegistryCredentialModal
     ref="createImageRegistryCredentialModalRef"
     :callback-on-create="refetchImageRegistryCredentialList" />
-  <div :key="2" class="mb-5 mt-5 flex w-full flex-row justify-between p-6">
+  <div :key="2" class="mb-5 flex w-full flex-row justify-between p-6 pt-0">
     <div class="w-1/2 max-w-md">
       <!--  Git as Source  -->
       <div v-if="applicationSourceType === 'git'" class="w-full">

@@ -26,7 +26,7 @@ onMounted(() => {
   <LoadingPage :show="authStore.IsLoggingInProgress" />
   <div class="app">
     <SideBar class="w-80" />
-    <div class="flex max-h-[100vh] w-full flex-col items-center overflow-y-auto p-6">
+    <div class="scrollbox flex max-h-[100vh] w-full flex-col items-center overflow-y-auto p-4">
       <RouterView />
     </div>
   </div>

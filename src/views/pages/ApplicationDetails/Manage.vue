@@ -103,10 +103,7 @@ const openWebConsole = () => {
 </script>
 
 <template>
-  <div class="mt-3 w-full rounded-md border border-warning-200 bg-warning-100 p-2">
-    Use the below options with caution. These actions are non-reversible.
-  </div>
-  <div class="mt-3 flex flex-col items-start">
+  <div class="flex flex-col items-start">
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
         <p class="inline-flex items-center gap-2 text-lg font-medium">
