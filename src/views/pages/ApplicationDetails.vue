@@ -10,6 +10,7 @@ import NewApplicationUpdaterStore from '@/store/applicationUpdater.js'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
+import UptimeChart from '@/views/components/UptimeChart.vue'
 
 // Toast
 const toast = useToast()
@@ -73,11 +74,12 @@ const applicationDetails = computed(() => applicationDetailsRaw.value?.applicati
 const realtimeInfo = computed(() => applicationDetailsRaw.value?.application?.realtimeInfo ?? {})
 const realtimeReplicaCountPercentage = computed(() => {
   try {
-    return (realtimeInfo.value.RunningReplicas / realtimeInfo.value.DesiredReplicas) * 100
+    return (realtimeInfo.value.RunningReplicas / applicationDetails.value.replicas) * 100
   } catch (e) {
     return 0
   }
 })
+const deploymentMode = computed(() => applicationDetails.value?.deploymentMode ?? '')
 
 const isIngressRulesAvailable = computed(() => {
   return (applicationDetails.value?.ingressRules ?? []).length > 0
@@ -232,25 +234,21 @@ onWakeApplicationError((error) => {
       </div>
       <!--   right side   -->
       <div class="flex flex-col items-end">
-        <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
-          <p v-if="applicationDetails.isSleeping" class="font-semibold text-blue-600">
+        <div class="mt-2 flex w-full items-center gap-2 text-center font-medium text-gray-800">
+          <p v-if="applicationDetails.isSleeping" class="my-2 w-full text-center font-semibold text-blue-600">
             <font-awesome-icon icon="fa-solid fa-bed" />
             Sleeping
           </p>
-          <p v-else-if="realtimeInfo.InfoFound" class="text-center">
-            Active {{ realtimeInfo.RunningReplicas }} instance(s)
-            <br />
-            <span
-              :class="{
-                'text-success-600': realtimeReplicaCountPercentage >= 100,
-                'text-warning-600': realtimeReplicaCountPercentage < 100 && realtimeReplicaCountPercentage > 0,
-                'text-danger-600': realtimeReplicaCountPercentage === 0
-              }"
-              class="font-bold"
-              v-if="!isNaN(realtimeReplicaCountPercentage)"
-              >[{{ realtimeReplicaCountPercentage }}%]</span
-            >
-          </p>
+          <div v-else-if="realtimeInfo.InfoFound" class="flex w-full flex-col items-center text-center">
+            <UptimeChart
+              v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"
+              :percentage="realtimeReplicaCountPercentage"
+              :label="`(${realtimeInfo.RunningReplicas ?? 0} / ${applicationDetails.replicas})`" />
+            <p v-else-if="deploymentMode === 'global'" class="w-full text-center font-semibold text-secondary-600">
+              {{ realtimeInfo.RunningReplicas ?? 0 }} Instances
+            </p>
+            <p v-else class="text-warning-600">Not Available</p>
+          </div>
           <p v-else class="text-warning-600">
             <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />&nbsp;&nbsp;Not Available
           </p>
