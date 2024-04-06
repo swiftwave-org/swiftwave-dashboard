@@ -10,6 +10,8 @@ import Badge from '@/views/components/Badge.vue'
 const router = useRouter()
 const toast = useToast()
 
+const applicationId = router.currentRoute.value.params.id
+
 // Fetch ingress rules
 const { result: ingressRulesRaw, onError: onDeploymentsError } = useQuery(
   gql`
@@ -57,9 +59,10 @@ const formatdate = (date) => {
       v-for="deployment in deployments"
       :key="deployment.id"
       :to="{
-        name: 'Deployment Details',
+        name: 'Application Deployment Details',
         params: {
-          id: deployment.id
+          id: applicationId,
+          deployment_id: deployment.id
         }
       }"
       class="w-full">

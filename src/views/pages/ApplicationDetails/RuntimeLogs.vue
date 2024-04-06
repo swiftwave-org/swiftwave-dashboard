@@ -10,7 +10,6 @@ import gql from 'graphql-tag'
 import { FitAddon } from 'xterm-addon-fit'
 import StatusPulse from '@/views/components/StatusPulse.vue'
 
-
 const toast = useToast()
 const router = useRouter()
 
@@ -22,20 +21,21 @@ const terminal = new Terminal({
 const fitAddon = new FitAddon()
 terminal.loadAddon(fitAddon)
 
-const {
-  result: deploymentLogRaw,
-  onError: onDeploymentLogError
-} = useSubscription(gql`
-  subscription ($id: String!) {
-    fetchRuntimeLog(applicationId: $id){
-      content
+const { result: deploymentLogRaw, onError: onDeploymentLogError } = useSubscription(
+  gql`
+    subscription ($id: String!) {
+      fetchRuntimeLog(applicationId: $id) {
+        content
+      }
     }
+  `,
+  {
+    id: router.currentRoute.value.params.id
+  },
+  {
+    enabled: showDeploymentLog
   }
-`, {
-  id: router.currentRoute.value.params.id
-}, {
-  enabled: showDeploymentLog
-})
+)
 
 onDeploymentLogError((err) => {
   toast.error(err.message)
@@ -48,7 +48,6 @@ watch(deploymentLog, (value) => {
   }
 })
 
-
 onMounted(() => {
   terminal.open(document.getElementById('terminal_2'))
   fitAddon.fit()
@@ -57,12 +56,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <p class="font-medium text-lg inline-flex items-center gap-2">Runtime Logs
+  <p class="inline-flex items-center gap-2 text-lg font-medium">
+    Runtime Logs
     <StatusPulse type="success" />
   </p>
-  <div id="terminal_2" class="w-full max-w-7xl mt-3"></div>
+  <div id="terminal_2" class="mt-3 w-full max-w-7xl overflow-hidden rounded-md bg-black p-2"></div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

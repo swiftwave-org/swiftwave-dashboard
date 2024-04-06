@@ -58,6 +58,7 @@ import {
   faRotateRight,
   faRoute,
   faServer,
+  faSignal,
   faSkullCrossbones,
   faSpinner,
   faStop,
@@ -152,7 +153,8 @@ library.add(
   faSpinner,
   faStop,
   faFileWaveform,
-  faBed
+  faBed,
+  faSignal
 )
 
 // Environment variables

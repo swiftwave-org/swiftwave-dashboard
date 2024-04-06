@@ -65,6 +65,11 @@ const router = createRouter({
           component: () => import('@/views/pages/ApplicationDetails/DeploymentList.vue')
         },
         {
+          path: 'deployment/:deployment_id',
+          name: 'Application Deployment Details',
+          component: () => import('@/views/pages/ApplicationDetails/DeploymentDetails.vue')
+        },
+        {
           path: 'runtime_logs',
           name: 'Application Details Runtime Logs',
           component: () => import('@/views/pages/ApplicationDetails/RuntimeLogs.vue')
@@ -115,11 +120,6 @@ const router = createRouter({
           component: () => import('@/views/pages/ApplicationDetails/ResourceStats.vue')
         }
       ]
-    },
-    {
-      path: '/deployment/:id',
-      name: 'Deployment Details',
-      component: () => import('@/views/pages/DeploymentDetails.vue')
     },
     {
       path: '/persistent-volumes',
