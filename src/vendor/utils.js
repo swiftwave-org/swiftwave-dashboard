@@ -86,6 +86,26 @@ function humanizeMemoryGB(value) {
   }
 }
 
+function humanizeMemoryMB(value) {
+  /**
+   * Convert a float value representing megabytes (MB) to a human-readable format.
+   * If the value is less than 1, it returns the value in kilobytes (KB).
+   * If the value is greater than 1024, it returns the value in gigabytes (GB).
+   * Otherwise, it returns the value in megabytes (MB).
+   */
+  if (value < 1) {
+    const kbValue = value * 1024
+    return `${kbValue.toFixed(2)} KB`
+  } else {
+    if (value > 1024) {
+      const gbValue = value / 1024
+      return `${gbValue.toFixed(2)} GB`
+    } else {
+      return `${value.toFixed(2)} MB`
+    }
+  }
+}
+
 function humanizeDiskGB(value) {
   /**
    * Convert a float value representing gigabytes (GB) to a human-readable format.
@@ -131,6 +151,7 @@ export {
   getGraphQlWsBaseUrl,
   getHttpBaseUrl,
   preventSpaceInput,
+  humanizeMemoryMB,
   humanizeMemoryGB,
   humanizeNetworkSpeed,
   humanizeDiskGB,
