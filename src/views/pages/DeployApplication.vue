@@ -89,9 +89,10 @@ onDeployApplicationMutationDone((result) => {
     return
   }
   router.push({
-    name: 'Deployment Details',
+    name: 'Application Deployment Details',
     params: {
-      id: result.data.createApplication.latestDeployment.id
+      id: result.data.createApplication.id,
+      deployment_id: result.data.createApplication.latestDeployment.id
     }
   })
 })
