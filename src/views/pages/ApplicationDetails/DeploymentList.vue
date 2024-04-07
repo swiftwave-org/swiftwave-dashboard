@@ -102,17 +102,4 @@ const formatdate = (date) => {
   <p class="mt-4 w-full text-center text-sm text-secondary-700">Scroll down to view more deployments(if any)</p>
 </template>
 
-<style scoped>
-.scrollbox::-webkit-scrollbar {
-  width: 12px;
-  @apply mx-2;
-}
-
-.scrollbox::-webkit-scrollbar-track {
-  @apply rounded-full bg-gray-200;
-}
-
-.scrollbox::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-primary-500;
-}
-</style>
+<style scoped></style>

@@ -143,6 +143,19 @@ function formatTimestampHumannize(timestamp) {
   return moment(new Date(timestamp)).format('Do MMMM YYYY - h:mm:ss a')
 }
 
+const maxColorSamples = 4
+
+function getRandomBackgroundAndBorderColourClass(indexProvided = null) {
+  // bg-color-<index>
+  let index
+  if (indexProvided === null) {
+    index = Math.floor(Math.random() * (maxColorSamples - 1)) + 1
+  } else {
+    index = (indexProvided % maxColorSamples) + 1
+  }
+  return [`bg-color-${index}`, `border-color-${index}`]
+}
+
 export {
   getGitProvideFromGitRepoUrl,
   getGitRepoOwnerFromGitRepoUrl,
@@ -155,5 +168,6 @@ export {
   humanizeMemoryGB,
   humanizeNetworkSpeed,
   humanizeDiskGB,
-  formatTimestampHumannize
+  formatTimestampHumannize,
+  getRandomBackgroundAndBorderColourClass
 }

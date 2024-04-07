@@ -66,4 +66,36 @@ onMounted(() => {
 .xterm-viewport::-webkit-scrollbar-thumb {
   @apply rounded-full bg-primary-500;
 }
+
+.bg-color-1 {
+  @apply bg-amber-300 !important;
+}
+
+.border-color-1 {
+  @apply border-amber-400 !important;
+}
+
+.bg-color-2 {
+  @apply bg-green-300 !important;
+}
+
+.border-color-2 {
+  @apply border-green-400 !important;
+}
+
+.bg-color-3 {
+  @apply bg-blue-300 !important;
+}
+
+.border-color-3 {
+  @apply border-blue-400 !important;
+}
+
+.bg-color-4 {
+  @apply bg-gray-300 !important;
+}
+
+.border-color-4 {
+  @apply border-gray-400 !important;
+}
 </style>

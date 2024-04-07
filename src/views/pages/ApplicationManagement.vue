@@ -8,8 +8,8 @@ import Table from '@/views/components/Table/Table.vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
-import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
 import { useToast } from 'vue-toastification'
+import ApplicationGroup from '@/views/partials/ApplicationGroup.vue'
 
 const router = useRouter()
 const toast = useToast()
@@ -43,6 +43,7 @@ const {
           gitProvider
           createdAt
         }
+        group
       }
     }
   `,
@@ -57,6 +58,17 @@ onApplicationsError((err) => {
 })
 
 const applications = computed(() => applicationsResult.value?.applications ?? [])
+const applicationGroupWise = computed(() => {
+  let applications = applicationsResult.value?.applications ?? []
+  let groupedApplications = {}
+  applications.forEach((application) => {
+    if (!groupedApplications[encodeURI(application.group)]) {
+      groupedApplications[encodeURI(application.group)] = []
+    }
+    groupedApplications[encodeURI(application.group)].push(application)
+  })
+  return groupedApplications
+})
 </script>
 
 <template>
@@ -88,7 +100,12 @@ const applications = computed(() => applicationsResult.value?.applications ?? []
         <TableMessage v-if="isApplicationsLoading"> Loading deployed applications...</TableMessage>
       </template>
       <template v-slot:body>
-        <ApplicationListRow v-for="application in applications" :key="application.id" :application="application" />
+        <ApplicationGroup
+          v-for="(applications, group, index) in applicationGroupWise"
+          :key="group"
+          :group="group"
+          :group-index="index"
+          :applications="applications" />
       </template>
     </Table>
   </section>
