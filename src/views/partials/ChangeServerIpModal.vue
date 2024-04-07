@@ -71,7 +71,7 @@ const startCountDown = () => {
     timeCount.value--
     if (timeCount.value === 0) {
       clearInterval(interval)
-      router.push({ name: 'Maintenance' })
+      router.push({ name: 'Maintenance', query: { redirect: router.currentRoute.value.path } })
     }
   }, 1000)
 }

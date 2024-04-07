@@ -9,16 +9,18 @@ const router = useRouter()
 const monitorIfServerIsUp = () => {
   const baseUrl = getHttpBaseUrl()
   const url = `${baseUrl}/healthcheck`
-  console.log('Monitoring server status')
-  setInterval(() => {
+  const interval = setInterval(() => {
     fetch(url, {
       cache: 'no-cache'
     })
       .then((res) => {
-        console.log('Server is up')
-        console.log(res)
         if (res.status === 200) {
-          window.location.href = router.resolve({ name: 'Applications' }).href
+          if (router.currentRoute.value.query.redirect) {
+            router.push(router.currentRoute.value.query.redirect)
+          } else {
+            window.location.href = router.resolve({ name: 'Applications' }).href
+          }
+          clearInterval(interval)
         }
       })
       .catch(() => {
