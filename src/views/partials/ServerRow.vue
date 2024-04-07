@@ -11,6 +11,7 @@ import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import SetupResourceMonitoring from '@/views/partials/SetupResourceMonitoring.vue'
+import ChangeServerIpModal from '@/views/partials/ChangeServerIpModal.vue'
 
 const props = defineProps({
   server: {
@@ -31,6 +32,7 @@ const actionsMenuRef = ref(null)
 const setupModalRef = ref(null)
 const enableProxyModalRef = ref(null)
 const setupResourceMonitoringModalRef = ref(null)
+const changeServerIpModalRef = ref(null)
 const onClickActions = () => {
   if (actionsBtnRef.value === null || actionsBtnRef.value.$el === null) {
     return
@@ -275,6 +277,12 @@ const enableDeploymentOnServer = () => {
     })
   }
 }
+
+const changeServerIp = () => {
+  if (changeServerIpModalRef.value) {
+    changeServerIpModalRef.value.openModal()
+  }
+}
 </script>
 
 <template>
@@ -284,14 +292,13 @@ const enableDeploymentOnServer = () => {
     :server-id="server.id"
     :server-ip="server.ip"
     :key="server.id + '_setup_server_modal'" />
-
   <EnableServerProxyModal ref="enableProxyModalRef" :server-id="server.id" :key="server.id + '_enable_proxy_modal'" />
   <SetupResourceMonitoring
     ref="setupResourceMonitoringModalRef"
     :server-id="server.id"
     :key="server.id + '_setup_resource_monitoring_modal'"
     :open-web-console="openWebConsole" />
-
+  <ChangeServerIpModal :server-ip="server.ip" :server-id="server.id" ref="changeServerIpModalRef" />
   <tr :key="server.id + '_server_row'">
     <TableRow align="left">
       <div class="flex flex-col text-sm font-medium text-gray-900">
@@ -371,6 +378,7 @@ const enableDeploymentOnServer = () => {
       <li v-if="!server.scheduleDeployments && !isSetupRequired" @click="enableDeploymentOnServer">
         <font-awesome-icon icon="fa-solid fa-play" />&nbsp;&nbsp;&nbsp;Enable Deployment on Server
       </li>
+      <li @click="changeServerIp"><font-awesome-icon icon="fa-solid fa-globe" />&nbsp;&nbsp;&nbsp;Change Server IP</li>
     </ul>
   </div>
 </template>

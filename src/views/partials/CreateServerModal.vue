@@ -32,7 +32,7 @@ const closeModal = () => {
   props.callbackOnPop()
 }
 
-// Register Domain state
+// Register Server state
 const newServerDetails = reactive({
   ip: '',
   user: 'root'
