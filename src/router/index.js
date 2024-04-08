@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '@/views/pages/LoginView.vue'
 import UnderMaintenancePage from '@/views/pages/UnderMaintenance.vue'
 
 const router = createRouter({
@@ -18,7 +17,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'Login',
-      component: LoginView
+      component: () => import('@/views/pages/LoginView.vue')
     },
     {
       path: '',

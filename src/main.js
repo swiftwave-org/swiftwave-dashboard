@@ -18,6 +18,7 @@ import {
   faBed,
   faBook,
   faBox,
+  faBug,
   faCalendarDays,
   faCaretDown,
   faChartColumn,
@@ -36,6 +37,7 @@ import {
   faCubesStacked,
   faDiagramProject,
   faEllipsisVertical,
+  faEnvelope,
   faEye,
   faEyeSlash,
   faFile,
@@ -45,6 +47,7 @@ import {
   faGear,
   faGlobe,
   faHammer,
+  faHandshakeAngle,
   faHardDrive,
   faKey,
   faLink,
@@ -53,6 +56,7 @@ import {
   faLocationArrow,
   faMagnifyingGlass,
   faNetworkWired,
+  faPeopleGroup,
   faPlay,
   faPlus,
   faPowerOff,
@@ -86,7 +90,7 @@ import router from './router'
 import './assets/css/base.css'
 import 'vue-toastification/dist/index.css'
 import { faDocker } from '@fortawesome/free-brands-svg-icons/faDocker'
-import { faGit } from '@fortawesome/free-brands-svg-icons'
+import { faGit, faGithub } from '@fortawesome/free-brands-svg-icons'
 import { createClient } from 'graphql-ws'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions' // <-- This one uses graphql-ws
 import { getMainDefinition } from '@apollo/client/utilities'
@@ -162,7 +166,12 @@ library.add(
   faCaretDown,
   faCheck,
   faPowerOff,
-  faUserTie
+  faUserTie,
+  faGithub,
+  faBug,
+  faHandshakeAngle,
+  faEnvelope,
+  faPeopleGroup
 )
 
 // Environment variables

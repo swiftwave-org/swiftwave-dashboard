@@ -1,12 +1,13 @@
 <script setup>
-import { RouterView } from 'vue-router'
-import { onBeforeMount, onMounted } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
+import { computed, onBeforeMount, onMounted } from 'vue'
 import { useAuthStore } from '@/store/auth.js'
 import SideBar from '@/views/partials/SideBar.vue'
 import LoadingPage from '@/views/pages/LoadingPage.vue'
 import NotAvailableOnMobile from '@/views/pages/NotAvailableOnMobile.vue'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 onBeforeMount(() => {
   const token = localStorage.getItem('token')
@@ -20,13 +21,19 @@ onMounted(() => {
     authStore.Logout()
   })
 })
+
+const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
 </script>
 
 <template>
   <LoadingPage :show="authStore.IsLoggingInProgress" />
   <div class="app">
     <SideBar class="w-80" />
-    <div class="scrollbox flex max-h-[100vh] w-full flex-col items-center overflow-y-auto p-4">
+    <div
+      class="scrollbox flex max-h-[100vh] w-full flex-col items-center overflow-y-auto"
+      :class="{
+        'p-4': !isLoginPage
+      }">
       <RouterView />
     </div>
   </div>

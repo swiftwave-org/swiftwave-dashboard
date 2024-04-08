@@ -4,6 +4,10 @@ export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        prompt: ['Prompt', 'sans-serif'],
+        comfortaa: ['Comfortaa', 'sans-serif']
+      },
       colors: {
         primary: {
           50: '#FAF5FF',
