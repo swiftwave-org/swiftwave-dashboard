@@ -278,11 +278,43 @@ const enableDeploymentOnServer = () => {
   }
 }
 
+// Change server IP
 const changeServerIp = () => {
   if (changeServerIpModalRef.value) {
     changeServerIpModalRef.value.openModal()
   }
 }
+
+// Delete server
+const {
+  mutate: deleteServer,
+  onError: onDeleteServerError,
+  onDone: onDeleteServerDone
+} = useMutation(
+  gql`
+    mutation DeleteServer($serverId: Uint!) {
+      deleteServer(id: $serverId)
+    }
+  `,
+  {
+    variables: {
+      serverId: props.server.id
+    }
+  }
+)
+
+onDeleteServerError((error) => {
+  toast.error(error.message)
+})
+
+onDeleteServerDone((val) => {
+  if (val.data.deleteServer) {
+    toast.success('Server has been deleted')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to delete server')
+  }
+})
 </script>
 
 <template>
@@ -379,6 +411,11 @@ const changeServerIp = () => {
         <font-awesome-icon icon="fa-solid fa-play" />&nbsp;&nbsp;&nbsp;Enable Deployment on Server
       </li>
       <li @click="changeServerIp"><font-awesome-icon icon="fa-solid fa-globe" />&nbsp;&nbsp;&nbsp;Change Server IP</li>
+      <li @click="deleteServer">
+        <p class="font-medium text-danger-500">
+          <font-awesome-icon icon="fa-solid fa-trash" />&nbsp;&nbsp;&nbsp;Delete Server
+        </p>
+      </li>
     </ul>
   </div>
 </template>
