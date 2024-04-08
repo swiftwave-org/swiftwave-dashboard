@@ -303,6 +303,7 @@ export default function newApplicationUpdater(applicationId) {
             }
             capabilities
             sysctls
+            group
           }
         }
       `,
@@ -479,7 +480,8 @@ export default function newApplicationUpdater(applicationId) {
         sourceCodeCompressedFileName: sourceConfigurationRef.sourceCodeCompressedFileName,
         dockerfile: sourceConfigurationRef.dockerfile,
         capabilities: applicationExistingDetails.capabilities,
-        sysctls: applicationExistingDetails.sysctls
+        sysctls: applicationExistingDetails.sysctls,
+        group: applicationExistingDetails.group
       }
     }
 
