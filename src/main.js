@@ -19,8 +19,10 @@ import {
   faBook,
   faBox,
   faCalendarDays,
+  faCaretDown,
   faChartColumn,
   faChartSimple,
+  faCheck,
   faChevronDown,
   faChevronRight,
   faCircleCheck,
@@ -154,7 +156,9 @@ library.add(
   faStop,
   faFileWaveform,
   faBed,
-  faSignal
+  faSignal,
+  faCaretDown,
+  faCheck
 )
 
 // Environment variables

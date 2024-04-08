@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Badge from '@/views/components/Badge.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ApplicationDetailsNavbar from '@/views/partials/ApplicationDetailsNavbar.vue'
@@ -11,6 +11,7 @@ import FilledButton from '@/views/components/FilledButton.vue'
 import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
+import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
 
 // Toast
 const toast = useToast()
@@ -59,6 +60,7 @@ const {
           protocol
           port
         }
+        group
       }
     }
   `,
@@ -142,9 +144,23 @@ onWakeApplicationDone(() => {
 onWakeApplicationError((error) => {
   toast.error(error.message)
 })
+
+// Application group update
+const applicationGroupUpdateModalRef = ref(null)
+const openApplicationGroupUpdateModal = () => {
+  if (applicationGroupUpdateModalRef.value) applicationGroupUpdateModalRef.value.openModal()
+}
 </script>
 
 <template>
+  <!-- Application group update modal -->
+  <UpdateApplicationGroupModal
+    ref="applicationGroupUpdateModalRef"
+    :current-group="applicationDetails.group"
+    :application-id="applicationDetails.id"
+    :callback-on-update="refetchApplicationDetails" />
+
+  <!-- Main -->
   <div v-if="applicationDetailsLoading">
     <p>Loading...</p>
   </div>
@@ -153,29 +169,41 @@ onWakeApplicationError((error) => {
       <!--   left side   -->
       <div>
         <div class="flex items-center gap-2">
-          <p class="text-xl font-medium">{{ applicationDetails.name }}</p>
-          <Badge v-if="applicationDetails.latestDeployment.status === 'live'" type="success">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'pending'" type="warning">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'deployPending'" type="warning">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'deploying'" type="warning">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'failed'" type="danger">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'stopped'" type="secondary">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
-            {{ applicationDetails.latestDeployment.status }}
-          </Badge>
-          <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
+          <div class="flex overflow-hidden rounded-full border-2 border-secondary-300 text-base">
+            <div class="flex items-center justify-center gap-2 py-1 pl-3 pr-2 font-medium">
+              {{ applicationDetails.name }}
+              <Badge v-if="applicationDetails.latestDeployment.status === 'live'" type="success">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'pending'" type="warning">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'deployPending'" type="warning">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'deploying'" type="warning">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'failed'" type="danger">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'stopped'" type="secondary">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
+                {{ applicationDetails.latestDeployment.status }}
+              </Badge>
+              <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
+            </div>
+            <div
+              @click="openApplicationGroupUpdateModal"
+              class="flex cursor-pointer items-center justify-center rounded-full bg-primary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-primary-500">
+              <span v-if="applicationDetails.group !== ''">{{ applicationDetails.group }}</span>
+              <span v-else>no group</span>
+              &nbsp;&nbsp;
+              <font-awesome-icon icon="fa-solid fa-caret-down" />
+            </div>
+          </div>
         </div>
         <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
           <font-awesome-icon
