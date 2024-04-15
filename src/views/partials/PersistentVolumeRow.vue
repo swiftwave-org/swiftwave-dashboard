@@ -143,8 +143,9 @@ const createBackup = () => {
   <tr :key="volume.id">
     <TableRow align="left">
       <div class="text-sm font-medium text-gray-900">
-        <Badge class="mr-1" type="success" v-if="volume.type === 'local'">local</Badge>
-        <Badge class="mr-1" type="warning" v-if="volume.type === 'nfs'">&nbsp;&nbsp;nfs&nbsp;&nbsp;</Badge>
+        <Badge class="mr-1" type="success" v-if="volume.type === 'local'">Local</Badge>
+        <Badge class="mr-1" type="warning" v-if="volume.type === 'nfs'">&nbsp;&nbsp;NFS&nbsp;&nbsp;</Badge>
+        <Badge class="mr-1" type="warning" v-if="volume.type === 'cifs'">&nbsp;CIFS&nbsp;</Badge>
         {{ volume.name }}
       </div>
     </TableRow>

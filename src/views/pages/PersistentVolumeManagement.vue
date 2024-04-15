@@ -17,6 +17,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/store/auth.js'
 import Badge from '@/views/components/Badge.vue'
 import CreatePersistentVolumeModal from '@/views/partials/CreatePersistentVolumeModal.vue'
+import SecuredText from '@/views/components/SecuredText.vue'
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -82,6 +83,14 @@ const {
         path
         version
       }
+      cifsConfig {
+        host
+        share
+        username
+        password
+        file_mode
+        dir_mode
+      }
     }
   }
 `)
@@ -145,8 +154,6 @@ const uploadAndRestoreNow = () => {
       }
     })
     .then((e) => {
-      const data = e.data
-      console.log(data)
       isRestoreNowButtonLoading.value = false
       toast.success('Restore initiated successfully')
       closeRestoreNowModal()
@@ -165,6 +172,14 @@ const selectedVolumeDetails = reactive({
     host: '',
     path: '',
     version: 0
+  },
+  cifsConfig: {
+    host: '',
+    share: '',
+    username: '',
+    password: '',
+    file_mode: '',
+    dir_mode: ''
   }
 })
 const closeVolumeDetailsModal = () => {
@@ -174,9 +189,16 @@ const closeVolumeDetailsModal = () => {
 const showDetails = (volume) => {
   selectedVolumeDetails.name = volume.name
   selectedVolumeDetails.type = volume.type
-  selectedVolumeDetails.nfsConfig.host = volume.nfsConfig.host
-  selectedVolumeDetails.nfsConfig.path = volume.nfsConfig.path
-  selectedVolumeDetails.nfsConfig.version = volume.nfsConfig.version
+  selectedVolumeDetails.nfsConfig.host = volume?.nfsConfig?.host ?? ''
+  selectedVolumeDetails.nfsConfig.path = volume?.nfsConfig?.path ?? ''
+  selectedVolumeDetails.nfsConfig.version = volume?.nfsConfig?.version ?? 0
+  selectedVolumeDetails.cifsConfig.host = volume?.cifsConfig?.host ?? ''
+  selectedVolumeDetails.cifsConfig.share = volume?.cifsConfig?.share ?? ''
+  selectedVolumeDetails.cifsConfig.username = volume?.cifsConfig?.username ?? ''
+  selectedVolumeDetails.cifsConfig.password = volume?.cifsConfig?.password ?? ''
+  selectedVolumeDetails.cifsConfig.file_mode = volume?.cifsConfig?.file_mode ?? ''
+  selectedVolumeDetails.cifsConfig.dir_mode = volume?.cifsConfig?.dir_mode ?? ''
+
   isVolumeDetailsModalOpen.value = true
 }
 </script>
@@ -253,7 +275,11 @@ const showDetails = (volume) => {
           <div class="w-1/2">
             <label class="block text-sm font-medium text-gray-700">Volume Type</label>
             <div class="mt-1">
-              <Badge type="warning">{{ selectedVolumeDetails.type }}</Badge>
+              <Badge class="mr-1" type="success" v-if="selectedVolumeDetails.type === 'local'">Local</Badge>
+              <Badge class="mr-1" type="warning" v-if="selectedVolumeDetails.type === 'nfs'">
+                &nbsp;&nbsp;NFS&nbsp;&nbsp;
+              </Badge>
+              <Badge class="mr-1" type="warning" v-if="selectedVolumeDetails.type === 'cifs'">&nbsp;CIFS&nbsp;</Badge>
             </div>
           </div>
         </div>
@@ -273,6 +299,61 @@ const showDetails = (volume) => {
               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
               {{ selectedVolumeDetails.nfsConfig.version }}
             </p>
+          </div>
+        </div>
+        <div class="mt-4" v-if="selectedVolumeDetails.type === 'cifs'">
+          <label class="block text-sm font-medium text-gray-700">CIFS Host</label>
+          <div class="mt-1">
+            <p
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              {{ selectedVolumeDetails.cifsConfig.host }}
+            </p>
+          </div>
+        </div>
+        <div class="mt-4" v-if="selectedVolumeDetails.type === 'cifs'">
+          <label class="block text-sm font-medium text-gray-700">CIFS Share</label>
+          <div class="mt-1">
+            <p
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              {{ selectedVolumeDetails.cifsConfig.share }}
+            </p>
+          </div>
+        </div>
+        <div class="mt-4 flex w-full flex-row gap-2" v-if="selectedVolumeDetails.type === 'cifs'">
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">Username</label>
+            <div class="mt-1">
+              <p
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {{ selectedVolumeDetails.cifsConfig.username }}
+              </p>
+            </div>
+          </div>
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="mt-1">
+              <SecuredText>{{ selectedVolumeDetails.cifsConfig.password }}</SecuredText>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex w-full flex-row gap-2" v-if="selectedVolumeDetails.type === 'cifs'">
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">File Mode</label>
+            <div class="mt-1">
+              <p
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {{ selectedVolumeDetails.cifsConfig.file_mode }}
+              </p>
+            </div>
+          </div>
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">Dir Mode</label>
+            <div class="mt-1">
+              <p
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {{ selectedVolumeDetails.cifsConfig.dir_mode }}
+              </p>
+            </div>
           </div>
         </div>
       </template>
