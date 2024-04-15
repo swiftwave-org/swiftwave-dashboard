@@ -31,6 +31,14 @@ const newPersistentVolumeDetails = reactive({
     host: '',
     path: '',
     version: 4
+  },
+  cifsConfig: {
+    host: '',
+    share: '',
+    username: '',
+    password: '',
+    file_mode: '0777',
+    dir_mode: '0777'
   }
 })
 
@@ -40,6 +48,12 @@ const openModal = () => {
   newPersistentVolumeDetails.nfsConfig.host = ''
   newPersistentVolumeDetails.nfsConfig.path = ''
   newPersistentVolumeDetails.nfsConfig.version = 4
+  newPersistentVolumeDetails.cifsConfig.host = ''
+  newPersistentVolumeDetails.cifsConfig.share = ''
+  newPersistentVolumeDetails.cifsConfig.username = ''
+  newPersistentVolumeDetails.cifsConfig.password = ''
+  newPersistentVolumeDetails.cifsConfig.file_mode = '0777'
+  newPersistentVolumeDetails.cifsConfig.dir_mode = '0777'
   isModalOpen.value = true
 }
 const closeModal = () => {
@@ -70,9 +84,7 @@ const {
 
 onDomainRegisterSuccess((result) => {
   closeModal()
-  let createdPersistentVolume = result.data.createPersistentVolume
-  newPersistentVolumeDetails.name = ''
-  props.callbackOnCreate(createdPersistentVolume)
+  props.callbackOnCreate(result.data.createPersistentVolume)
 })
 
 onDomainRegisterFail((err) => {
@@ -86,7 +98,7 @@ defineExpose({
 </script>
 
 <template>
-  <ModalDialog :close-modal="closeModal" :is-open="isModalOpen">
+  <ModalDialog :close-modal="closeModal" :is-open="isModalOpen" width="lg">
     <template v-slot:header>Add New Persistent Volume</template>
     <template v-slot:body>
       Enter a unique name for the persistent volume.
@@ -99,11 +111,11 @@ defineExpose({
               id="name"
               v-model="newPersistentVolumeDetails.name"
               autocomplete="off"
-              @keydown="preventSpaceInput"
               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               name="name"
               placeholder="Name of persistent volume"
-              type="text" />
+              type="text"
+              @keydown="preventSpaceInput" />
           </div>
         </div>
         <!--    Type Field      -->
@@ -114,10 +126,11 @@ defineExpose({
             class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
             <option value="local">Local</option>
             <option value="nfs">NFS</option>
+            <option value="cifs">CIFS</option>
           </select>
         </div>
         <!--   NFS Server Host    -->
-        <div class="mt-2" v-if="newPersistentVolumeDetails.type === 'nfs'">
+        <div v-if="newPersistentVolumeDetails.type === 'nfs'" class="mt-2">
           <label class="block text-sm font-medium text-gray-700">NFS Server Host</label>
           <div class="mt-1">
             <input
@@ -127,13 +140,13 @@ defineExpose({
               placeholder="NFS Server Host"
               type="text" />
           </div>
-          <p class="mt-2 text-sm text-gray-500">
+          <p class="mt-1 text-sm text-gray-500">
             Example:
             <span class="text-gray-700"> nfs-server.example.com </span>
           </p>
         </div>
         <!--    NFS Share Path      -->
-        <div class="mt-2" v-if="newPersistentVolumeDetails.type === 'nfs'">
+        <div v-if="newPersistentVolumeDetails.type === 'nfs'" class="mt-2">
           <label class="block text-sm font-medium text-gray-700">NFS Share Path</label>
           <div class="mt-1">
             <input
@@ -143,13 +156,13 @@ defineExpose({
               placeholder="NFS Share Path"
               type="text" />
           </div>
-          <p class="mt-2 text-sm text-gray-500">
+          <p class="mt-1 text-sm text-gray-500">
             Example:
             <span class="text-gray-700"> /mnt/nfs_share </span>
           </p>
         </div>
         <!--  Version -->
-        <div class="mt-2" v-if="newPersistentVolumeDetails.type === 'nfs'">
+        <div v-if="newPersistentVolumeDetails.type === 'nfs'" class="mt-2">
           <label class="block text-sm font-medium text-gray-700">NFS Version</label>
           <select
             v-model="newPersistentVolumeDetails.nfsConfig.version"
@@ -158,6 +171,95 @@ defineExpose({
             <option value="3">NFS v3</option>
             <option value="2">NFS v2</option>
           </select>
+        </div>
+        <!--   CIFS Host     -->
+        <div v-if="newPersistentVolumeDetails.type === 'cifs'" class="mt-2">
+          <label class="block text-sm font-medium text-gray-700">CIFS Host</label>
+          <div class="mt-1">
+            <input
+              v-model="newPersistentVolumeDetails.cifsConfig.host"
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="CIFS Host"
+              type="text" />
+          </div>
+          <p class="mt-1 text-sm text-gray-500">
+            Example:
+            <span class="text-gray-700">uxxxxx.your-server.de</span>
+          </p>
+        </div>
+        <!--   CIFS Share     -->
+        <div v-if="newPersistentVolumeDetails.type === 'cifs'" class="mt-2">
+          <label class="block text-sm font-medium text-gray-700">CIFS Share</label>
+          <div class="mt-1">
+            <input
+              v-model="newPersistentVolumeDetails.cifsConfig.share"
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="CIFS Share"
+              type="text" />
+          </div>
+          <p class="mt-1 text-sm text-gray-500">
+            Example:
+            <span class="text-gray-700">//uxxxxx.your-server.de/backup</span>
+          </p>
+        </div>
+        <div class="mt-2 flex w-full flex-row gap-2" v-if="newPersistentVolumeDetails.type === 'cifs'">
+          <!--   CIFS Username     -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">CIFS Username</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.username"
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS Username"
+                type="text" />
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+              Example:
+              <span class="text-gray-700">uxxxxx</span>
+            </p>
+          </div>
+          <!--   CIFS Password   -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">CIFS Password</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.password"
+                autocomplete="new-password"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS Password"
+                type="password" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2 flex w-full flex-row gap-2" v-if="newPersistentVolumeDetails.type === 'cifs'">
+          <!--   CIFS File Mode     -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">CIFS File Mode</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.file_mode"
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS File Mode"
+                type="text" />
+            </div>
+          </div>
+          <!--   CIFS Dir Mode     -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">CIFS Dir Mode</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.dir_mode"
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS Dir Mode"
+                type="text" />
+            </div>
+          </div>
         </div>
       </form>
     </template>
