@@ -275,11 +275,9 @@ const showDetails = (volume) => {
           <div class="w-1/2">
             <label class="block text-sm font-medium text-gray-700">Volume Type</label>
             <div class="mt-1">
-              <Badge class="mr-1" type="success" v-if="selectedVolumeDetails.type === 'local'">Local</Badge>
-              <Badge class="mr-1" type="warning" v-if="selectedVolumeDetails.type === 'nfs'">
-                &nbsp;&nbsp;NFS&nbsp;&nbsp;
-              </Badge>
-              <Badge class="mr-1" type="warning" v-if="selectedVolumeDetails.type === 'cifs'">&nbsp;CIFS&nbsp;</Badge>
+              <Badge type="success" v-if="selectedVolumeDetails.type === 'local'">Local</Badge>
+              <Badge type="warning" v-if="selectedVolumeDetails.type === 'nfs'"> &nbsp;&nbsp;NFS&nbsp;&nbsp; </Badge>
+              <Badge type="warning" v-if="selectedVolumeDetails.type === 'cifs'">&nbsp;CIFS&nbsp;</Badge>
             </div>
           </div>
         </div>
