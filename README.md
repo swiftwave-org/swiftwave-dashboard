@@ -1,4 +1,6 @@
 # dashboard
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fswiftwave-org%2Fdashboard.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fswiftwave-org%2Fdashboard?ref=badge_shield)
+
 
 This template should help get you started developing with Vue 3 in Vite.
 
@@ -33,3 +35,7 @@ npm run build
 ```sh
 npm run lint
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fswiftwave-org%2Fdashboard.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fswiftwave-org%2Fdashboard?ref=badge_large)
