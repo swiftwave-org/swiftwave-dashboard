@@ -3,11 +3,6 @@ import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed, reactive, ref, watch } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  getGitProvideFromGitRepoUrl,
-  getGitRepoNameFromGitRepoUrl,
-  getGitRepoOwnerFromGitRepoUrl
-} from '@/vendor/utils.js'
 import { useRouter } from 'vue-router'
 
 export default function newApplicationUpdater(applicationId) {
@@ -175,8 +170,7 @@ export default function newApplicationUpdater(applicationId) {
       command: '',
       gitCredentialID: 0,
       gitProvider: '',
-      repositoryName: '',
-      repositoryOwner: '',
+      repositoryUrl: '',
       repositoryBranch: '',
       codePath: '',
       imageRegistryCredentialID: 0,
@@ -291,10 +285,8 @@ export default function newApplicationUpdater(applicationId) {
                 key
                 value
               }
-              gitProvider
               gitCredentialID
-              repositoryName
-              repositoryOwner
+              repositoryUrl
               repositoryBranch
               codePath
               imageRegistryCredentialID
@@ -378,49 +370,36 @@ export default function newApplicationUpdater(applicationId) {
       }
       if (sourceConfigurationRef) {
         // check if source configuration is changed
-      }
-      if (sourceConfigurationRef.gitProvider !== applicationExistingDetails.latestDeployment.gitProvider) {
+        if (sourceConfigurationRef.repositoryUrl !== applicationExistingDetails.latestDeployment.repositoryUrl) {
+          return true
+        }
+        if (sourceConfigurationRef.repositoryBranch !== applicationExistingDetails.latestDeployment.repositoryBranch) {
+          return true
+        }
+        if (sourceConfigurationRef.codePath !== applicationExistingDetails.latestDeployment.codePath) {
+          return true
+        }
         if (
-          !(
-            sourceConfigurationRef.gitProvider === null &&
-            applicationExistingDetails.latestDeployment.gitProvider === 'none'
-          )
+          sourceConfigurationRef.imageRegistryCredentialID !==
+          applicationExistingDetails.latestDeployment.imageRegistryCredentialID
         ) {
           return true
         }
-      }
-      if (sourceConfigurationRef.repositoryName !== applicationExistingDetails.latestDeployment.repositoryName) {
-        return true
-      }
-      if (sourceConfigurationRef.repositoryOwner !== applicationExistingDetails.latestDeployment.repositoryOwner) {
-        return true
-      }
-      if (sourceConfigurationRef.repositoryBranch !== applicationExistingDetails.latestDeployment.repositoryBranch) {
-        return true
-      }
-      if (sourceConfigurationRef.codePath !== applicationExistingDetails.latestDeployment.codePath) {
-        return true
-      }
-      if (
-        sourceConfigurationRef.imageRegistryCredentialID !==
-        applicationExistingDetails.latestDeployment.imageRegistryCredentialID
-      ) {
-        return true
-      }
-      if (sourceConfigurationRef.dockerImage !== applicationExistingDetails.latestDeployment.dockerImage) {
-        return true
-      }
-      if (sourceConfigurationRef.command !== applicationExistingDetails.command) {
-        return true
-      }
-      if (
-        sourceConfigurationRef.sourceCodeCompressedFileName !==
-        applicationExistingDetails.latestDeployment.sourceCodeCompressedFileName
-      ) {
-        return true
-      }
-      if (sourceConfigurationRef.dockerfile !== applicationExistingDetails.latestDeployment.dockerfile) {
-        return true
+        if (sourceConfigurationRef.dockerImage !== applicationExistingDetails.latestDeployment.dockerImage) {
+          return true
+        }
+        if (sourceConfigurationRef.command !== applicationExistingDetails.command) {
+          return true
+        }
+        if (
+          sourceConfigurationRef.sourceCodeCompressedFileName !==
+          applicationExistingDetails.latestDeployment.sourceCodeCompressedFileName
+        ) {
+          return true
+        }
+        if (sourceConfigurationRef.dockerfile !== applicationExistingDetails.latestDeployment.dockerfile) {
+          return true
+        }
       }
       // check if build args are changed
       let existingBuildArgs = {}
@@ -470,9 +449,7 @@ export default function newApplicationUpdater(applicationId) {
         }),
         // update this part
         gitCredentialID: sourceConfigurationRef.gitCredentialID,
-        gitProvider: sourceConfigurationRef.gitProvider,
-        repositoryName: sourceConfigurationRef.repositoryName,
-        repositoryOwner: sourceConfigurationRef.repositoryOwner,
+        repositoryUrl: sourceConfigurationRef.repositoryUrl,
         repositoryBranch: sourceConfigurationRef.repositoryBranch,
         codePath: sourceConfigurationRef.codePath,
         imageRegistryCredentialID: sourceConfigurationRef.imageRegistryCredentialID,
@@ -502,9 +479,7 @@ export default function newApplicationUpdater(applicationId) {
     const updateApplicationSource = (source) => {
       sourceConfigurationRef.command = source.command
       sourceConfigurationRef.gitCredentialID = source.gitCredentialID
-      sourceConfigurationRef.gitProvider = getGitProvideFromGitRepoUrl(source.gitRepoUrl)
-      sourceConfigurationRef.repositoryName = getGitRepoNameFromGitRepoUrl(source.gitRepoUrl)
-      sourceConfigurationRef.repositoryOwner = getGitRepoOwnerFromGitRepoUrl(source.gitRepoUrl)
+      sourceConfigurationRef.repositoryUrl = source.gitRepoUrl
       sourceConfigurationRef.repositoryBranch = source.gitBranch
       sourceConfigurationRef.codePath = source.codePath
       sourceConfigurationRef.imageRegistryCredentialID = source.imageRegistryCredentialID

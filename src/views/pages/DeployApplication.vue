@@ -6,11 +6,6 @@ import ApplicationSourceSelection from '@/views/partials/DeployApplication/Appli
 import ApplicationSourceConfiguration from '@/views/partials/DeployApplication/ApplicationSourceConfiguration.vue'
 import ApplicationAdditionalSettings from '@/views/partials/DeployApplication/ApplicationAdditionalSettings.vue'
 import ApplicationDeployConfirmation from '@/views/partials/DeployApplication/ApplicationDeployConfirmation.vue'
-import {
-  getGitProvideFromGitRepoUrl,
-  getGitRepoNameFromGitRepoUrl,
-  getGitRepoOwnerFromGitRepoUrl
-} from '@/vendor/utils.js'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
@@ -44,9 +39,7 @@ const newApplicationState = reactive({
   environmentVariables: [],
   persistentVolumeBindings: [],
   gitCredentialID: 0,
-  gitProvider: '',
-  repositoryName: '',
-  repositoryOwner: '',
+  repositoryUrl: '',
   repositoryBranch: '',
   codePath: '',
   imageRegistryCredentialID: 0,
@@ -131,10 +124,8 @@ const finalizeApplicationSourceConfigurationAndMoveToNextTab = (configuration) =
   newApplicationState.gitCredentialID = configuration.gitCredentialID === 0 ? null : configuration.gitCredentialID
   newApplicationState.imageRegistryCredentialID =
     configuration.imageRegistryCredentialID === 0 ? null : configuration.imageRegistryCredentialID
-  newApplicationState.gitProvider = getGitProvideFromGitRepoUrl(configuration.gitRepoUrl)
+  newApplicationState.repositoryUrl = configuration.gitRepoUrl
   newApplicationState.repositoryBranch = configuration.gitBranch
-  newApplicationState.repositoryName = getGitRepoNameFromGitRepoUrl(configuration.gitRepoUrl)
-  newApplicationState.repositoryOwner = getGitRepoOwnerFromGitRepoUrl(configuration.gitRepoUrl)
   newApplicationState.codePath = configuration.codePath
   newApplicationState.sourceCodeCompressedFileName = configuration.sourceCodeFile
   newApplicationState.dockerImage = configuration.dockerImage

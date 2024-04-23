@@ -99,9 +99,6 @@ const fetchGitBranches = () => {
     return
   }
   let gitRepoUrl = stateRef.gitRepoUrl.trim()
-  if (gitRepoUrl.includes('https://') === false && gitRepoUrl.includes('http://') === false) {
-    gitRepoUrl = 'https://' + gitRepoUrl
-  }
   fetchGitBranchesVariables.value = {
     input: {
       gitCredentialId: stateRef.gitCredentialID,
@@ -129,12 +126,7 @@ function prefillDetails() {
   if (applicationExistingDetailsResult.value && applicationExistingDetailsResult.value.application) {
     stateRef.command = applicationExistingDetailsResult.value.application.command
     if (applicationExistingDetailsResult.value.application.latestDeployment.upstreamType === 'git') {
-      stateRef.gitRepoUrl =
-        applicationExistingDetailsResult.value.application.latestDeployment.gitProvider +
-        '.com/' +
-        applicationExistingDetailsResult.value.application.latestDeployment.repositoryOwner +
-        '/' +
-        applicationExistingDetailsResult.value.application.latestDeployment.repositoryName
+      stateRef.gitRepoUrl = applicationExistingDetailsResult.value.application.latestDeployment.repositoryUrl
       stateRef.gitBranch = applicationExistingDetailsResult.value.application.latestDeployment.repositoryBranch
       stateRef.gitCredentialID = applicationExistingDetailsResult.value.application.latestDeployment.gitCredentialID
       stateRef.codePath = applicationExistingDetailsResult.value.application.latestDeployment.codePath
