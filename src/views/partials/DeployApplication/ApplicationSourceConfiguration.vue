@@ -365,7 +365,6 @@ const openCreateImageRegistryCredentialModal = computed(
               placeholder="Enter Git Repository URL"
               type="text"
               v-debounce:1000ms="fetchGitBranches" />
-            <p class="mt-1 text-xs text-gray-800">* Only GitHub & GitLab supported</p>
           </div>
         </div>
 

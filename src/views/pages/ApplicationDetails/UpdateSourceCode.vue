@@ -432,8 +432,6 @@ const openCreateImageRegistryCredentialModal = computed(
               name="name"
               placeholder="Enter Git Repository URL"
               type="text" />
-
-            <p class="mt-1 text-xs text-gray-800">* Only GitHub & GitLab supported</p>
           </div>
         </div>
 
