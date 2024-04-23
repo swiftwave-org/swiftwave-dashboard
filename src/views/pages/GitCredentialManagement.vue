@@ -99,7 +99,8 @@ onGitCredentialListError((err) => {
       <template v-slot:header>
         <TableHeader align="left">Identifier Name</TableHeader>
         <TableHeader align="center">Type</TableHeader>
-        <TableHeader align="center">Details</TableHeader>
+        <TableHeader align="center">Show Details</TableHeader>
+        <TableHeader align="center">Edit Details</TableHeader>
         <TableHeader align="right">Actions</TableHeader>
       </template>
       <template v-if="gitCredentials.length === 0" v-slot:message>

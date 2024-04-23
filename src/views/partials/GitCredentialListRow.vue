@@ -9,6 +9,7 @@ import { useToast } from 'vue-toastification'
 import { computed, ref } from 'vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import Code from '@/views/components/Code.vue'
+import UpdateGitCredentialModal from '@/views/partials/UpdateGitCredentialModal.vue'
 
 const toast = useToast()
 
@@ -24,6 +25,7 @@ const props = defineProps({
 })
 
 const isCredsDetailsLoaded = ref(false)
+const updateGitCredentialModalRef = ref(null)
 
 const {
   load: loadGitCredentialDetails,
@@ -68,9 +70,16 @@ const showDetails = () => {
 }
 
 const isModalOpen = ref(false)
+
+const openEditModal = () => {
+  if (updateGitCredentialModalRef.value) updateGitCredentialModalRef.value.openModal()
+}
 </script>
 
 <template>
+  <!-- Update Git Credential modal -->
+  <UpdateGitCredentialModal :git-credential-id="gitCredential.id" ref="updateGitCredentialModalRef" />
+  <!-- Git Credential details modal -->
   <ModalDialog :is-open="isModalOpen" :close-modal="() => (isModalOpen = false)">
     <template v-slot:header>Git Credential Details</template>
     <template v-slot:body>
@@ -134,6 +143,9 @@ const isModalOpen = ref(false)
     </TableRow>
     <TableRow align="center" flex>
       <FilledButton slim :onclick="showDetails" :loading="isGitCredentialDetailsLoading">Show Details</FilledButton>
+    </TableRow>
+    <TableRow align="center" flex>
+      <FilledButton type="secondary" slim :onclick="openEditModal">Edit Details </FilledButton>
     </TableRow>
     <TableRow align="right">
       <TextButton :click="() => deleteGitCredential(gitCredential)" type="danger"> Delete</TextButton>
