@@ -20,11 +20,11 @@ const copyToClipboard = () => {
 
 <template>
   <div
-    class="relative my-2 cursor-copy break-words rounded-lg border-2 border-secondary-300 bg-secondary-100 p-3 transition-all"
+    class="relative my-2 break-words rounded-lg border-2 border-secondary-300 bg-secondary-100 p-3 transition-all"
     :class="{
       'ring-2 ring-primary-300': showCopyBorder
     }">
-    <div @click="copyToClipboard" ref="textDivRef">
+    <div ref="textDivRef" class="select-text">
       <slot></slot>
     </div>
     <div

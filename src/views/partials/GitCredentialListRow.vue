@@ -1,9 +1,18 @@
 <script setup>
 import TableRow from '@/views/components/Table/TableRow.vue'
 import TextButton from '@/views/components/TextButton.vue'
-import SecuredText from '@/views/components/SecuredText.vue'
+import Badge from '@/views/components/Badge.vue'
+import FilledButton from '@/views/components/FilledButton.vue'
+import { useLazyQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import { useToast } from 'vue-toastification'
+import { computed, ref } from 'vue'
+import ModalDialog from '@/views/components/ModalDialog.vue'
+import Code from '@/views/components/Code.vue'
 
-defineProps({
+const toast = useToast()
+
+const props = defineProps({
   gitCredential: {
     type: Object,
     required: true
@@ -13,27 +22,121 @@ defineProps({
     required: true
   }
 })
+
+const isCredsDetailsLoaded = ref(false)
+
+const {
+  load: loadGitCredentialDetails,
+  result: gitCredentialDetailsRaw,
+  loading: isGitCredentialDetailsLoading,
+  onError: onGitCredentialDetailsError,
+  onResult: onGitCredentialDetailsResult
+} = useLazyQuery(
+  gql`
+    query ($id: Uint!) {
+      gitCredential(id: $id) {
+        id
+        name
+        type
+        username
+        sshPublicKey
+      }
+    }
+  `,
+  {
+    id: props.gitCredential.id
+  }
+)
+
+const gitCredentialDetails = computed(() => gitCredentialDetailsRaw.value?.gitCredential ?? {})
+
+onGitCredentialDetailsError((err) => {
+  toast.error(err.message)
+})
+
+onGitCredentialDetailsResult(() => {
+  isCredsDetailsLoaded.value = true
+  isModalOpen.value = true
+})
+
+const showDetails = () => {
+  if (!isCredsDetailsLoaded.value) {
+    loadGitCredentialDetails()
+  } else {
+    isModalOpen.value = true
+  }
+}
+
+const isModalOpen = ref(false)
 </script>
 
 <template>
+  <ModalDialog :is-open="isModalOpen" :close-modal="() => (isModalOpen = false)">
+    <template v-slot:header>Git Credential Details</template>
+    <template v-slot:body>
+      <div class="mt-4 flex w-full flex-row gap-2">
+        <div class="w-1/2">
+          <label class="block text-sm font-medium text-gray-700">Name</label>
+          <div class="mt-1">
+            <p
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              {{ gitCredentialDetails.name ?? '' }}
+            </p>
+          </div>
+        </div>
+        <div class="w-1/2">
+          <label class="block text-sm font-medium text-gray-700">Authentication Mode</label>
+          <div class="mt-1">
+            <Badge v-if="gitCredentialDetails.type === 'http'" type="success">HTTP Based</Badge>
+            <Badge v-else-if="gitCredentialDetails.type === 'ssh'" type="warning">SSH Based</Badge>
+            <Badge v-else type="danger">Unknown</Badge>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 flex w-full flex-row gap-2" v-if="gitCredentialDetails.type === 'http'">
+        <div class="w-1/2">
+          <label class="block text-sm font-medium text-gray-700">Username</label>
+          <div class="mt-1">
+            <p
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              {{ gitCredentialDetails.username ?? '' }}
+            </p>
+          </div>
+        </div>
+        <div class="w-1/2">
+          <label class="block text-sm font-medium text-gray-700">Password</label>
+          <div class="mt-1">
+            <p
+              class="block w-full rounded-md border-gray-300 italic shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              Can't show (Confidential)
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 flex w-full flex-col gap-1" v-if="gitCredentialDetails.type === 'ssh'">
+        <label class="block text-sm font-medium text-gray-700">SSH Public Key</label>
+        <div>
+          <Code> {{ gitCredentialDetails.sshPublicKey ?? '' }} </Code>
+        </div>
+      </div>
+    </template>
+  </ModalDialog>
   <tr>
     <TableRow align="left">
       <div class="text-sm font-medium text-gray-900">
         {{ gitCredential.name }}
       </div>
     </TableRow>
-    <TableRow align="left">
-      <div class="text-sm text-gray-900">{{ gitCredential.username }}</div>
+    <TableRow align="center">
+      <Badge v-if="gitCredential.type === 'http'" type="success">HTTP Authentication</Badge>
+      <Badge v-else-if="gitCredential.type === 'ssh'" type="warning">SSH Authentication</Badge>
+      <Badge v-else type="danger">Unknown</Badge>
     </TableRow>
-    <TableRow align="left">
-      <SecuredText>{{ gitCredential.password }}</SecuredText>
+    <TableRow align="center" flex>
+      <FilledButton slim :onclick="showDetails" :loading="isGitCredentialDetailsLoading">Show Details</FilledButton>
     </TableRow>
     <TableRow align="right">
-      <TextButton
-        :click="() => deleteGitCredential(gitCredential)"
-        type="danger">
-        Delete
-      </TextButton>
+      <TextButton :click="() => deleteGitCredential(gitCredential)" type="danger"> Delete</TextButton>
     </TableRow>
   </tr>
 </template>

@@ -65,8 +65,7 @@ const {
       gitCredentials {
         id
         name
-        username
-        password
+        type
       }
     }
   `,
@@ -99,8 +98,8 @@ onGitCredentialListError((err) => {
     <Table class="mt-8">
       <template v-slot:header>
         <TableHeader align="left">Identifier Name</TableHeader>
-        <TableHeader align="left">Username</TableHeader>
-        <TableHeader align="left">Password</TableHeader>
+        <TableHeader align="center">Type</TableHeader>
+        <TableHeader align="center">Details</TableHeader>
         <TableHeader align="right">Actions</TableHeader>
       </template>
       <template v-if="gitCredentials.length === 0" v-slot:message>
