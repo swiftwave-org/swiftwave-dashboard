@@ -216,6 +216,7 @@ const {
       gitCredentials {
         id
         name
+        type
       }
     }
   `,
@@ -407,7 +408,7 @@ const openCreateImageRegistryCredentialModal = computed(
               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
               <option selected value="0">No Credential</option>
               <option v-for="credential in gitCredentials" :key="credential.id" :value="credential.id">
-                {{ credential.name }}
+                {{ credential.name }} [{{ credential.type }}]
               </option>
             </select>
           </div>

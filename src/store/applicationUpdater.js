@@ -365,7 +365,9 @@ export default function newApplicationUpdater(applicationId) {
       }
 
       // check if any source configuration is changed
-      if (sourceConfigurationRef.gitCredentialID !== applicationExistingDetails.latestDeployment.gitCredentialID) {
+      if (
+        parseInt(sourceConfigurationRef.gitCredentialID) !== applicationExistingDetails.latestDeployment.gitCredentialID
+      ) {
         return true
       }
       if (sourceConfigurationRef) {
