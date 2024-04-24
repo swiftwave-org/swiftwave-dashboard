@@ -46,7 +46,7 @@ const deleteIngressRulesWithConfirmation = (ingress_rule) => {
 }
 
 onIngressDeleteSuccess(() => {
-  toast.success('Ingress Rule deleted successfully')
+  toast.success('Ingress Rule will be deleted shortly\nThis can take upto 5 minutes to reflect in the system')
   refetchIngressRules()
 })
 
@@ -65,6 +65,8 @@ const fetchAllIngressRulesQuery = gql`
         name
       }
       port
+      targetType
+      externalService
       application {
         name
       }
@@ -127,7 +129,11 @@ defineExpose({
     <template v-slot:header>
       <TableHeader align="left">ID</TableHeader>
       <TableHeader align="center">Status</TableHeader>
-      <TableHeader align="center">Rule</TableHeader>
+      <TableHeader align="center">Ingress</TableHeader>
+      <TableHeader align="center">
+        <font-awesome-icon icon="fa-solid fa-arrow-right" />
+      </TableHeader>
+      <TableHeader align="center">Target</TableHeader>
       <TableHeader align="right">Actions</TableHeader>
     </template>
     <template v-slot:message>
@@ -162,8 +168,20 @@ defineExpose({
               >udp://&lt;server-ip&gt;:{{ ingressRule.port }}</a
             >
             <a v-else href="javascript:void(0);"><i>Unknown</i></a>
-            &nbsp;&nbsp;<font-awesome-icon icon="fa-solid fa-arrow-right" />&nbsp;&nbsp;
-            <a href="javascript:void(0);">{{ ingressRule.application.name }}:{{ ingressRule.targetPort }}</a>
+          </div>
+        </TableRow>
+        <TableRow align="center">
+          <font-awesome-icon icon="fa-solid fa-arrow-right" />
+        </TableRow>
+        <TableRow align="center">
+          <div class="text-sm text-gray-900">
+            <Badge v-if="ingressRule.targetType === 'externalService'" type="warning">External Service</Badge>
+            <Badge v-else-if="ingressRule.targetType === 'application'" type="success">Application</Badge>
+            &nbsp;&nbsp;
+            <a v-if="ingressRule.targetType === 'application'" href="javascript:void(0);"
+              >{{ ingressRule.application.name }}:{{ ingressRule.targetPort }}</a
+            >
+            <a v-else href="javascript:void(0);">{{ ingressRule.externalService }}:{{ ingressRule.targetPort }}</a>
           </div>
         </TableRow>
         <TableRow align="right">
