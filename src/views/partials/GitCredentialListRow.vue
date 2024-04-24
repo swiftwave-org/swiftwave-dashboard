@@ -5,7 +5,7 @@ import Badge from '@/views/components/Badge.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { ref } from 'vue'
 import UpdateGitCredentialModal from '@/views/partials/UpdateGitCredentialModal.vue'
-import GitCredentialDetailsModal from '@/views/GitCredentialDetailsModal.vue'
+import GitCredentialDetailsModal from '@/views/partials/GitCredentialDetailsModal.vue'
 
 defineProps({
   gitCredential: {
