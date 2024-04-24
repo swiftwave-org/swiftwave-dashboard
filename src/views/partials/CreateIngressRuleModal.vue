@@ -25,6 +25,18 @@ const toast = useToast()
 const isModalOpen = ref(false)
 const specificApplicationId = ref('')
 const isSpecificApplicationChosen = computed(() => specificApplicationId.value !== '')
+
+// Create ingress rule
+const newIngressRuleDetails = reactive({
+  targetType: 'application',
+  protocol: 'http',
+  domainId: 0,
+  port: 80,
+  targetPort: 80,
+  applicationId: '',
+  externalService: ''
+})
+
 const openModal = (appId) => {
   newIngressRuleDetails.protocol = 'http'
   newIngressRuleDetails.domainId = 0
@@ -46,14 +58,15 @@ const closeModal = () => {
   props.callbackOnPop()
 }
 
-// Create ingress rule
-const newIngressRuleDetails = reactive({
-  protocol: 'http',
-  domainId: 0,
-  port: 80,
-  applicationId: '',
-  targetPort: 80
-})
+const configureExternalService = () => {
+  newIngressRuleDetails.targetType = 'externalService'
+  newIngressRuleDetails.applicationId = ''
+}
+
+const configureApplication = () => {
+  newIngressRuleDetails.targetType = 'application'
+  newIngressRuleDetails.externalService = ''
+}
 
 const {
   mutate: createIngressRule,
@@ -215,7 +228,7 @@ defineExpose({
             <font-awesome-icon icon="fa-solid fa-arrow-down" />
           </div>
 
-          <div class="mt-2">
+          <div class="mt-2" v-show="newIngressRuleDetails.targetType === 'application'">
             <p class="block text-sm font-medium text-gray-700">Application Name</p>
             <div class="mt-1 flex space-x-2">
               <select
@@ -237,6 +250,29 @@ defineExpose({
                 type="number" />
             </div>
           </div>
+          <p
+            v-show="newIngressRuleDetails.targetType === 'application' && !isSpecificApplicationChosen"
+            class="mt-2 flex items-center text-sm">
+            Need to expose some external services ?
+            <a @click="configureExternalService" class="ml-1.5 cursor-pointer font-bold text-primary-600">Click here</a>
+          </p>
+          <div class="mt-2" v-show="newIngressRuleDetails.targetType === 'externalService'">
+            <p class="block text-sm font-medium text-gray-700">External Service Name</p>
+            <div class="mt-1 flex space-x-2">
+              <input
+                v-model="newIngressRuleDetails.externalService"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+              <input
+                v-model="newIngressRuleDetails.targetPort"
+                class="block w-3/12 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="Port"
+                type="number" />
+            </div>
+          </div>
+          <p v-show="newIngressRuleDetails.targetType === 'externalService'" class="mt-2 flex items-center text-sm">
+            Need to expose deployed application ?
+            <a @click="configureApplication" class="ml-1.5 cursor-pointer font-bold text-primary-600">Click here</a>
+          </p>
         </form>
       </template>
       <template v-slot:footer>
