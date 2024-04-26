@@ -61,6 +61,16 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
   @apply rounded-full bg-primary-500;
 }
 
+.terminal {
+  margin-right: calc(0.5rem + 9px);
+}
+
+.xterm-viewport {
+  right: calc(-0.5rem - 9px) !important;
+  cursor: pointer !important;
+  overflow-y: auto !important;
+}
+
 .xterm-viewport::-webkit-scrollbar {
   width: 9px !important;
   height: 9px !important;
