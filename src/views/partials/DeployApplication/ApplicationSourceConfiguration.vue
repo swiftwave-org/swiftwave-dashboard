@@ -13,6 +13,7 @@ import BuildArgInput from '@/views/partials/BuildArgInput.vue'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
 import CreateImageRegistryCredentialModal from '@/views/partials/CreateImageRegistryCredentialModal.vue'
 import CreateGitCredentialModal from '@/views/partials/CreateGitCredentialModal.vue'
+import ChooseOtherDockerConfigurationModal from '@/views/partials/ChooseOtherDockerConfigurationModal.vue'
 
 const props = defineProps({
   applicationSourceType: {
@@ -245,23 +246,27 @@ onGenerateConfigurationError((err) => toast.error(err.message))
 
 onGenerateConfigurationSuccess((res) => {
   if (res.data && res.data.dockerConfigGenerator) {
-    stateRef.detectedServiceName = res.data.dockerConfigGenerator.detectedServiceName
-    stateRef.dockerFile = res.data.dockerConfigGenerator.dockerFile
-    stateRef.dockerBuildArgs = res.data.dockerConfigGenerator.dockerBuildArgs
-    // set default build args if not set
-    for (const buildArg of stateRef.dockerBuildArgs) {
-      stateRef.buildArgs[buildArg.key] = buildArg.defaultValue
-    }
-    // delete build args if not present in dockerBuildArgs
-    for (const buildArgKey in stateRef.buildArgs) {
-      if (!stateRef.dockerBuildArgs.some((buildArg) => buildArg.key === buildArgKey)) {
-        delete stateRef.buildArgs[buildArgKey]
-      }
-    }
-    stateRef.isDockerConfigurationGenerated = true
+    updateDockerConfiguration(res.data.dockerConfigGenerator)
     closeDockerFileEditor()
   }
 })
+
+const updateDockerConfiguration = (dockerConfig) => {
+  stateRef.detectedServiceName = dockerConfig.detectedServiceName
+  stateRef.dockerFile = dockerConfig.dockerFile
+  stateRef.dockerBuildArgs = dockerConfig.dockerBuildArgs
+  // set default build args if not set
+  for (const buildArg of stateRef.dockerBuildArgs) {
+    stateRef.buildArgs[buildArg.key] = buildArg.defaultValue
+  }
+  // delete build args if not present in dockerBuildArgs
+  for (const buildArgKey in stateRef.buildArgs) {
+    if (!stateRef.dockerBuildArgs.some((buildArg) => buildArg.key === buildArgKey)) {
+      delete stateRef.buildArgs[buildArgKey]
+    }
+  }
+  stateRef.isDockerConfigurationGenerated = true
+}
 
 const updateBuildArg = (key, value) => {
   stateRef.buildArgs[key] = value
@@ -311,6 +316,12 @@ const createImageRegistryCredentialModalRef = ref(null)
 const openCreateImageRegistryCredentialModal = computed(
   () => createImageRegistryCredentialModalRef.value?.openModal ?? (() => {})
 )
+
+// Chose Other Docker Configuration
+const chooseOtherDockerConfigurationModalRef = ref(null)
+const openChooseOtherDockerConfigurationModal = computed(
+  () => chooseOtherDockerConfigurationModalRef.value?.openModal ?? (() => {})
+)
 </script>
 
 <template>
@@ -319,6 +330,9 @@ const openCreateImageRegistryCredentialModal = computed(
   <CreateImageRegistryCredentialModal
     ref="createImageRegistryCredentialModalRef"
     :callback-on-create="refetchImageRegistryCredentialList" />
+  <ChooseOtherDockerConfigurationModal
+    ref="chooseOtherDockerConfigurationModalRef"
+    :on-apply-configuration="updateDockerConfiguration" />
 
   <TabPanel :key="2" class="mt-5 flex h-full w-full flex-row justify-evenly p-6">
     <div class="w-1/2 max-w-md">
@@ -495,7 +509,15 @@ const openCreateImageRegistryCredentialModal = computed(
 
     <div v-if="stateRef.isDockerConfigurationGenerated" class="w-1/2 max-w-md">
       <p class="text-xl font-medium">Generated Configuration</p>
-      <p class="mt-6 font-medium text-gray-700">
+      <FilledButton
+        class="mt-6 w-full"
+        slim
+        type="secondary"
+        v-if="applicationSourceType !== 'image'"
+        :click="openChooseOtherDockerConfigurationModal"
+        >If detected service is incorrect, Click to change the configuration
+      </FilledButton>
+      <p class="mt-4 font-medium text-gray-700">
         🏂 Detected Service Name -
         <span class="font-normal text-primary-600">{{ stateRef.detectedServiceName }}</span>
       </p>
