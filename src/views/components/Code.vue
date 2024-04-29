@@ -6,15 +6,37 @@ const toast = useToast()
 const showCopyBorder = ref(false)
 const textDivRef = ref(null)
 const copyToClipboard = () => {
-  toast.success('Copied to clipboard')
   if (textDivRef.value === null) {
     return
   }
-  navigator.clipboard.writeText(textDivRef.value.innerText)
-  showCopyBorder.value = true
-  setTimeout(() => {
-    showCopyBorder.value = false
-  }, 2000)
+  let isSuccess = false
+  if ('clipboard' in navigator) {
+    navigator.clipboard.writeText(textDivRef.value.innerText)
+    isSuccess = true
+  } else {
+    const textArea = document.createElement('textarea')
+    textArea.value = textDivRef.value.innerText
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    try {
+      const success = document.execCommand('copy')
+      isSuccess = success
+    } catch (err) {
+      isSuccess = false
+    }
+    document.body.removeChild(textArea)
+  }
+  if (isSuccess) {
+    toast.success('Copied to clipboard')
+    showCopyBorder.value = true
+    setTimeout(() => {
+      showCopyBorder.value = false
+    }, 2000)
+  } else {
+    toast.error('Failed to copy to clipboard')
+  }
 }
 </script>
 
