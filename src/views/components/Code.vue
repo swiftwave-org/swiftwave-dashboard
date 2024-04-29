@@ -9,7 +9,7 @@ const copyToClipboard = () => {
   if (textDivRef.value === null) {
     return
   }
-  let isSuccess = false
+  let isSuccess
   if ('clipboard' in navigator) {
     navigator.clipboard.writeText(textDivRef.value.innerText)
     isSuccess = true
@@ -21,8 +21,7 @@ const copyToClipboard = () => {
     textArea.focus()
     textArea.select()
     try {
-      const success = document.execCommand('copy')
-      isSuccess = success
+      isSuccess = document.execCommand('copy')
     } catch (err) {
       isSuccess = false
     }
