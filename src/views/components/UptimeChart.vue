@@ -36,7 +36,7 @@ const noOfRedLines = computed(() => 10 - noOfGreenLines.value)
         <div
           v-for="i in noOfGreenLines"
           :key="i"
-          class="h-6 w-1.5 rounded-lg bg-green-500"
+          class="rounded-lg bg-green-500"
           :class="{
             'h-6 w-1.5': !small,
             'h-4 w-[0.25rem]': small
