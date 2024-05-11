@@ -85,7 +85,7 @@ const applicationGroupWise = computed(() => {
     <!-- Table -->
     <Table class="mt-8">
       <template v-slot:header>
-        <TableHeader align="left">Application Name</TableHeader>
+        <TableHeader align="left">Application / Group</TableHeader>
         <TableHeader align="center">Status</TableHeader>
         <TableHeader align="center">Replicas</TableHeader>
         <TableHeader align="center">Source</TableHeader>

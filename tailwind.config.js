@@ -2,6 +2,7 @@
 export default {
   darkMode: false,
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  safelist: ['hidden'],
   theme: {
     extend: {
       fontFamily: {

@@ -57,7 +57,7 @@ const isDisabled = computed(() => {
     :disabled="isDisabled"
     class="flex items-center justify-center px-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     type="button"
-    @click="click">
+    @click.stop="click">
     <!--    spinner -->
     <svg
       v-if="loading"

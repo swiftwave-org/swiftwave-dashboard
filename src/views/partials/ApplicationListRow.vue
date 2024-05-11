@@ -10,6 +10,10 @@ const props = defineProps({
   application: {
     type: Object,
     required: true
+  },
+  isVisible: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -22,7 +26,7 @@ const viewApplicationDetails = () => {
 </script>
 
 <template>
-  <tr>
+  <tr v-show="isVisible">
     <TableRow align="left">
       <div class="text-sm font-medium text-gray-900">
         {{ application.name }}

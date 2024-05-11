@@ -9,6 +9,18 @@ const props = defineProps({
   label: {
     type: String,
     required: true
+  },
+  hideLabel: {
+    type: Boolean,
+    default: false
+  },
+  hideHover: {
+    type: Boolean,
+    default: false
+  },
+  small: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -21,12 +33,32 @@ const noOfRedLines = computed(() => 10 - noOfGreenLines.value)
   <div class="group relative w-max">
     <div class="flex flex-col items-center">
       <div class="flex flex-row gap-1">
-        <div v-for="i in noOfGreenLines" :key="i" class="h-6 w-1.5 rounded-lg bg-green-500"></div>
-        <div v-for="i in noOfRedLines" :key="i" class="h-6 w-1.5 rounded-lg bg-red-400"></div>
+        <div
+          v-for="i in noOfGreenLines"
+          :key="i"
+          class="h-6 w-1.5 rounded-lg bg-green-500"
+          :class="{
+            'h-6 w-1.5': !small,
+            'h-4 w-[0.25rem]': small
+          }"></div>
+        <div
+          v-for="i in noOfRedLines"
+          :key="i"
+          class="rounded-lg bg-red-400"
+          :class="{
+            'h-6 w-1.5': !small,
+            'h-4 w-[0.25rem]': small
+          }"></div>
       </div>
-      <p class="mt-0.5 text-sm text-secondary-600">{{ label }}</p>
+      <p v-if="!hideLabel" class="mt-0.5 text-sm text-secondary-600">{{ label }}</p>
     </div>
-    <span class="pointer-events-none absolute left-28 top-0 w-max opacity-0 transition-opacity group-hover:opacity-100">
+    <span
+      v-if="!hideHover"
+      class="pointer-events-none absolute top-0 w-max opacity-0 transition-opacity group-hover:opacity-100"
+      :class="{
+        'left-28 text-base': !small,
+        'left-20 text-sm': small
+      }">
       {{ percentage }}%
     </span>
   </div>
