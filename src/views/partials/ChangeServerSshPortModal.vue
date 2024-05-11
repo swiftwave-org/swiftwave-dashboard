@@ -14,7 +14,7 @@ const props = defineProps({
     required: true
   },
   serverSshPort: {
-    type: String,
+    type: Number,
     required: true
   }
 })

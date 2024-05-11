@@ -1,5 +1,37 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import UnderMaintenancePage from '@/views/pages/UnderMaintenance.vue'
+import SetupSwiftwavePage from '@/views/pages/SetupSwiftwave.vue'
+import LoginView from '@/views/pages/LoginView.vue'
+import DeployApplicationPage from '@/views/pages/DeployApplication.vue'
+import DeployStackPage from '@/views/pages/DeployStack.vue'
+import AppStorePage from '@/views/pages/AppStore.vue'
+import AppInstallPage from '@/views/pages/AppInstall.vue'
+import ApplicationsPage from '@/views/pages/ApplicationManagement.vue'
+import ApplicationDetailsPage from '@/views/pages/ApplicationDetails.vue'
+import ApplicationDetailsDeploymentListPage from '@/views/pages/ApplicationDetails/DeploymentList.vue'
+import ApplicationDetailsDeploymentDetailsPage from '@/views/pages/ApplicationDetails/DeploymentDetails.vue'
+import ApplicationDetailsRuntimeLogsPage from '@/views/pages/ApplicationDetails/RuntimeLogs.vue'
+import ApplicationDetailsIngressRulesPage from '@/views/pages/ApplicationDetails/IngressRules.vue'
+import ApplicationDetailsUpdateSourcePage from '@/views/pages/ApplicationDetails/UpdateSourceCode.vue'
+import ApplicationDetailsEnvironmentVariablesPage from '@/views/pages/ApplicationDetails/EnvironmentVariables.vue'
+import ApplicationDetailsPersistentVolumesPage from '@/views/pages/ApplicationDetails/PersistentVolumes.vue'
+import ApplicationDetailsDeploymentConfigPage from '@/views/pages/ApplicationDetails/DeploymentConfig.vue'
+import ApplicationDetailsDangerZonePage from '@/views/pages/ApplicationDetails/Destroy.vue'
+import ApplicationDetailsManagePage from '@/views/pages/ApplicationDetails/Manage.vue'
+import ApplicationDetailsWebhookCIPage from '@/views/pages/ApplicationDetails/WebhookCI.vue'
+import ApplicationDetailsResourceStatsPage from '@/views/pages/ApplicationDetails/ResourceStats.vue'
+import PersistentVolumeManagementPage from '@/views/pages/PersistentVolumeManagement.vue'
+import UserManagementPage from '@/views/pages/UsersManagement.vue'
+import GitCredentialManagementPage from '@/views/pages/GitCredentialManagement.vue'
+import ImageRegistryCredentialManagementPage from '@/views/pages/ImageRegistryCredentialManagement.vue'
+import DomainManagementPage from '@/views/pages/DomainManagement.vue'
+import RedirectRuleManagementPage from '@/views/pages/RedirectRuleManagement.vue'
+import IngressRuleManagementPage from '@/views/pages/IngressRuleManagement.vue'
+import DownloadPVBackupPage from '@/views/pages/DownloadPVBackup.vue'
+import ServerManagementPage from '@/views/pages/ServerManagement.vue'
+import ServerLogsPage from '@/views/pages/ServerLogs.vue'
+import ServerAnalyticsPage from '@/views/pages/ServerAnalytics.vue'
+import SystemLogsPage from '@/views/pages/SystemLogs.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +39,7 @@ const router = createRouter({
     {
       path: '/setup',
       name: 'Setup',
-      component: () => import('@/views/pages/SetupSwiftwave.vue')
+      component: SetupSwiftwavePage
     },
     {
       path: '/maintenance',
@@ -17,7 +49,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'Login',
-      component: () => import('@/views/pages/LoginView.vue')
+      component: LoginView
     },
     {
       path: '',
@@ -30,156 +62,156 @@ const router = createRouter({
         {
           path: 'application',
           name: 'Deploy Application',
-          component: () => import('@/views/pages/DeployApplication.vue')
+          component: DeployApplicationPage
         },
         {
           path: 'stack',
           name: 'Deploy Stack',
-          component: () => import('@/views/pages/DeployStack.vue')
+          component: DeployStackPage
         },
         {
           path: 'app-store',
           name: 'App Store',
-          component: () => import('@/views/pages/AppStore.vue')
+          component: AppStorePage
         },
         {
           path: 'app-store/install',
           name: 'Install from App Store',
-          component: () => import('@/views/pages/AppInstall.vue')
+          component: AppInstallPage
         }
       ]
     },
     {
       path: '/applications',
       name: 'Applications',
-      component: () => import('@/views/pages/ApplicationManagement.vue')
+      component: ApplicationsPage
     },
     {
       path: '/application/:id',
       name: 'Application Details',
-      component: () => import('@/views/pages/ApplicationDetails.vue'),
+      component: ApplicationDetailsPage,
       children: [
         {
           path: 'deployments',
           name: 'Application Details Deployments',
-          component: () => import('@/views/pages/ApplicationDetails/DeploymentList.vue')
+          component: ApplicationDetailsDeploymentListPage
         },
         {
           path: 'deployment/:deployment_id',
           name: 'Application Deployment Details',
-          component: () => import('@/views/pages/ApplicationDetails/DeploymentDetails.vue')
+          component: ApplicationDetailsDeploymentDetailsPage
         },
         {
           path: 'runtime_logs',
           name: 'Application Details Runtime Logs',
-          component: () => import('@/views/pages/ApplicationDetails/RuntimeLogs.vue')
+          component: ApplicationDetailsRuntimeLogsPage
         },
         {
           path: 'ingress_rules',
           name: 'Application Details Ingress Rules',
-          component: () => import('@/views/pages/ApplicationDetails/IngressRules.vue')
+          component: ApplicationDetailsIngressRulesPage
         },
         {
           path: 'update_source',
           name: 'Application Details Update Source',
-          component: () => import('@/views/pages/ApplicationDetails/UpdateSourceCode.vue')
+          component: ApplicationDetailsUpdateSourcePage
         },
         {
           path: 'environment_variables',
           name: 'Application Details Environment Variables',
-          component: () => import('@/views/pages/ApplicationDetails/EnvironmentVariables.vue')
+          component: ApplicationDetailsEnvironmentVariablesPage
         },
         {
           path: 'persistent_volumes',
           name: 'Application Details Persistent Volumes',
-          component: () => import('@/views/pages/ApplicationDetails/PersistentVolumes.vue')
+          component: ApplicationDetailsPersistentVolumesPage
         },
         {
           path: 'deployment_config',
           name: 'Application Details Deployment Config',
-          component: () => import('@/views/pages/ApplicationDetails/DeploymentConfig.vue')
+          component: ApplicationDetailsDeploymentConfigPage
         },
         {
           path: 'danger_zone',
           name: 'Application Details Danger Zone',
-          component: () => import('@/views/pages/ApplicationDetails/Destroy.vue')
+          component: ApplicationDetailsDangerZonePage
         },
         {
           path: 'manage',
           name: 'Application Details Manage',
-          component: () => import('@/views/pages/ApplicationDetails/Manage.vue')
+          component: ApplicationDetailsManagePage
         },
         {
           path: 'webhook_ci',
           name: 'Application Details Webhook CI',
-          component: () => import('@/views/pages/ApplicationDetails/WebhookCI.vue')
+          component: ApplicationDetailsWebhookCIPage
         },
         {
           path: 'resource_stats',
           name: 'Application Details Resource Stats',
-          component: () => import('@/views/pages/ApplicationDetails/ResourceStats.vue')
+          component: ApplicationDetailsResourceStatsPage
         }
       ]
     },
     {
       path: '/persistent-volumes',
       name: 'Persistent Volumes',
-      component: () => import('@/views/pages/PersistentVolumeManagement.vue')
+      component: PersistentVolumeManagementPage
     },
     {
       path: '/users',
       name: 'Users',
-      component: () => import('@/views/pages/UsersManagement.vue')
+      component: UserManagementPage
     },
     {
       path: '/git-credentials',
       name: 'Git Credentials',
-      component: () => import('@/views/pages/GitCredentialManagement.vue')
+      component: GitCredentialManagementPage
     },
     {
       path: '/image-registry-credentials',
       name: 'Image Registry Credentials',
-      component: () => import('@/views/pages/ImageRegistryCredentialManagement.vue')
+      component: ImageRegistryCredentialManagementPage
     },
     {
       path: '/domains',
       name: 'Domains',
-      component: () => import('@/views/pages/DomainManagement.vue')
+      component: DomainManagementPage
     },
     {
       path: '/redirect-rules',
       name: 'Redirect Rules',
-      component: () => import('@/views/pages/RedirectRuleManagement.vue')
+      component: RedirectRuleManagementPage
     },
     {
       path: '/ingress-rules',
       name: 'Ingress Rules',
-      component: () => import('@/views/pages/IngressRuleManagement.vue')
+      component: IngressRuleManagementPage
     },
     {
       path: '/pv-backup-download/:backup_id',
       name: 'Download Persistent Volume Backup',
-      component: () => import('@/views/pages/DownloadPVBackup.vue')
+      component: DownloadPVBackupPage
     },
     {
       path: '/servers',
       name: 'Servers',
-      component: () => import('@/views/pages/ServerManagement.vue')
+      component: ServerManagementPage
     },
     {
       path: '/server/logs',
       name: 'Server Logs',
-      component: () => import('@/views/pages/ServerLogs.vue')
+      component: ServerLogsPage
     },
     {
       path: '/server/analytics',
       name: 'Server Analytics',
-      component: () => import('@/views/pages/ServerAnalytics.vue')
+      component: ServerAnalyticsPage
     },
     {
       path: '/logs',
       name: 'System Logs',
-      component: () => import('@/views/pages/SystemLogs.vue')
+      component: SystemLogsPage
     }
   ]
 })
