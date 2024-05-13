@@ -18,7 +18,7 @@ const props = defineProps({
     type: String,
     default: 'md',
     validator: (value) => {
-      return ['sm', 'md', 'lg', 'xl', '2xl'].includes(value)
+      return ['sm', 'md', 'lg', 'xl', '2xl', '4xl'].includes(value)
     }
   }
 })
@@ -60,7 +60,8 @@ const closeModalWithValidation = () => {
                 'max-w-md': width === 'md',
                 'max-w-lg': width === 'lg',
                 'max-w-xl': width === 'xl',
-                'max-w-2xl': width === '2xl'
+                'max-w-2xl': width === '2xl',
+                'max-w-4xl': width === '4xl'
               }"
               class="w-full transform overflow-hidden rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all">
               <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-gray-900">

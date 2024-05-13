@@ -12,6 +12,8 @@ import PersistentVolumeSelector from '@/views/partials/PersistentVolumeSelector.
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { preventSpaceInput } from '@/vendor/utils.js'
+import Divider from '@/views/components/Divider.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,6 +26,64 @@ const isInstallNowModalOpen = ref(false)
 const formStateRef = reactive({
   STACK_NAME: ''
 }) // will be filled with stack values
+const suggestedIngressRules = reactive({})
+/*
+{
+  "${STACK_NAME}_app": {
+    "5000/http" : {
+     "description": "HTTP port for the application",
+     "ignored": false,
+     "info": {
+        "protocol": "http",
+        "availableProtocols": ["http"],
+        "port": 443,
+        "allowPortSelection": false,
+        "newDomain": "example.com",
+        "domainId": 1,
+     }
+  }
+}
+*/
+const ignoredIngressRules = computed(() => {
+  let rulesMap = {}
+  for (app in suggestedIngressRules) {
+    let ingressRules = {}
+    for (let ingressRuleName of Object.keys(suggestedIngressRules[app])) {
+      if (suggestedIngressRules[app][ingressRuleName].ignored) {
+        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName]
+      }
+    }
+    if (Object.keys(ingressRules).length !== 0) {
+      rulesMap[app] = ingressRules
+    }
+  }
+  return rulesMap
+})
+
+const configuredIngressRules = computed(() => {
+  let rulesMap = {}
+  for (app in suggestedIngressRules) {
+    let ingressRules = {}
+    for (let ingressRuleName of Object.keys(suggestedIngressRules[app])) {
+      if (!suggestedIngressRules[app][ingressRuleName].ignored) {
+        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName]
+      }
+    }
+    if (Object.keys(ingressRules).length !== 0) {
+      rulesMap[app] = ingressRules
+    }
+  }
+  return rulesMap
+})
+
+const ignoreIngressRule = (app, ingressRuleName) => {
+  suggestedIngressRules[app][ingressRuleName].ignored = true
+}
+
+const configureIngressRule = (app, ingressRuleName) => {
+  suggestedIngressRules[app][ingressRuleName].ignored = false
+}
+
 const deployedApplicationsResult = ref(null)
 
 onMounted(() => {
@@ -45,7 +105,7 @@ const fetchStackDetails = async () => {
         if (stackDetails.value.docs.iframe_video_embed.includes('<script')) {
           throw new Error('Invalid stack file')
         }
-        setForm()
+        setupSystem()
       } else {
         throw new Error('Invalid stack file')
       }
@@ -57,11 +117,38 @@ const fetchStackDetails = async () => {
     })
 }
 
-const setForm = () => {
+const setupSystem = () => {
   let variables = stackDetails.value?.docs?.variables ?? {}
   formStateRef.STACK_NAME = ''
   for (const [key, value] of Object.entries(variables)) {
     formStateRef[key] = value.default
+  }
+  for (const [serviceName, serviceConfig] of Object.entries(stackDetails.value?.services ?? {})) {
+    if ('expose' in serviceConfig) {
+      const ingressRules = serviceConfig.expose ?? []
+      let rulesMap = {}
+      for (const ingressRule of ingressRules) {
+        let splitted = ingressRule.split('/')
+        if (splitted.length !== 3) {
+          continue
+        }
+        const port = splitted[0]
+        const protocol = splitted[1]
+        rulesMap[`${port}/${protocol}`] = {
+          description: splitted[2],
+          ignored: false,
+          info: {
+            protocol: protocol,
+            availableProtocols: protocol === 'http' ? ['http', 'https'] : [protocol],
+            port: protocol === 'http' ? 80 : port,
+            allowPortSelection: false,
+            newDomain: '',
+            domainId: 0
+          }
+        }
+      }
+      suggestedIngressRules[serviceName] = rulesMap
+    }
   }
   isLoadingStack.value = false
 }
@@ -76,13 +163,15 @@ const isFormFilled = computed(() => {
   return true
 })
 
+const replaceStackName = (originalName, stackName) => originalName.replace('{{STACK_NAME}}', stackName)
+
 const openInstallNowModal = () => {
   isInstallNowModalOpen.value = true
 }
 const closeModal = () => {
   if (confirm('Are you sure you want to cancel?')) {
     isInstallNowModalOpen.value = false
-    setForm()
+    setupSystem()
   }
 }
 
@@ -136,7 +225,7 @@ const deployStackHelper = () => {
 const isResultModalOpen = ref(false)
 const closeResultModal = () => {
   isResultModalOpen.value = false
-  setForm()
+  setupSystem()
 }
 
 const openUrlInNewPage = (url) => {
@@ -174,56 +263,113 @@ const openUrlInNewPage = (url) => {
     <div class="absolute bottom-0 right-0">
       <div class="flex flex-row items-center justify-center gap-2">
         <p class="font-semibold text-secondary-700">Looking for installation ?</p>
-        <FilledButton type="info" :click="openInstallNowModal">
-          <font-awesome-icon icon="fa-solid fa-plus" class="mr-2" />
-          Install Now
-        </FilledButton>
+        <FilledButton type="primary" :click="openInstallNowModal"> Install Now</FilledButton>
       </div>
     </div>
   </section>
   <!--  Modal to create -->
-  <ModalDialog :is-open="isInstallNowModalOpen && !isLoadingStack" non-cancelable width="2xl">
+  <ModalDialog
+    :is-open="isInstallNowModalOpen && !isLoadingStack"
+    non-cancelable
+    :width="Object.keys(suggestedIngressRules).length !== 0 ? '4xl' : 'lg'">
     <template v-slot:header>Install {{ stackDetails.docs.name }}</template>
     <template v-slot:body>
       Fill all the required information
-      <div class="mt-4 flex w-full select-none flex-col gap-3">
-        <div>
-          <label class="block text-base font-medium text-gray-700">
-            <p>Application Name <span class="text-red-600"> *</span></p>
-            <p class="text-sm font-normal">Provide a name for your application</p>
-          </label>
-          <div class="mt-1">
-            <input
-              v-model="formStateRef.STACK_NAME"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              type="text"
-              placeholder="Anything you like . . ." />
+      <!--  App info    -->
+      <div class="mt-4 flex w-full flex-row gap-8">
+        <div class="flex w-full flex-col gap-2">
+          <div>
+            <label class="block text-base font-medium text-gray-700">
+              <p>Application Name <span class="text-red-600"> *</span></p>
+              <p class="text-sm font-normal">Provide a name for your application</p>
+            </label>
+            <div class="mt-1">
+              <input
+                v-model="formStateRef.STACK_NAME"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                type="text"
+                @keydown="preventSpaceInput"
+                placeholder="Anything you like..." />
+            </div>
+          </div>
+          <div v-for="key in Object.keys(stackDetails.docs.variables)">
+            <label class="block text-base font-medium text-gray-700">
+              <p>{{ stackDetails.docs.variables[key].title }} <span class="text-red-600"> *</span></p>
+              <p class="text-sm font-normal">{{ stackDetails.docs.variables[key].description }}</p>
+            </label>
+            <div class="mt-1">
+              <input
+                v-if="stackDetails.docs.variables[key].type === 'text'"
+                v-model="formStateRef[key]"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                type="text" />
+              <select
+                v-if="stackDetails.docs.variables[key].type === 'options'"
+                v-model="formStateRef[key]"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                <option v-for="op in stackDetails.docs.variables[key].options" :key="op.value" :value="op.value">
+                  {{ op.title }}
+                </option>
+              </select>
+              <PersistentVolumeSelector
+                v-if="stackDetails.docs.variables[key].type === 'volume'"
+                :on-select="(volume) => (formStateRef[key] = volume)"
+                selector="name"
+                show-create-link />
+            </div>
           </div>
         </div>
-        <div v-for="key in Object.keys(stackDetails.docs.variables)">
-          <label class="block text-base font-medium text-gray-700">
-            <p>{{ stackDetails.docs.variables[key].title }} <span class="text-red-600"> *</span></p>
-            <p class="text-sm font-normal">{{ stackDetails.docs.variables[key].description }}</p>
-          </label>
-          <div class="mt-1">
-            <input
-              v-if="stackDetails.docs.variables[key].type === 'text'"
-              v-model="formStateRef[key]"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              type="text" />
-            <select
-              v-if="stackDetails.docs.variables[key].type === 'options'"
-              v-model="formStateRef[key]"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-              <option v-for="op in stackDetails.docs.variables[key].options" :key="op.value" :value="op.value">
-                {{ op.title }}
-              </option>
-            </select>
-            <PersistentVolumeSelector
-              v-if="stackDetails.docs.variables[key].type === 'volume'"
-              :on-select="(volume) => (formStateRef[key] = volume)"
-              selector="name"
-              show-create-link />
+        <!--    Ingress rule configuration    -->
+        <div class="flex w-full flex-col gap-2" v-show="Object.keys(suggestedIngressRules).length !== 0">
+          <p class="text-base font-bold" v-show="Object.keys(configuredIngressRules).length !== 0">
+            Configure Ingress rules
+          </p>
+          <div v-for="(ingressRules, serviceName) in configuredIngressRules" :key="serviceName">
+            <p class="text-base font-medium">{{ replaceStackName(serviceName, formStateRef.STACK_NAME) }}</p>
+            <div class="mt-2 flex w-full flex-col gap-2">
+              <div
+                class="flex flex-row justify-between"
+                v-for="(config, ingressRuleName) in ingressRules"
+                :key="ingressRuleName">
+                <div>
+                  <p class="text-base font-medium">{{ ingressRuleName }}</p>
+                  <p class="w-full text-sm font-normal">{{ config.description }}</p>
+                </div>
+                <FilledButton
+                  type="danger"
+                  class="aspect-square"
+                  :click="() => ignoreIngressRule(serviceName, ingressRuleName)">
+                  <font-awesome-icon icon="fa-solid fa-xmark" class="text-lg" />
+                </FilledButton>
+              </div>
+            </div>
+          </div>
+          <divider
+            v-show="
+              Object.keys(ignoredIngressRules).length !== 0 && Object.keys(configuredIngressRules).length !== 0
+            " />
+          <p class="text-base font-bold" v-show="Object.keys(ignoredIngressRules).length !== 0">
+            Ignored Ingress Rules
+          </p>
+          <div v-for="(ingressRules, serviceName) in ignoredIngressRules" :key="serviceName">
+            <p class="text-base font-medium">{{ replaceStackName(serviceName, formStateRef.STACK_NAME) }}</p>
+            <div class="mt-2 flex w-full flex-col gap-2">
+              <div
+                class="flex flex-row justify-between"
+                v-for="(config, ingressRuleName) in ingressRules"
+                :key="ingressRuleName">
+                <div>
+                  <p class="text-base font-medium">{{ ingressRuleName }}</p>
+                  <p class="w-full text-sm font-normal">{{ config.description }}</p>
+                </div>
+                <FilledButton
+                  type="success"
+                  class="aspect-square"
+                  :click="() => configureIngressRule(serviceName, ingressRuleName)">
+                  <font-awesome-icon icon="fa-solid fa-plus" class="text-lg" />
+                </FilledButton>
+              </div>
+            </div>
           </div>
         </div>
       </div>
