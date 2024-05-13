@@ -28,6 +28,7 @@ import {
   faChevronRight,
   faCircleCheck,
   faCircleDown,
+  faCircleNotch,
   faCircleStop,
   faCircleXmark,
   faClipboard,
@@ -173,7 +174,8 @@ library.add(
   faHandshakeAngle,
   faEnvelope,
   faPeopleGroup,
-  faLayerGroup
+  faLayerGroup,
+  faCircleNotch
 )
 
 // Environment variables

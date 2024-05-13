@@ -27,6 +27,7 @@ const isInstallNowModalOpen = ref(false)
 const formStateRef = reactive({
   STACK_NAME: ''
 }) // will be filled with stack values
+const isAllIngressRulesCreationAttempted = ref(false)
 const suggestedIngressRules = reactive({})
 /*
 {
@@ -40,6 +41,7 @@ const suggestedIngressRules = reactive({})
         "port": 443,
         "allowPortSelection": false,
         "domainId": 1,
+        "status": "pending", // pending, created, failed
      }
   }
 }
@@ -59,7 +61,6 @@ const ignoredIngressRules = computed(() => {
   }
   return rulesMap
 })
-
 const configuredIngressRules = computed(() => {
   let rulesMap = {}
   for (app in suggestedIngressRules) {
@@ -75,13 +76,82 @@ const configuredIngressRules = computed(() => {
   }
   return rulesMap
 })
-
 const ignoreIngressRule = (app, ingressRuleName) => {
   suggestedIngressRules[app][ingressRuleName].ignored = true
 }
-
 const configureIngressRule = (app, ingressRuleName) => {
   suggestedIngressRules[app][ingressRuleName].ignored = false
+}
+const ingressRuleMutations = ref([])
+const ingressRuleMutationAppIngressList = ref([])
+const ingressRuleMutationIndex = ref(0)
+
+const {
+  mutate: createIngressRuleRaw,
+  onDone: onIngressRuleCreateSuccess,
+  onError: onIngressRuleCreateFail
+} = useMutation(gql`
+  mutation ($input: IngressRuleInput!) {
+    createIngressRule(input: $input) {
+      id
+    }
+  }
+`)
+
+const createIngressRule = (index) => {
+  if (index >= ingressRuleMutationAppIngressList.value.length) {
+    isAllIngressRulesCreationAttempted.value = true
+    return
+  }
+  console.log(ingressRuleMutations.value[index])
+  createIngressRuleRaw(ingressRuleMutations.value[index])
+}
+
+onIngressRuleCreateSuccess(() => {
+  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value]
+  suggestedIngressRules[record[0]][record[1]].info.status = 'success'
+  ingressRuleMutationIndex.value++
+  createIngressRule(ingressRuleMutationIndex.value)
+})
+
+onIngressRuleCreateFail((err) => {
+  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value]
+  suggestedIngressRules[record[0]][record[1]].info.status = 'failed'
+  ingressRuleMutationIndex.value++
+  createIngressRule(ingressRuleMutationIndex.value)
+})
+
+const createIngressRules = async () => {
+  if (!deployedApplicationsResult.value) return
+  let appNameIDMap = {}
+  let deployedApplicationsResultValue = deployedApplicationsResult.value
+  for (const i in deployedApplicationsResultValue) {
+    appNameIDMap[deployedApplicationsResultValue[i].application.name] =
+      deployedApplicationsResultValue[i].application.id
+  }
+  // create ingress rules
+  let configuredIngressRulesValue = configuredIngressRules.value
+  if (configuredIngressRulesValue.length === 0) return
+  for (const app in configuredIngressRulesValue) {
+    for (const ingressRuleName in configuredIngressRulesValue[app]) {
+      ingressRuleMutations.value.push({
+        input: {
+          targetType: 'application',
+          protocol: configuredIngressRulesValue[app][ingressRuleName].info.protocol,
+          domainId:
+            configuredIngressRulesValue[app][ingressRuleName].info.domainId == 0
+              ? null
+              : configuredIngressRulesValue[app][ingressRuleName].info.domainId,
+          port: configuredIngressRulesValue[app][ingressRuleName].info.port,
+          targetPort: ingressRuleName.split('/')[0],
+          applicationId: appNameIDMap[replaceStackName(app, formStateRef.STACK_NAME)],
+          externalService: ''
+        }
+      })
+      ingressRuleMutationAppIngressList.value.push([app, ingressRuleName])
+    }
+  }
+  createIngressRule(0)
 }
 
 const deployedApplicationsResult = ref(null)
@@ -143,7 +213,8 @@ const setupSystem = () => {
             port: protocol === 'http' ? 80 : port,
             allowPortSelection: true,
             domainId: 0,
-            exists: false
+            exists: false,
+            status: 'pending'
           }
         }
       }
@@ -178,7 +249,6 @@ const isFormFilled = computed(() => {
   }
   return true
 })
-
 const replaceStackName = (originalName, stackName) => originalName.replace('{{STACK_NAME}}', stackName)
 
 const openInstallNowModal = () => {
@@ -214,6 +284,7 @@ onDeployStackDone((res) => {
   deployedApplicationsResult.value = res?.data?.deployStack ?? []
   isInstallNowModalOpen.value = false
   isResultModalOpen.value = true
+  createIngressRules()
 })
 
 onDeployStackError((err) => {
@@ -227,8 +298,6 @@ const deployStackHelper = async () => {
     toast.error('Please fix the ingress rules before deploying')
     return
   }
-  alert('Deploying...')
-  return
   let variablesForSubmission = []
   const stateRef = toRaw(formStateRef)
   for (const [key, value] of Object.entries(stateRef)) {
@@ -270,6 +339,14 @@ onDomainListError((err) => {
 })
 
 const domainList = computed(() => domainListResult.value?.domains ?? [])
+const getDomainName = (domainId) => {
+  for (const domain of domainList.value) {
+    if (domain.id === domainId) {
+      return domain.name
+    }
+  }
+  return ''
+}
 const createDomainModalRef = ref(null)
 const openNewDomainModal = () => {
   if (!createDomainModalRef.value?.openModal) return
@@ -557,7 +634,9 @@ const openUrlInNewPage = (url) => {
     </template>
     <template v-slot:footer>
       <div class="mt-4 flex w-full flex-row justify-between gap-2">
-        <FilledButton type="danger" :click="closeModal" :disabled="deployStackLoading">Cancel</FilledButton>
+        <FilledButton type="danger" :click="closeModal" :disabled="deployStackLoading"
+          >Cancel Installation
+        </FilledButton>
         <FilledButton type="primary" :loading="deployStackLoading" :disabled="!isFormFilled" :click="deployStackHelper"
           >Install Now
         </FilledButton>
@@ -566,7 +645,7 @@ const openUrlInNewPage = (url) => {
   </ModalDialog>
 
   <!--  Modal to show result    -->
-  <ModalDialog :is-open="isResultModalOpen" :close-modal="closeResultModal">
+  <ModalDialog :is-open="isResultModalOpen" :close-modal="closeResultModal" width="2xl">
     <template v-slot:header>🎉 Deployed Successfully</template>
     <template v-slot:body>
       <div class="flex flex-col space-y-3 pt-3">
@@ -599,10 +678,48 @@ const openUrlInNewPage = (url) => {
         <div v-if="deployedApplicationsResult.length === 0" class="text-center text-gray-500">
           No applications deployed
         </div>
+
+        <div class="flex items-center gap-2">
+          <div
+            v-for="(ingressRules, serviceName) in configuredIngressRules"
+            :key="serviceName"
+            class="flex w-full flex-col gap-2">
+            <div
+              v-for="(config, ingressRuleName) in ingressRules"
+              :key="ingressRuleName"
+              class="o flex w-full flex-row items-center gap-2">
+              <font-awesome-icon
+                v-if="config.info.status === 'pending'"
+                icon="fa-solid fa-circle-notch"
+                class="animate-spin text-base text-warning-500" />
+              <font-awesome-icon
+                v-else-if="config.info.status === 'success'"
+                icon="fa-solid fa-circle-check"
+                class="text-base text-success-500" />
+              <font-awesome-icon
+                v-else-if="config.info.status === 'failed'"
+                icon="fa-solid fa-circle-xmark"
+                class="text-base text-danger-500" />
+              <p>
+                {{ config.info.protocol }}://{{
+                  config.info.protocol === 'http' || config.info.protocol === 'https'
+                    ? getDomainName(config.info.domainId)
+                    : 'server_ip'
+                }}:{{ config.info.port }}
+                <font-awesome-icon icon="fa-solid fa-arrow-right" class="px-2" />
+                {{ replaceStackName(serviceName, formStateRef.STACK_NAME) }}:{{ ingressRuleName }}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
     <template v-slot:footer>
-      <FilledButton type="warning" class="w-full" :click="() => $router.replace('/applications')"
+      <FilledButton
+        type="warning"
+        class="w-full"
+        :click="() => $router.replace('/applications')"
+        :disabled="!isAllIngressRulesCreationAttempted"
         >Go to Applications List
       </FilledButton>
     </template>
