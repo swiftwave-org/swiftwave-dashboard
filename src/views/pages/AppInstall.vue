@@ -9,11 +9,12 @@ import MarkdownRenderer from '@/views/components/MarkdownRenderer.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import PersistentVolumeSelector from '@/views/partials/PersistentVolumeSelector.vue'
-import { useMutation } from '@vue/apollo-composable'
+import { useLazyQuery, useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { preventSpaceInput } from '@/vendor/utils.js'
 import Divider from '@/views/components/Divider.vue'
+import CreateDomainModal from '@/views/partials/CreateDomainModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,7 +39,6 @@ const suggestedIngressRules = reactive({})
         "availableProtocols": ["http"],
         "port": 443,
         "allowPortSelection": false,
-        "newDomain": "example.com",
         "domainId": 1,
      }
   }
@@ -141,9 +141,9 @@ const setupSystem = () => {
             protocol: protocol,
             availableProtocols: protocol === 'http' ? ['http', 'https'] : [protocol],
             port: protocol === 'http' ? 80 : port,
-            allowPortSelection: false,
-            newDomain: '',
-            domainId: 0
+            allowPortSelection: true,
+            domainId: 0,
+            exists: false
           }
         }
       }
@@ -158,6 +158,22 @@ const isFormFilled = computed(() => {
   for (const [key, value] of Object.entries(variables)) {
     if (!formStateRef[key]) {
       return false
+    }
+  }
+  for (const app in suggestedIngressRules) {
+    for (const ingressRuleName in suggestedIngressRules[app]) {
+      if (!suggestedIngressRules[app][ingressRuleName].ignored) {
+        if (
+          (suggestedIngressRules[app][ingressRuleName].info.protocol === 'http' ||
+            suggestedIngressRules[app][ingressRuleName].info.protocol === 'https') &&
+          (suggestedIngressRules[app][ingressRuleName].info.domainId == 0 ||
+            suggestedIngressRules[app][ingressRuleName].info.domainId === undefined ||
+            suggestedIngressRules[app][ingressRuleName].info.domainId === null ||
+            suggestedIngressRules[app][ingressRuleName].info.domainId === '')
+        ) {
+          return false
+        }
+      }
     }
   }
   return true
@@ -204,7 +220,15 @@ onDeployStackError((err) => {
   toast.error(err.message)
 })
 
-const deployStackHelper = () => {
+const deployStackHelper = async () => {
+  // verify ingress rules
+  const isValid = await validateIngressRules()
+  if (!isValid) {
+    toast.error('Please fix the ingress rules before deploying')
+    return
+  }
+  alert('Deploying...')
+  return
   let variablesForSubmission = []
   const stateRef = toRaw(formStateRef)
   for (const [key, value] of Object.entries(stateRef)) {
@@ -219,6 +243,102 @@ const deployStackHelper = () => {
       variables: variablesForSubmission
     }
   })
+}
+
+// Domain list
+const {
+  result: domainListResult,
+  refetch: refetchDomainList,
+  onError: onDomainListError
+} = useQuery(
+  gql`
+    query {
+      domains {
+        id
+        name
+      }
+    }
+  `,
+  null,
+  {
+    pollInterval: 10000
+  }
+)
+
+onDomainListError((err) => {
+  toast.error(err.message)
+})
+
+const domainList = computed(() => domainListResult.value?.domains ?? [])
+const createDomainModalRef = ref(null)
+const openNewDomainModal = () => {
+  if (!createDomainModalRef.value?.openModal) return
+  isInstallNowModalOpen.value = false
+  createDomainModalRef.value.openModal()
+}
+
+const { load: validateIngressRulesRaw, refetch: refetchValidateIngressRules } = useLazyQuery(
+  gql`
+    query ($input: IngressRuleValidationInput!) {
+      isNewIngressRuleValid(input: $input)
+    }
+  `,
+  {},
+  {
+    fetchPolicy: 'no-cache',
+    nextFetchPolicy: 'no-cache',
+    initialFetchPolicy: 'no-cache',
+    keepPreviousResult: false,
+    enabled: true
+  }
+)
+
+function validateIngressRulesQuery(val) {
+  return validateIngressRulesRaw(null, val, null) || refetchValidateIngressRules(val)
+}
+
+const validateIngressRules = async () => {
+  let isValidRules = true
+  for (const app in suggestedIngressRules) {
+    const rules = suggestedIngressRules[app]
+    for (const ingressRuleName in rules) {
+      if (!rules[ingressRuleName].ignored) {
+        let isValid = true
+        try {
+          const res = await validateIngressRulesQuery({
+            input: {
+              domainId: rules[ingressRuleName].info.domainId == 0 ? null : rules[ingressRuleName].info.domainId,
+              protocol: rules[ingressRuleName].info.protocol,
+              port: rules[ingressRuleName].info.port
+            }
+          })
+          if (res.isNewIngressRuleValid || res.data.isNewIngressRuleValid) {
+            isValid = true
+          } else {
+            isValid = false
+          }
+        } catch (e) {
+          console.log(e.message)
+          isValid = false
+        }
+        isValidRules = isValidRules && isValid
+        suggestedIngressRules[app][ingressRuleName].info.exists = !isValid
+      }
+    }
+  }
+  return isValidRules
+}
+
+const onChangeProtocol = (app, ingressRuleName) => {
+  if (suggestedIngressRules[app][ingressRuleName].info.protocol === 'http') {
+    suggestedIngressRules[app][ingressRuleName].info.port = 80
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true
+  } else if (suggestedIngressRules[app][ingressRuleName].info.protocol === 'https') {
+    suggestedIngressRules[app][ingressRuleName].info.port = 443
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = false
+  } else {
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true
+  }
 }
 
 // Result modal
@@ -267,11 +387,16 @@ const openUrlInNewPage = (url) => {
       </div>
     </div>
   </section>
+  <!-- New domain modal  -->
+  <CreateDomainModal
+    ref="createDomainModalRef"
+    :callback-on-create="refetchDomainList"
+    :callback-on-pop="openInstallNowModal" />
   <!--  Modal to create -->
   <ModalDialog
     :is-open="isInstallNowModalOpen && !isLoadingStack"
     non-cancelable
-    :width="Object.keys(suggestedIngressRules).length !== 0 ? '4xl' : 'lg'">
+    :width="Object.keys(suggestedIngressRules).length !== 0 ? '6xl' : 'lg'">
     <template v-slot:header>Install {{ stackDetails.docs.name }}</template>
     <template v-slot:body>
       Fill all the required information
@@ -320,34 +445,90 @@ const openUrlInNewPage = (url) => {
           </div>
         </div>
         <!--    Ingress rule configuration    -->
-        <div class="flex w-full flex-col gap-2" v-show="Object.keys(suggestedIngressRules).length !== 0">
+        <div class="flex w-full flex-col gap-1" v-show="Object.keys(suggestedIngressRules).length !== 0">
           <p class="text-base font-bold" v-show="Object.keys(configuredIngressRules).length !== 0">
             Configure Ingress rules
           </p>
-          <div v-for="(ingressRules, serviceName) in configuredIngressRules" :key="serviceName">
-            <p class="text-base font-medium">{{ replaceStackName(serviceName, formStateRef.STACK_NAME) }}</p>
-            <div class="mt-2 flex w-full flex-col gap-2">
-              <div
-                class="flex flex-row justify-between"
-                v-for="(config, ingressRuleName) in ingressRules"
-                :key="ingressRuleName">
-                <div>
-                  <p class="text-base font-medium">{{ ingressRuleName }}</p>
-                  <p class="w-full text-sm font-normal">{{ config.description }}</p>
+          <p class="flex items-center text-sm">
+            Need to add a domain ?
+            <a @click="openNewDomainModal" class="ml-1.5 cursor-pointer font-bold text-primary-600"
+              >Click here to register domain</a
+            >
+          </p>
+          <div
+            v-for="(ingressRules, serviceName) in configuredIngressRules"
+            :key="serviceName"
+            class="flex flex-col gap-3">
+            <div>
+              <p class="text-base font-medium">{{ replaceStackName(serviceName, formStateRef.STACK_NAME) }}</p>
+              <div class="mt-2 flex w-full flex-col gap-3">
+                <div
+                  class="flex flex-row justify-between"
+                  v-for="(config, ingressRuleName) in ingressRules"
+                  :key="ingressRuleName">
+                  <div class="flex w-full flex-col">
+                    <p
+                      class="text-sm font-medium"
+                      :class="{
+                        'text-gray-700': !config.info.exists,
+                        'text-red-600': config.info.exists
+                      }">
+                      {{ config.description }}
+                    </p>
+                    <div class="mt-2 flex flex-row items-center gap-2">
+                      <!--   Choose protocol   -->
+                      <select
+                        class="block w-5/12 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        v-model="config.info.protocol"
+                        @change="() => onChangeProtocol(serviceName, ingressRuleName)">
+                        <option :value="protocol" v-for="protocol in config.info.availableProtocols">
+                          {{ protocol.toUpperCase() }}
+                        </option>
+                      </select>
+                      <!--  Domain name   -->
+                      <select
+                        v-if="config.info.protocol === 'http' || config.info.protocol === 'https'"
+                        v-model="config.info.domainId"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                        <option value="0">Select a domain</option>
+                        <option :value="domain.id" v-for="domain in domainList">
+                          {{ domain.name }}
+                        </option>
+                      </select>
+                      <div v-else class="block w-full text-end text-sm italic">Use proxy IP with port</div>
+                      <!--   Port -->
+                      <input
+                        v-model="config.info.port"
+                        class="block w-5/12 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        placeholder="Port"
+                        type="number"
+                        :readonly="!config.info.allowPortSelection" />
+                      <!--  Arrow  -->
+                      <font-awesome-icon icon="fa-solid fa-arrow-right" />
+                      <!--  Info  -->
+                      <p class="text-nowrap">{{ ingressRuleName }}</p>
+                      <!--  Ignore button  -->
+                      <FilledButton
+                        type="danger"
+                        class="ml-2 aspect-square"
+                        :click="() => ignoreIngressRule(serviceName, ingressRuleName)">
+                        <font-awesome-icon icon="fa-solid fa-xmark" class="text-lg" />
+                      </FilledButton>
+                    </div>
+                    <p class="text-sm text-red-600" v-if="config.info.exists">
+                      Ingress rule already exists, please choose different domain or port.
+                    </p>
+                  </div>
                 </div>
-                <FilledButton
-                  type="danger"
-                  class="aspect-square"
-                  :click="() => ignoreIngressRule(serviceName, ingressRuleName)">
-                  <font-awesome-icon icon="fa-solid fa-xmark" class="text-lg" />
-                </FilledButton>
               </div>
             </div>
           </div>
+          <!--  Divider  -->
           <divider
             v-show="
               Object.keys(ignoredIngressRules).length !== 0 && Object.keys(configuredIngressRules).length !== 0
             " />
+          <!--      Ignored Ingress Rules    -->
           <p class="text-base font-bold" v-show="Object.keys(ignoredIngressRules).length !== 0">
             Ignored Ingress Rules
           </p>
@@ -375,16 +556,9 @@ const openUrlInNewPage = (url) => {
       </div>
     </template>
     <template v-slot:footer>
-      <div class="mt-4 flex w-full flex-row gap-2">
-        <FilledButton class="w-full" type="danger" :click="closeModal" :disabled="deployStackLoading"
-          >Cancel
-        </FilledButton>
-        <FilledButton
-          class="w-full"
-          type="primary"
-          :loading="deployStackLoading"
-          :disabled="!isFormFilled"
-          :click="deployStackHelper"
+      <div class="mt-4 flex w-full flex-row justify-between gap-2">
+        <FilledButton type="danger" :click="closeModal" :disabled="deployStackLoading">Cancel</FilledButton>
+        <FilledButton type="primary" :loading="deployStackLoading" :disabled="!isFormFilled" :click="deployStackHelper"
           >Install Now
         </FilledButton>
       </div>

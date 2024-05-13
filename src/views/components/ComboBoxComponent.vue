@@ -43,7 +43,7 @@ watch(selectedOption, (newValue) => {
 <template>
   <Combobox v-model="selectedOption">
     <div
-      class="relative w-full overflow-hidden rounded-md border-2 border-gray-300 shadow transition-all delay-75 hover:border-primary-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+      class="relative w-full overflow-hidden rounded-md border border-gray-400 shadow transition-all delay-75 hover:border-2 hover:border-primary-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
       <ComboboxInput
         @change="query = $event.target.value"
         placeholder="Start typing to filter..."
