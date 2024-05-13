@@ -80,7 +80,7 @@
         name: 'Application Details Manage',
         params: { id: $route.params.id }
       }">
-      Manage & Access
+      Actions
     </RouterLink>
     <RouterLink
       class="nav-element !text-red-500"

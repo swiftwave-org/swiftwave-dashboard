@@ -5,7 +5,6 @@ import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
-import Divider from '@/views/components/Divider.vue'
 
 const router = useRouter()
 const toast = useToast()
@@ -106,16 +105,14 @@ const openWebConsole = () => {
   <div class="flex flex-col items-start">
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
-        <p class="inline-flex items-center gap-2 text-lg font-medium">
-          <font-awesome-icon icon="fa-solid fa-terminal" />&nbsp;SSH Shell
-        </p>
+        <p class="inline-flex items-center gap-2 text-lg font-medium">SSH in Application</p>
         <p class="text-sm text-secondary-700">You can access the shell of the container running this application.</p>
       </div>
-      <FilledButton type="primary" @click="openWebConsole"> Open Web Console</FilledButton>
+      <FilledButton type="primary" @click="openWebConsole">
+        <font-awesome-icon icon="fa-solid fa-terminal" class="mr-2" />
+        Open Console
+      </FilledButton>
     </div>
-
-    <Divider />
-
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
         <p class="inline-flex items-center gap-2 text-lg font-medium">Restart Application</p>
@@ -124,6 +121,7 @@ const openWebConsole = () => {
         </p>
       </div>
       <FilledButton type="primary" @click="restartApplicationWithConfirmation" :loading="restartApplicationLoading">
+        <font-awesome-icon icon="fa-solid fa-rotate-right" class="mr-2" />
         Click to Restart
       </FilledButton>
     </div>
@@ -134,6 +132,7 @@ const openWebConsole = () => {
         <p class="text-sm text-secondary-700">This will trigger a new deployment with the latest source code.</p>
       </div>
       <FilledButton type="primary" @click="rebuildApplicationWithConfirmation" :loading="rebuildApplicationLoading">
+        <font-awesome-icon icon="fa-solid fa-hammer" class="mr-2" />
         Click to Rebuild
       </FilledButton>
     </div>
