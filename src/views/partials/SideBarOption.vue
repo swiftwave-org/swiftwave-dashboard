@@ -58,7 +58,7 @@ const closeMenu = () => {
       }">
       <DisclosureButton
         as="button"
-        class="flex w-full items-center justify-between rounded-lg bg-gray-100 bg-opacity-10 bg-clip-padding px-3 py-1.5 text-gray-200 backdrop-blur-sm backdrop-filter">
+        class="flex w-full items-center justify-between rounded-lg bg-gray-200 bg-opacity-20 bg-clip-padding px-3 py-1.5 text-gray-200 backdrop-blur-sm backdrop-filter">
         <div>
           <slot name="icon"></slot>
           <span class="mx-2 text-sm font-medium">
