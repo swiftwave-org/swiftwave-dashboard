@@ -238,7 +238,7 @@ disableDeploymentOnServerDone((val) => {
 
 const disableDeploymentOnServer = () => {
   const confirmation = confirm(
-    'Are you sure that you want to disable deployments on this server ?\n All deployments will be moved to other servers.'
+    'Are you sure that you want to disable deployments on this server ?\n All deployments will be moved to other servers.\nYour applications may face downtime of few seconds.'
   )
   if (confirmation) {
     disableDeploymentOnServerRaw({
@@ -272,7 +272,9 @@ enableDeploymentOnServerDone((val) => {
 })
 
 const enableDeploymentOnServer = () => {
-  const confirmation = confirm('Are you sure that you want to enable deployments on this server ?')
+  const confirmation = confirm(
+    'Are you sure that you want to enable deployments on this server ?\n Swiftwave will try to redistribute deployments to other servers.\n Your applications may face downtime of few seconds.'
+  )
   if (confirmation) {
     enableDeploymentOnServerRaw({
       serverId: props.server.id
@@ -324,6 +326,75 @@ onDeleteServerDone((val) => {
     toast.error('Failed to delete server')
   }
 })
+
+// Maintenance mode
+const {
+  mutate: disableMaintenanceModeRaw,
+  onError: disableMaintenanceModeError,
+  onDone: disableMaintenanceModeDone
+} = useMutation(gql`
+  mutation PutServerOutOfMaintenanceMode($serverId: Uint!) {
+    putServerOutOfMaintenanceMode(id: $serverId)
+  }
+`)
+
+disableMaintenanceModeError((error) => {
+  toast.error(error.message)
+})
+
+disableMaintenanceModeDone((val) => {
+  if (val.data.putServerOutOfMaintenanceMode) {
+    toast.success('Maintenance mode has been disabled on the requested server')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to disable maintenance mode on server')
+  }
+})
+
+const disableMaintenanceMode = () => {
+  const confirmation = confirm(
+    'Are you sure that you want to disable maintenance mode on this server ?\n\nAll your application will be moved to other servers.'
+  )
+  if (confirmation) {
+    disableMaintenanceModeRaw({
+      serverId: props.server.id
+    })
+  }
+}
+
+const {
+  mutate: enableMaintenanceModeRaw,
+  onError: enableMaintenanceModeError,
+  onDone: enableMaintenanceModeDone
+} = useMutation(gql`
+  mutation PutServerInMaintenanceMode($serverId: Uint!) {
+    putServerInMaintenanceMode(id: $serverId)
+  }
+`)
+
+enableMaintenanceModeError((error) => {
+  toast.error(error.message)
+})
+
+enableMaintenanceModeDone((val) => {
+  if (val.data.putServerInMaintenanceMode) {
+    toast.success('Maintenance mode has been enabled on the requested server')
+    props.refetchServers()
+  } else {
+    toast.error('Failed to enable maintenance mode on server')
+  }
+})
+
+const enableMaintenanceMode = () => {
+  const confirmation = confirm(
+    'Are you sure that you want to enable maintenance mode on this server ?\n\nAll your application will be moved to other servers.\nThe proxy on the selected server will be disabled also during the maintenance mode.\n'
+  )
+  if (confirmation) {
+    enableMaintenanceModeRaw({
+      serverId: props.server.id
+    })
+  }
+}
 </script>
 
 <template>
@@ -351,11 +422,25 @@ onDeleteServerDone((val) => {
         <span class="text-xs text-gray-700">{{ server.hostname }}</span>
       </div>
     </TableRow>
+    <TableRow align="center" class="text-sm text-gray-900"> {{ server.user }}/{{ server.ssh_port }}</TableRow>
     <TableRow align="center">
-      {{ server.ssh_port }}
+      <Badge v-if="server.swarmNodeStatus === 'ready' && !isSetupRequired" type="success" class="capitalize">
+        {{ server.swarmNodeStatus }}
+      </Badge>
+      <Badge v-else type="danger" class="capitalize">{{ server.swarmNodeStatus }}</Badge>
     </TableRow>
     <TableRow align="center">
-      {{ server.user }}
+      <Badge v-if="server.status === 'online'" type="success">Online</Badge>
+      <Badge v-else-if="server.status === 'offline'" type="danger">Offline</Badge>
+      <Badge v-else-if="server.status === 'preparing'" type="warning">Preparing</Badge>
+      <FilledButton v-else-if="server.status === 'needs_setup'" type="primary" :click="setupServer" slim>
+        <font-awesome-icon icon="fa-solid fa-wrench" />&nbsp;&nbsp;&nbsp;Setup Server
+      </FilledButton>
+    </TableRow>
+    <TableRow align="center">
+      <Badge v-if="server.maintenanceMode && !isSetupRequired" type="danger">ON</Badge>
+      <Badge v-else-if="!isSetupRequired" type="success">OFF</Badge>
+      <span v-else></span>
     </TableRow>
     <TableRow align="center">
       <Badge v-if="server.swarmMode === 'manager' && !isSetupRequired" type="success">Manager</Badge>
@@ -377,14 +462,7 @@ onDeleteServerDone((val) => {
       <Badge v-else-if="!server.proxyEnabled && !isSetupRequired" type="danger">Disabled</Badge>
       <span v-else></span>
     </TableRow>
-    <TableRow align="center">
-      <Badge v-if="server.status === 'online'" type="success">Online</Badge>
-      <Badge v-else-if="server.status === 'offline'" type="danger">Offline</Badge>
-      <Badge v-else-if="server.status === 'preparing'" type="warning">Preparing</Badge>
-      <FilledButton v-else-if="server.status === 'needs_setup'" type="primary" :click="setupServer" slim>
-        <font-awesome-icon icon="fa-solid fa-wrench" />&nbsp;&nbsp;&nbsp;Setup Server
-      </FilledButton>
-    </TableRow>
+
     <TableRow align="center" flex>
       <FilledButton type="primary" slim :click="openAnalyticsPage">
         <font-awesome-icon icon="fa-solid fa-chart-column" />&nbsp;&nbsp;&nbsp;Analytics
@@ -417,14 +495,20 @@ onDeleteServerDone((val) => {
       <li v-if="server.swarmMode === 'worker' && !isSetupRequired" @click="promoteToManager">
         <font-awesome-icon icon="fa-solid fa-angle-up" />&nbsp;&nbsp;&nbsp;Promote to Swarm Manager
       </li>
-      <li v-if="!isSetupRequired" @click="setupResourceMonitoring">
-        <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Setup Resource Monitoring
+      <li v-if="!isSetupRequired && !server.maintenanceMode" @click="enableMaintenanceMode">
+        <font-awesome-icon icon="fa-solid fa-person-digging" />&nbsp;&nbsp;&nbsp;Enable Maintenance Mode
+      </li>
+      <li v-if="!isSetupRequired && server.maintenanceMode" @click="disableMaintenanceMode">
+        <font-awesome-icon icon="fa-solid fa-person-digging" />&nbsp;&nbsp;&nbsp;Disable Maintenance Mode
       </li>
       <li v-if="server.scheduleDeployments && !isSetupRequired" @click="disableDeploymentOnServer">
         <font-awesome-icon icon="fa-solid fa-stop" />&nbsp;&nbsp;&nbsp;Disable Deployment on Server
       </li>
       <li v-if="!server.scheduleDeployments && !isSetupRequired" @click="enableDeploymentOnServer">
         <font-awesome-icon icon="fa-solid fa-play" />&nbsp;&nbsp;&nbsp;Enable Deployment on Server
+      </li>
+      <li v-if="!isSetupRequired" @click="setupResourceMonitoring">
+        <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Setup Resource Monitoring
       </li>
       <li @click="changeServerIp"><font-awesome-icon icon="fa-solid fa-globe" />&nbsp;&nbsp;&nbsp;Change Server IP</li>
       <li @click="changeServerSSHPort">

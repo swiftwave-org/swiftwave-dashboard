@@ -59,6 +59,7 @@ import {
   faMagnifyingGlass,
   faNetworkWired,
   faPeopleGroup,
+  faPersonDigging,
   faPlay,
   faPlus,
   faPowerOff,
@@ -175,7 +176,8 @@ library.add(
   faEnvelope,
   faPeopleGroup,
   faLayerGroup,
-  faCircleNotch
+  faCircleNotch,
+  faPersonDigging
 )
 
 // Environment variables

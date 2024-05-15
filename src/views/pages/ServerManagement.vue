@@ -29,6 +29,8 @@ const {
         user
         ssh_port
         swarmMode
+        swarmNodeStatus
+        maintenanceMode
         scheduleDeployments
         dockerUnixSocketPath
         proxyEnabled
@@ -80,12 +82,13 @@ const openCreateServerModal = () => {
     <Table class="mt-8">
       <template v-slot:header>
         <TableHeader align="left">Server</TableHeader>
-        <TableHeader align="center">SSH Port</TableHeader>
-        <TableHeader align="center">User</TableHeader>
-        <TableHeader align="center">Swarm Mode</TableHeader>
+        <TableHeader align="center">SSH</TableHeader>
+        <TableHeader align="center">Node</TableHeader>
+        <TableHeader align="center">Status</TableHeader>
+        <TableHeader align="center">Maintenance</TableHeader>
+        <TableHeader align="center">Swarm</TableHeader>
         <TableHeader align="center">Deployment</TableHeader>
         <TableHeader align="center">Proxy</TableHeader>
-        <TableHeader align="center">Status</TableHeader>
         <TableHeader align="center">Analytics</TableHeader>
         <TableHeader align="center">Logs</TableHeader>
         <TableHeader align="right">Actions</TableHeader>
