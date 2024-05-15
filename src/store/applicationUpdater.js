@@ -78,7 +78,9 @@ export default function newApplicationUpdater(applicationId) {
                 value
               }
               gitProvider
+              gitEndpoint
               gitCredentialID
+              repositoryUrl
               repositoryName
               repositoryOwner
               repositoryBranch
@@ -136,6 +138,8 @@ export default function newApplicationUpdater(applicationId) {
       sourceConfigurationRef.command = deploymentConfiguration.command
       sourceConfigurationRef.gitCredentialID = deploymentConfiguration.latestDeployment.gitCredentialID
       sourceConfigurationRef.gitProvider = deploymentConfiguration.latestDeployment.gitProvider
+      sourceConfigurationRef.gitEndpoint = deploymentConfiguration.latestDeployment.gitEndpoint
+      sourceConfigurationRef.repositoryUrl = deploymentConfiguration.latestDeployment.repositoryUrl
       sourceConfigurationRef.repositoryName = deploymentConfiguration.latestDeployment.repositoryName
       sourceConfigurationRef.repositoryOwner = deploymentConfiguration.latestDeployment.repositoryOwner
       sourceConfigurationRef.repositoryBranch = deploymentConfiguration.latestDeployment.repositoryBranch
@@ -170,6 +174,7 @@ export default function newApplicationUpdater(applicationId) {
       command: '',
       gitCredentialID: 0,
       gitProvider: '',
+      gitEndpoint: '',
       repositoryUrl: '',
       repositoryBranch: '',
       codePath: '',
@@ -285,6 +290,8 @@ export default function newApplicationUpdater(applicationId) {
                 key
                 value
               }
+              gitEndpoint
+              gitProvider
               gitCredentialID
               repositoryUrl
               repositoryBranch
@@ -469,13 +476,7 @@ export default function newApplicationUpdater(applicationId) {
       if (applicationExistingDetails.length === 0) {
         return ''
       }
-      return (
-        applicationExistingDetails.latestDeployment.gitProvider +
-        '.com/' +
-        applicationExistingDetails.latestDeployment.repositoryOwner +
-        '/' +
-        applicationExistingDetails.latestDeployment.repositoryName
-      )
+      return applicationExistingDetails.latestDeployment.gitEndpoint
     })
 
     const updateApplicationSource = (source) => {
