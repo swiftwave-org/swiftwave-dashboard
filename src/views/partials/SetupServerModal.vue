@@ -5,7 +5,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import Step from '@/views/components/Step.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import gql from 'graphql-tag'
-import { useMutation, useQuery } from '@vue/apollo-composable'
+import { useLazyQuery, useMutation, useQuery } from '@vue/apollo-composable'
 import Code from '@/views/components/Code.vue'
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
@@ -38,6 +38,15 @@ const openModal = () => {
   isModalOpen.value = true
 }
 const closeModal = () => {
+  networkInterfacesOfServer.value = []
+  info.step = 1
+  info.sshVerified = -1
+  info.dependenciesInstalled = -1
+  info.dependencyReport = []
+  info.isAutomatedDependenciesTriggered = false
+  info.dockerUnixPath = '/var/run/docker.sock'
+  info.swarmMode = 'manager'
+  info.advertiseIP = ''
   isModalOpen.value = false
 }
 
@@ -56,7 +65,8 @@ const info = reactive({
   dependencyReport: [],
   isAutomatedDependenciesTriggered: false,
   dockerUnixPath: '/var/run/docker.sock',
-  swarmMode: 'manager'
+  swarmMode: 'manager',
+  advertiseIP: ''
 })
 
 // Verify SSH connection
@@ -132,6 +142,7 @@ onVerifyDependenciesSuccess((result) => {
     info.dependenciesInstalled = isAvailable ? 1 : 0
     if (isAvailable) {
       info.step = 3
+      loadNetworkInterfacesOfServer()
     }
   }
 })
@@ -183,7 +194,8 @@ const setupServer = () => {
     input: {
       id: props.serverId,
       swarmMode: info.swarmMode,
-      dockerUnixSocketPath: info.dockerUnixPath
+      dockerUnixSocketPath: info.dockerUnixPath,
+      advertiseIP: info.advertiseIP
     }
   })
 }
@@ -226,11 +238,52 @@ onFetchPublicSSHKeyError((err) => {
 })
 
 const publicSSHKey = computed(() => fetchPublicSSHKeyResult.value?.publicSSHKey ?? '')
+
+// Fetch network interfaces of the server
+const networkInterfacesOfServer = ref([])
+const {
+  load: loadNetworkInterfacesOfServerRaw,
+  refetch: refetchNetworkInterfacesOfServerRaw,
+  loading: isNetworkInterfacesOfServerLoading,
+  onResult: onNetworkInterfacesOfServerResult,
+  onError: onNetworkInterfacesOfServerError
+} = useLazyQuery(
+  gql`
+    query ($id: Uint!) {
+      networkInterfacesOnServer(id: $id) {
+        name
+        ip
+      }
+    }
+  `,
+  {
+    id: props.serverId
+  }
+)
+
+const loadNetworkInterfacesOfServer = () => {
+  if (loadNetworkInterfacesOfServerRaw() === false) {
+    refetchNetworkInterfacesOfServerRaw()
+  }
+}
+
+onNetworkInterfacesOfServerError((err) => {
+  toast.error(err.message)
+})
+
+onNetworkInterfacesOfServerResult((result) => {
+  if (result.data.networkInterfacesOnServer) {
+    networkInterfacesOfServer.value = result.data.networkInterfacesOnServer
+    if (networkInterfacesOfServer.value.length > 0) {
+      info.advertiseIP = networkInterfacesOfServer.value[0].ip
+    }
+  }
+})
 </script>
 
 <template>
   <teleport to="body">
-    <ModalDialog :close-modal="closeModal" :is-open="isModalOpen" :key="serverId + '_setup_server_modal'" width="2xl">
+    <ModalDialog :close-modal="closeModal" :is-open="isModalOpen" :key="serverId + '_setup_server_modal'" width="xl">
       <template v-slot:header>Setup Server - {{ serverIp }}</template>
       <template v-slot:body>
         <div class="mt-6">
@@ -327,11 +380,33 @@ const publicSSHKey = computed(() => fetchPublicSSHKeyResult.value?.publicSSHKey 
                 </select>
               </div>
               <p class="mt-0.5 text-sm italic text-secondary-600">
-                If you have no server registered already, select <b>Manager</b>
+                If you have no server registered already, must select <b>Manager</b>
               </p>
             </div>
             <div class="mt-3">
-              <label class="block text-sm font-medium leading-6 text-gray-900" for="dockerUnixPath"
+              <label class="block text-sm font-medium text-gray-700" for="domain"
+                >Swarm Advertise IP<span class="ml-2 italic" v-if="isNetworkInterfacesOfServerLoading"
+                  ><font-awesome-icon icon="fa-solid fa-spinner" class="animate-spin" />&nbsp;&nbsp;Fetching...</span
+                ></label
+              >
+              <div class="mt-1 flex flex-col">
+                <select
+                  v-if="networkInterfacesOfServer.length > 1"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  v-model="info.advertiseIP">
+                  <option v-for="ip in networkInterfacesOfServer" :key="ip.ip" :value="ip.ip">
+                    {{ ip.ip }} [{{ ip.name }}]
+                  </option>
+                </select>
+                <p class="text-sm font-medium">{{ info.advertiseIP }}</p>
+                <p v-if="networkInterfacesOfServer.length > 0" class="mt-0.5 text-sm italic text-secondary-600">
+                  <span class="font-medium text-danger-500">Note:</span> Make sure that this IP address on your system
+                  doesn't get changed on future.
+                </p>
+              </div>
+            </div>
+            <div class="mt-3">
+              <label class="block text-sm font-medium text-gray-700" for="dockerUnixPath"
                 >Docker UNIX Socket Path</label
               >
               <div class="mt-1">
