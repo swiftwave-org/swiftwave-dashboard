@@ -358,10 +358,9 @@ const generateConfigurationForCustomDockerFile = (customDockerFile) => {
   generateConfigurationVariables.value.input = {
     sourceType: 'custom',
     gitCredentialID: null,
-    gitProvider: null,
     repositoryBranch: null,
-    repositoryName: null,
-    repositoryOwner: null,
+    repositoryUrl: null,
+    codePath: null,
     customDockerFile: customDockerFile,
     sourceCodeCompressedFileName: null
   }
