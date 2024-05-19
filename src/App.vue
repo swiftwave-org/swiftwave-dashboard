@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/auth.js'
 import SideBar from '@/views/partials/SideBar.vue'
 import LoadingPage from '@/views/pages/LoadingPage.vue'
 import NotAvailableOnMobile from '@/views/pages/NotAvailableOnMobile.vue'
+import GlobalWarning from '@/views/partials/GlobalWarning.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -36,6 +37,7 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
       }">
       <RouterView />
     </div>
+    <GlobalWarning />
   </div>
   <NotAvailableOnMobile />
 </template>
