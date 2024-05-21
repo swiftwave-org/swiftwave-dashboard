@@ -94,7 +94,7 @@ const fetchAnalyticsServiceToken = async (rotate = false) => {
                 echo "deb [signed-by=/etc/apt/keyrings/swiftwave.gpg] http://deb.repo.swiftwave.org/
                 swiftwave-stats-ninja stable" | sudo tee /etc/apt/sources.list.d/swiftwave-stats-ninja.list<br />
                 sudo apt update<br />
-                sudo apt install swiftwave-stats-ninja
+                sudo apt install swiftwave-stats-ninja=2.0.0
               </Code>
               <div class="my-4"></div>
               <p class="font-medium">For Fedora/CentOS/Almalinux/RockyLinux users,</p>
