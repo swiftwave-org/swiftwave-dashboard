@@ -100,7 +100,7 @@ const fetchAnalyticsServiceToken = async (rotate = false) => {
               <p class="font-medium">For Fedora/CentOS/Almalinux/RockyLinux users,</p>
               <Code>
                 sudo dnf config-manager --add-repo http://rpm.repo.swiftwave.org/swiftwave.repo<br />
-                sudo dnf install -y swiftwave-stats-ninja
+                sudo dnf install -y swiftwave-stats-ninja-2.0.0-1
               </Code>
             </div>
           </Step>
