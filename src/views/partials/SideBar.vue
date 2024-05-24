@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/auth.js'
 import { RouterLink, useRouter } from 'vue-router'
 import Logo from '@/assets/images/logo-full-inverse-subtitle.png'
 import ChangePasswordModal from '@/views/partials/ChangePasswordModal.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import SideBarOption from '@/views/partials/SideBarOption.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
@@ -36,12 +36,20 @@ const logoutWithConfirmation = () => {
   }
 }
 
-onMounted(() => {
+const fetchSWVersion = () => {
   if (authStore.IsLoggedIn) {
     authStore.fetchSWVersion().then((v) => {
       swVersion.value = v
     })
   }
+}
+
+watch(authStore.IsLoggedIn, () => {
+  fetchSWVersion()
+})
+
+onMounted(() => {
+  fetchSWVersion()
 })
 
 // Restart system
