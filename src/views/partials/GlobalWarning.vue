@@ -25,7 +25,7 @@ const {
 
 const showNoServerConfiguredWarning = computed(() => {
   if (!authStore.IsLoggedIn) return false
-  if (['System Logs', 'Setup', 'Users', 'Servers'].includes(route.name)) return false
+  if (['System Logs', 'Setup', 'Users', 'Servers', 'Server Logs'].includes(route.name)) return false
   if (!noOfPreparedServersResult.value) return false
   if (noOfPreparedServersResult.value.noOfPreparedServers === undefined) return false
   if (noOfPreparedServersResult.value.noOfPreparedServers === null) return false
