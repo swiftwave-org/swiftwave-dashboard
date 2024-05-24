@@ -435,30 +435,35 @@ const openUrlInNewPage = (url) => {
     <DotLoader />
   </div>
   <section v-else class="relative mx-auto mt-2 flex h-full w-full max-w-7xl flex-col items-center overflow-hidden">
-    <!--  Header  -->
-    <div class="flex w-full flex-row gap-5">
-      <!--      Logo -->
-      <div class="h-14 w-14 rounded-md border border-primary-500 p-1.5">
-        <img :src="stackDetails.docs.logo_url" class="h-full w-full" :alt="stackDetails.docs.name" />
+    <div class="scrollbox h-full w-full overflow-y-auto">
+      <!--  Header  -->
+      <div class="flex w-full flex-row gap-5">
+        <!--      Logo -->
+        <div class="h-14 w-14 rounded-md border border-primary-500 p-1.5">
+          <img :src="stackDetails.docs.logo_url" class="h-full w-full" :alt="stackDetails.docs.name" />
+        </div>
+        <!--    Title and description    -->
+        <div>
+          <p class="text-xl font-semibold">{{ stackDetails.docs.name }}</p>
+          <p class="text-gray-800">{{ stackDetails.docs.description }}</p>
+        </div>
       </div>
-      <!--    Title and description    -->
-      <div>
-        <p class="text-xl font-semibold">{{ stackDetails.docs.name }}</p>
-        <p class="text-gray-800">{{ stackDetails.docs.description }}</p>
+      <!--  Iframe Video  -->
+      <div
+        class="mt-12"
+        v-if="stackDetails.docs.iframe_video_embed"
+        v-html="stackDetails.docs.iframe_video_embed"></div>
+      <!--  Readme description  -->
+      <div class="mt-12 w-full" v-if="stackDetails.docs.readme_description">
+        <MarkdownRenderer :source="stackDetails.docs.readme_description" />
       </div>
-    </div>
-    <!--  Iframe Video  -->
-    <div class="mt-12" v-if="stackDetails.docs.iframe_video_embed" v-html="stackDetails.docs.iframe_video_embed"></div>
-    <!--  Readme description  -->
-    <div class="mt-12 w-full" v-if="stackDetails.docs.readme_description">
-      <MarkdownRenderer :source="stackDetails.docs.readme_description" />
-    </div>
-    <div v-else class="mt-12 w-full">
-      <p class="italic text-gray-800">No details available</p>
+      <div v-else class="mt-12 w-full">
+        <p class="italic text-gray-800">No details available</p>
+      </div>
     </div>
     <!--  Installation Options  -->
     <div class="absolute bottom-0 right-0">
-      <div class="flex flex-row items-center justify-center gap-2">
+      <div class="flex flex-row items-center justify-center gap-2 pr-20">
         <p class="font-semibold text-secondary-700">Looking for installation ?</p>
         <FilledButton type="primary" :click="openInstallNowModal"> Install Now</FilledButton>
       </div>

@@ -111,9 +111,6 @@ const openStackFileForInstall = (stack) => {
       <!--        >-->
       <!--      </FilledButton>-->
     </div>
-    <p class="mb-4 text-base font-semibold italic text-secondary-600">
-      Click on any app to view more details and install
-    </p>
     <!-- If loading   -->
     <div v-if="isLoading" class="flex h-[500px] w-full items-center justify-center">
       <DotLoader />
@@ -159,7 +156,7 @@ const openStackFileForInstall = (stack) => {
     <template v-slot:header>Install {{ selectedApp.title }}</template>
     <template v-slot:body>
       <p>Choose the preferred version -</p>
-      <div class="mt-6">
+      <div class="mt-6 flex flex-col gap-2">
         <OutlinedButton
           :click="() => openStackFileForInstall(stack)"
           class="w-full"
