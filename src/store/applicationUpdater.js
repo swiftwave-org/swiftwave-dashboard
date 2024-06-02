@@ -12,7 +12,6 @@ export default function newApplicationUpdater(applicationId) {
     const isConfigurationUpdated = ref(false)
     const applyConfigurationChanges = () => {
       const appState = mergeChangesWithExistingApplicationDetails()
-      console.log('appState', appState)
       appState.gitCredentialID = parseInt(appState.gitCredentialID)
       appState.imageRegistryCredentialID = parseInt(appState.imageRegistryCredentialID)
       appState.gitCredentialID = appState.gitCredentialID === 0 ? null : appState.gitCredentialID
