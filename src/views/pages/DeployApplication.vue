@@ -40,6 +40,12 @@ const newApplicationState = reactive({
   sourceCodeCompressedFileName: '',
   capabilities: [],
   sysctls: [],
+  resourceLimit: {
+    memoryMb: 0
+  },
+  reservedResource: {
+    memoryMb: 0
+  },
   group: ''
 })
 
