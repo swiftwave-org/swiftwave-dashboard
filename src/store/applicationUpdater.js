@@ -62,6 +62,12 @@ export default function newApplicationUpdater(applicationId) {
             deploymentMode
             replicas
             command
+            resourceLimit {
+              memoryMb
+            }
+            reservedResource {
+              memoryMb
+            }
             environmentVariables {
               key
               value
@@ -132,24 +138,26 @@ export default function newApplicationUpdater(applicationId) {
       persistentVolumeBindingsDetails.keys = keys
       persistentVolumeBindingsDetails.map = map
 
-      const deploymentConfiguration = applicationDetailsRaw.value?.application ?? {}
-      deploymentConfigurationDetails.deploymentMode = deploymentConfiguration.deploymentMode
-      deploymentConfigurationDetails.replicas = deploymentConfiguration.replicas
-      sourceConfigurationRef.command = deploymentConfiguration.command
-      sourceConfigurationRef.gitCredentialID = deploymentConfiguration.latestDeployment.gitCredentialID
-      sourceConfigurationRef.gitProvider = deploymentConfiguration.latestDeployment.gitProvider
-      sourceConfigurationRef.gitEndpoint = deploymentConfiguration.latestDeployment.gitEndpoint
-      sourceConfigurationRef.repositoryUrl = deploymentConfiguration.latestDeployment.repositoryUrl
-      sourceConfigurationRef.repositoryName = deploymentConfiguration.latestDeployment.repositoryName
-      sourceConfigurationRef.repositoryOwner = deploymentConfiguration.latestDeployment.repositoryOwner
-      sourceConfigurationRef.repositoryBranch = deploymentConfiguration.latestDeployment.repositoryBranch
-      sourceConfigurationRef.codePath = deploymentConfiguration.latestDeployment.codePath
+      const applicationConfiguration = applicationDetailsRaw.value?.application ?? {}
+      deploymentConfigurationDetails.deploymentMode = applicationConfiguration.deploymentMode
+      deploymentConfigurationDetails.replicas = applicationConfiguration.replicas
+      deploymentConfigurationDetails.resourceLimit.memoryMb = applicationConfiguration.resourceLimit.memoryMb
+      deploymentConfigurationDetails.reservedResource.memoryMb = applicationConfiguration.reservedResource.memoryMb
+      sourceConfigurationRef.command = applicationConfiguration.command
+      sourceConfigurationRef.gitCredentialID = applicationConfiguration.latestDeployment.gitCredentialID
+      sourceConfigurationRef.gitProvider = applicationConfiguration.latestDeployment.gitProvider
+      sourceConfigurationRef.gitEndpoint = applicationConfiguration.latestDeployment.gitEndpoint
+      sourceConfigurationRef.repositoryUrl = applicationConfiguration.latestDeployment.repositoryUrl
+      sourceConfigurationRef.repositoryName = applicationConfiguration.latestDeployment.repositoryName
+      sourceConfigurationRef.repositoryOwner = applicationConfiguration.latestDeployment.repositoryOwner
+      sourceConfigurationRef.repositoryBranch = applicationConfiguration.latestDeployment.repositoryBranch
+      sourceConfigurationRef.codePath = applicationConfiguration.latestDeployment.codePath
       sourceConfigurationRef.imageRegistryCredentialID =
-        deploymentConfiguration.latestDeployment.imageRegistryCredentialID
-      sourceConfigurationRef.dockerImage = deploymentConfiguration.latestDeployment.dockerImage
+        applicationConfiguration.latestDeployment.imageRegistryCredentialID
+      sourceConfigurationRef.dockerImage = applicationConfiguration.latestDeployment.dockerImage
       sourceConfigurationRef.sourceCodeCompressedFileName =
-        deploymentConfiguration.latestDeployment.sourceCodeCompressedFileName
-      sourceConfigurationRef.dockerfile = deploymentConfiguration.latestDeployment.dockerfile
+        applicationConfiguration.latestDeployment.sourceCodeCompressedFileName
+      sourceConfigurationRef.dockerfile = applicationConfiguration.latestDeployment.dockerfile
 
       // reset isConfigurationUpdated
       isConfigurationUpdated.value = false
@@ -167,7 +175,13 @@ export default function newApplicationUpdater(applicationId) {
 
     const deploymentConfigurationDetails = reactive({
       deploymentMode: '',
-      replicas: 0
+      replicas: 0,
+      resourceLimit: {
+        memoryMb: 0
+      },
+      reservedResource: {
+        memoryMb: 0
+      }
     })
 
     const sourceConfigurationRef = reactive({
@@ -258,6 +272,16 @@ export default function newApplicationUpdater(applicationId) {
       // triggerUpdateHook()
     }
 
+    const onMemoryLimitChanged = (value) => {
+      deploymentConfigurationDetails.resourceLimit.memoryMb = value
+      triggerUpdateHook()
+    }
+
+    const onMemoryReservedChanged = (value) => {
+      deploymentConfigurationDetails.reservedResource.memoryMb = value
+      triggerUpdateHook()
+    }
+
     const replicasCountChanged = () => {
       triggerUpdateHook()
     }
@@ -275,6 +299,12 @@ export default function newApplicationUpdater(applicationId) {
             deploymentMode
             command
             replicas
+            resourceLimit {
+              memoryMb
+            }
+            reservedResource {
+              memoryMb
+            }
             environmentVariables {
               key
               value
@@ -326,7 +356,17 @@ export default function newApplicationUpdater(applicationId) {
       if (applicationExistingDetails.replicas.toString() !== deploymentConfigurationDetails.replicas.toString()) {
         return true
       }
-
+      // check if resource limit is changed
+      if (applicationExistingDetails.resourceLimit.memoryMb !== deploymentConfigurationDetails.resourceLimit.memoryMb) {
+        return true
+      }
+      // check if reserved resource is changed
+      if (
+        applicationExistingDetails.reservedResource.memoryMb !==
+        deploymentConfigurationDetails.reservedResource.memoryMb
+      ) {
+        return true
+      }
       // check if environment variables are changed
       const existingEnvironmentVariables = applicationExistingDetails.environmentVariables ?? []
       const existingEnvironmentVariableKeys = existingEnvironmentVariables.map((variable) => variable.key)
@@ -438,6 +478,12 @@ export default function newApplicationUpdater(applicationId) {
         command: sourceConfigurationRef.command,
         deploymentMode: deploymentConfigurationDetails.deploymentMode,
         replicas: deploymentConfigurationDetails.replicas,
+        resourceLimit: {
+          memoryMb: deploymentConfigurationDetails.resourceLimit.memoryMb
+        },
+        reservedResource: {
+          memoryMb: deploymentConfigurationDetails.reservedResource.memoryMb
+        },
         buildArgs: Object.entries(sourceConfigurationRef.buildArgs).map(([k, v]) => {
           return {
             key: k,
@@ -508,6 +554,8 @@ export default function newApplicationUpdater(applicationId) {
       deletePersistentVolumeBinding,
       onPersistentVolumeChange,
       onPersistentVolumeMountingPathChange,
+      onMemoryLimitChanged,
+      onMemoryReservedChanged,
       deploymentConfigurationDetails,
       changeDeploymentStrategy,
       replicasCountChanged,
