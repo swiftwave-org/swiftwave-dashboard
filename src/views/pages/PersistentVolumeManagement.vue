@@ -91,6 +91,8 @@ const {
         password
         file_mode
         dir_mode
+        uid
+        gid
       }
     }
   }
@@ -199,6 +201,8 @@ const showDetails = (volume) => {
   selectedVolumeDetails.cifsConfig.password = volume?.cifsConfig?.password ?? ''
   selectedVolumeDetails.cifsConfig.file_mode = volume?.cifsConfig?.file_mode ?? ''
   selectedVolumeDetails.cifsConfig.dir_mode = volume?.cifsConfig?.dir_mode ?? ''
+  selectedVolumeDetails.cifsConfig.uid = volume?.cifsConfig?.uid ?? ''
+  selectedVolumeDetails.cifsConfig.gid = volume?.cifsConfig?.gid ?? ''
 
   isVolumeDetailsModalOpen.value = true
 }
@@ -351,6 +355,26 @@ const showDetails = (volume) => {
               <p
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                 {{ selectedVolumeDetails.cifsConfig.dir_mode }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex w-full flex-row gap-2" v-if="selectedVolumeDetails.type === 'cifs'">
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">UID</label>
+            <div class="mt-1">
+              <p
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {{ selectedVolumeDetails.cifsConfig.uid }}
+              </p>
+            </div>
+          </div>
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">GID</label>
+            <div class="mt-1">
+              <p
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                {{ selectedVolumeDetails.cifsConfig.gid }}
               </p>
             </div>
           </div>
