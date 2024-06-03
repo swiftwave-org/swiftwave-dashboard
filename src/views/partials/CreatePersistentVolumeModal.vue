@@ -38,7 +38,9 @@ const newPersistentVolumeDetails = reactive({
     username: '',
     password: '',
     file_mode: '0777',
-    dir_mode: '0777'
+    dir_mode: '0777',
+    uid: 0,
+    gid: 0
   }
 })
 
@@ -54,6 +56,8 @@ const openModal = () => {
   newPersistentVolumeDetails.cifsConfig.password = ''
   newPersistentVolumeDetails.cifsConfig.file_mode = '0777'
   newPersistentVolumeDetails.cifsConfig.dir_mode = '0777'
+  newPersistentVolumeDetails.cifsConfig.uid = 0
+  newPersistentVolumeDetails.cifsConfig.gid = 0
   isModalOpen.value = true
 }
 
@@ -303,6 +307,33 @@ defineExpose({
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 placeholder="CIFS Dir Mode"
                 type="text" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2 flex w-full flex-row gap-2" v-if="newPersistentVolumeDetails.type === 'cifs'">
+          <!--   CIFS UID     -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">Mount UID</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.uid"
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS UID"
+                type="number" />
+            </div>
+          </div>
+          <!--   CIFS Gid     -->
+          <div class="w-1/2">
+            <label class="block text-sm font-medium text-gray-700">Mount GID</label>
+            <div class="mt-1">
+              <input
+                v-model="newPersistentVolumeDetails.cifsConfig.gid"
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="CIFS GID"
+                type="number" />
             </div>
           </div>
         </div>
