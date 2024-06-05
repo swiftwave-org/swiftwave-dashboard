@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { preventSpaceInput } from '@/vendor/utils.js'
 import Divider from '@/views/components/Divider.vue'
 import CreateDomainModal from '@/views/partials/CreateDomainModal.vue'
+import OutlinedButton from '@/views/components/OutlinedButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -428,6 +429,41 @@ const closeResultModal = () => {
 const openUrlInNewPage = (url) => {
   window.open(url)
 }
+
+// Form page routing
+const currentPage = ref(1)
+const noOfPages = computed(() => {
+  if (!stackDetails.value) return 0
+  return Math.ceil((Object.keys(stackDetails.value.docs.variables).length + 1) / 6)
+})
+const nextPage = () => {
+  if (currentPage.value === noOfPages.value) return
+  currentPage.value++
+}
+const previousPage = () => {
+  if (currentPage.value === 1) return
+  currentPage.value--
+}
+const isFirstPage = computed(() => currentPage.value === 1)
+const isLastPage = computed(() => currentPage.value === noOfPages.value)
+const formVariables = computed(() => {
+  if (!stackDetails.value) return []
+  const variables = Object.keys(stackDetails.value.docs.variables)
+  // for first page, send first 5 variables
+  if (currentPage.value === 1) {
+    return variables.slice(0, 5)
+  }
+  // for other pages, send next 6 variables
+  return variables.slice(5, variables.length).slice((currentPage.value - 2) * 6, (currentPage.value - 1) * 6)
+})
+const pagePercentage = computed(() => {
+  if (noOfPages.value == 0) return 0
+  return Math.min(100, Math.ceil((currentPage.value / noOfPages.value) * 100))
+})
+const noOfBlankFields = computed(() => {
+  if (currentPage.value === 1) return Math.max(0, 5 - formVariables.value.length)
+  return Math.max(0, 6 - formVariables.value.length)
+})
 </script>
 
 <template>
@@ -464,8 +500,10 @@ const openUrlInNewPage = (url) => {
     <!--  Installation Options  -->
     <div class="absolute bottom-0 right-0">
       <div class="flex flex-row items-center justify-center gap-2 pr-20">
-        <p class="font-semibold text-secondary-700">Looking for installation ?</p>
-        <FilledButton type="primary" :click="openInstallNowModal"> Install Now</FilledButton>
+        <FilledButton type="primary" :click="openInstallNowModal">
+          <font-awesome-icon icon="fa-solid fa-hammer" class="mr-2" />
+          Install Now
+        </FilledButton>
       </div>
     </div>
   </section>
@@ -485,7 +523,7 @@ const openUrlInNewPage = (url) => {
       <!--  App info    -->
       <div class="mt-4 flex w-full flex-row gap-8">
         <div class="flex w-full flex-col gap-2">
-          <div>
+          <div v-if="currentPage === 1">
             <label class="block text-base font-medium text-gray-700">
               <p>Application Name <span class="text-red-600"> *</span></p>
               <p class="text-sm font-normal">Provide a name for your application</p>
@@ -499,7 +537,7 @@ const openUrlInNewPage = (url) => {
                 placeholder="Anything you like..." />
             </div>
           </div>
-          <div v-for="key in Object.keys(stackDetails.docs.variables)">
+          <div v-for="key in formVariables">
             <label class="block text-base font-medium text-gray-700">
               <p>{{ stackDetails.docs.variables[key].title }} <span class="text-red-600"> *</span></p>
               <p class="text-sm font-normal">{{ stackDetails.docs.variables[key].description }}</p>
@@ -524,6 +562,43 @@ const openUrlInNewPage = (url) => {
                 selector="name"
                 show-create-link />
             </div>
+          </div>
+
+          <div v-for="i in noOfBlankFields" :key="i">
+            <label class="block text-base font-medium text-gray-700">
+              <p class="text-transparent">dummy</p>
+              <p class="text-sm font-normal text-transparent">dummy</p>
+            </label>
+            <div class="mt-1">
+              <input
+                class="block w-full border-transparent bg-transparent text-transparent accent-transparent"
+                type="text"
+                disabled
+                aria-disabled="true" />
+            </div>
+          </div>
+
+          <div class="my-2 flex flex-row gap-4" v-if="noOfPages > 1">
+            <OutlinedButton type="primary" :click="previousPage" :disabled="isFirstPage" slim>
+              <font-awesome-icon icon="fa-solid fa-chevron-left" />
+            </OutlinedButton>
+            <div class="flex w-full flex-row items-center gap-2">
+              <!--     Progress          -->
+              <div class="h-1.5 w-full rounded-full bg-gray-200">
+                <div
+                  class="h-full rounded-full bg-primary-500 transition-all duration-300"
+                  :style="{
+                    width: `${pagePercentage}%`
+                  }"></div>
+              </div>
+              <!--    Text          -->
+              <p class="w-[50px] text-right text-sm font-medium text-secondary-600">
+                {{ currentPage }} / {{ noOfPages }}
+              </p>
+            </div>
+            <OutlinedButton type="primary" :click="nextPage" :disabled="isLastPage" slim>
+              <font-awesome-icon icon="fa-solid fa-chevron-right" />
+            </OutlinedButton>
           </div>
         </div>
         <!--    Ingress rule configuration    -->
@@ -639,11 +714,9 @@ const openUrlInNewPage = (url) => {
     </template>
     <template v-slot:footer>
       <div class="mt-4 flex w-full flex-row justify-between gap-2">
-        <FilledButton type="danger" :click="closeModal" :disabled="deployStackLoading"
-          >Cancel Installation
-        </FilledButton>
+        <FilledButton type="danger" :click="closeModal" :disabled="deployStackLoading">Cancel</FilledButton>
         <FilledButton type="primary" :loading="deployStackLoading" :disabled="!isFormFilled" :click="deployStackHelper"
-          >Install Now
+          >Start Installation
         </FilledButton>
       </div>
     </template>
