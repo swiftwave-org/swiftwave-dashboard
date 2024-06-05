@@ -46,7 +46,8 @@ const {
   load: loadPersistentVolumeSize,
   refetch: refetchPersistentVolumeSize,
   loading: isPersistentVolumeSizeLoading,
-  onResult: onPersistentVolumeSizeResult
+  onResult: onPersistentVolumeSizeResult,
+  onError: onPersistentVolumeSizeError
 } = useLazyQuery(
   gql`
     query ($id: Uint!) {
@@ -64,6 +65,10 @@ const {
 
 onPersistentVolumeSizeResult(() => {
   sizeFetched.value = true
+})
+
+onPersistentVolumeSizeError((err) => {
+  toast.error(err.message)
 })
 
 const fetchPersistentVolumeSize = async () => {
@@ -155,7 +160,7 @@ const createBackup = () => {
     <TableRow align="center" flex>
       <p v-show="sizeFetched">{{ persistentVolumeSize }} MB</p>
       <FilledButton :click="fetchPersistentVolumeSize" slim type="secondary" :loading="isPersistentVolumeSizeLoading"
-        >{{ sizeFetched ? 'Refresh Size' : 'Fetch Size' }}
+        >{{ sizeFetched ? 'Refresh' : 'Fetch Size' }}
       </FilledButton>
     </TableRow>
     <TableRow align="center" flex>
