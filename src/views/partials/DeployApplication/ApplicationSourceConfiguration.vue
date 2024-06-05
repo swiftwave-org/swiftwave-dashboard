@@ -7,7 +7,7 @@ import { useLazyQuery, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useToast } from 'vue-toastification'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { generateTarBlob } from '@/vendor/tarts.js'
+import createTar from '@swiftwave/tartplus'
 import DockerfileEditor from '@/views/partials/DeployApplication/DockerfileEditor.vue'
 import BuildArgInput from '@/views/partials/BuildArgInput.vue'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
@@ -197,7 +197,7 @@ async function uploadTarFile(fileblob) {
 const uploadSourceCode = async () => {
   stateRef.isUploadingSourceCode = true
   try {
-    const file = await generateTarBlob(sourceCodeFileFieldRef.value.files)
+    const file = await createTar(sourceCodeFileFieldRef.value.files, ['.gitignore'])
     const res = await uploadTarFile(file)
     if (res.success) {
       stateRef.sourceCodeFile = res.file
