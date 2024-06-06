@@ -2,6 +2,13 @@
 import { useToast } from 'vue-toastification'
 import { ref } from 'vue'
 
+defineProps({
+  showCopyButton: {
+    type: Boolean,
+    default: true
+  }
+})
+
 const toast = useToast()
 const showCopyBorder = ref(false)
 const textDivRef = ref(null)
@@ -49,6 +56,7 @@ const copyToClipboard = () => {
       <slot></slot>
     </div>
     <div
+      v-if="showCopyButton"
       @click="copyToClipboard"
       class="absolute right-0 top-0 m-3 flex h-10 w-10 cursor-copy items-center justify-center rounded-lg border-2 border-primary-300 bg-white transition-all hover:bg-gray-200">
       <font-awesome-icon icon="fa-solid fa-clipboard" class="text-xl" />
