@@ -6,11 +6,15 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import PageBar from '@/views/components/PageBar.vue'
 import { useToast } from 'vue-toastification'
+import VueQrcode from 'vue-qrcode'
+
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import UserListRow from '@/views/partials/UserListRow.vue'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import { preventSpaceInput } from '@/vendor/utils.js'
+import Code from '@/views/components/Code.vue'
+import Divider from '@/views/components/Divider.vue'
 
 const toast = useToast()
 const isModalOpen = ref(false)
@@ -38,6 +42,7 @@ const {
       createUser(input: $input) {
         id
         username
+        totpEnabled
       }
     }
   `,
@@ -89,6 +94,7 @@ onUserDeleteFail((err) => {
 // User list query
 const {
   result: userListResult,
+  loading: isUserListLoading,
   refetch: refetchUserList,
   onError: onUserListFetchFailed
 } = useQuery(
@@ -97,6 +103,7 @@ const {
       users {
         id
         username
+        totpEnabled
       }
     }
   `,
@@ -110,9 +117,148 @@ const users = computed(() => userListResult.value?.users)
 onUserListFetchFailed((err) => {
   toast.error(err.message)
 })
+
+// TOTP Enable Related
+const totpModalOpen = ref(false)
+const enableTotpRequest = reactive({
+  totpSecret: '',
+  totpProvisioningUri: '',
+  filledTotp: ''
+})
+const resetTotpRequest = () => {
+  enableTotpRequest.totpSecret = ''
+  enableTotpRequest.totpProvisioningUri = ''
+  enableTotpRequest.filledTotp = ''
+}
+const closeTotpModal = () => {
+  totpModalOpen.value = false
+}
+
+const {
+  mutate: requestEnableTotp,
+  loading: isRequestEnableTotpLoading,
+  onDone: onRequestEnableTotpSuccess,
+  onError: onRequestEnableTotpError
+} = useMutation(gql`
+  mutation {
+    requestTotpEnable {
+      totpSecret
+      totpProvisioningUri
+    }
+  }
+`)
+
+onRequestEnableTotpSuccess((response) => {
+  enableTotpRequest.totpSecret = response.data.requestTotpEnable.totpSecret
+  enableTotpRequest.totpProvisioningUri = response.data.requestTotpEnable.totpProvisioningUri
+  totpModalOpen.value = true
+})
+
+onRequestEnableTotpError((err) => {
+  toast.error(err.message)
+})
+
+const requestEnableTotpWithConfirmation = () => {
+  if (confirm(`Are you sure you want to enable TOTP 2FA for ?`)) {
+    resetTotpRequest()
+    requestEnableTotp()
+  }
+}
+
+const {
+  mutate: enableTotpRaw,
+  loading: isEnableTotpLoading,
+  onDone: onEnableTotpSuccess,
+  onError: onEnableTotpError
+} = useMutation(gql`
+  mutation ($totp: String!) {
+    enableTotp(totp: $totp)
+  }
+`)
+
+const enableTotp = () => {
+  enableTotpRaw({ totp: enableTotpRequest.filledTotp })
+}
+
+onEnableTotpSuccess(() => {
+  closeTotpModal()
+  resetTotpRequest()
+  toast.success('TOTP 2FA enabled successfully')
+  refetchUserList()
+})
+
+onEnableTotpError((err) => {
+  toast.error(err.message)
+})
+
+// Disable TOTP Related
+const {
+  mutate: disableTotpRaw,
+  loading: isDisableTotpLoading,
+  onDone: onDisableTotpSuccess,
+  onError: onDisableTotpError
+} = useMutation(gql`
+  mutation {
+    disableTotp
+  }
+`)
+
+const disableTotpWithConfirmation = () => {
+  if (confirm(`Are you sure you want to disable TOTP 2FA for current user ?`)) {
+    disableTotpRaw()
+  }
+}
+
+onDisableTotpSuccess((response) => {
+  if (response.data.disableTotp) {
+    toast.success('TOTP 2FA disabled successfully')
+    refetchUserList()
+  } else {
+    toast.error('Failed to disable TOTP 2FA')
+  }
+})
+
+onDisableTotpError((err) => {
+  toast.error(err.message)
+})
 </script>
 
 <template>
+  <!-- Modal for totp -->
+  <ModalDialog :close-modal="closeTotpModal" :is-open="totpModalOpen">
+    <template v-slot:header>TOTP 2FA</template>
+    <template v-slot:body>
+      <div class="mt-6 flex flex-col items-center">
+        <p class="font-medium">Scan the QR code with Authenticator app.</p>
+        <VueQrcode class="my-4" :value="enableTotpRequest.totpProvisioningUri" />
+        <p class="font-medium">Or Paste the secret code in authenticator app.</p>
+        <Code :show-copy-button="false">
+          {{ enableTotpRequest.totpSecret }}
+        </Code>
+      </div>
+      <Divider />
+      <div class="flex w-full flex-col items-center gap-4">
+        <p class="font-medium">Enter TOTP from app</p>
+        <v-otp-input
+          :num-inputs="6"
+          input-classes="otp-input"
+          :placeholder="['*', '*', '*', '*', '*', '*']"
+          v-model:value="enableTotpRequest.filledTotp"
+          @on-change="(v) => (enableTotpRequest.filledTotp = v)" />
+      </div>
+    </template>
+    <template v-slot:footer>
+      <FilledButton
+        :click="enableTotp"
+        :loading="isEnableTotpLoading"
+        :disabled="enableTotpRequest.filledTotp.length !== 6"
+        type="primary"
+        class="w-full">
+        Verify & Enable TOTP 2FA
+      </FilledButton>
+    </template>
+  </ModalDialog>
+
   <section class="mx-auto w-full max-w-7xl">
     <!-- Modal for new user -->
     <ModalDialog :close-modal="closeModal" :is-open="isModalOpen">
@@ -152,7 +298,7 @@ onUserListFetchFailed((err) => {
         </form>
       </template>
       <template v-slot:footer>
-        <FilledButton :click="createUser" :loading="isUserCreating" type="primary">Create </FilledButton>
+        <FilledButton :click="createUser" :loading="isUserCreating" type="primary">Create</FilledButton>
       </template>
     </ModalDialog>
 
@@ -164,7 +310,17 @@ onUserListFetchFailed((err) => {
         features
       </template>
       <template v-slot:buttons>
-        <FilledButton :click="openModal" type="primary"> Create User </FilledButton>
+        <FilledButton :click="openModal" type="primary">
+          <font-awesome-icon icon="fa-solid fa-plus" class="mr-2" />
+          Create User
+        </FilledButton>
+        <FilledButton type="ghost" :click="refetchUserList">
+          <font-awesome-icon
+            icon="fa-solid fa-arrows-rotate"
+            :class="{
+              'animate-spin ': isUserListLoading
+            }" />&nbsp;&nbsp; Refresh List
+        </FilledButton>
       </template>
     </PageBar>
 
@@ -172,9 +328,9 @@ onUserListFetchFailed((err) => {
     <Table class="mt-8">
       <template v-slot:header>
         <TableHeader align="left">Username</TableHeader>
-        <TableHeader align="left">ID</TableHeader>
         <TableHeader align="center">Status</TableHeader>
-        <TableHeader align="left">Role</TableHeader>
+        <TableHeader align="center">Role</TableHeader>
+        <TableHeader align="center">2FA</TableHeader>
         <TableHeader align="right">Actions</TableHeader>
       </template>
       <template v-slot:message>
@@ -189,7 +345,10 @@ onUserListFetchFailed((err) => {
           v-for="user in users"
           v-bind:key="user.id"
           :delete-user="deleteUserWithConfirmation"
-          :user="user" />
+          :user="user"
+          :is-request-running-for-totp="isRequestEnableTotpLoading || isDisableTotpLoading"
+          :enable-totp-current-user="requestEnableTotpWithConfirmation"
+          :disable-totp-current-user="disableTotpWithConfirmation" />
       </template>
     </Table>
   </section>

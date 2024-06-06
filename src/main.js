@@ -1,6 +1,7 @@
 import { createApp, h, markRaw, provide } from 'vue'
 import { createPinia } from 'pinia'
 import vueDebounce from 'vue-debounce'
+import VOtpInput from 'vue3-otp-input'
 
 import { DefaultApolloClient } from '@vue/apollo-composable'
 
@@ -251,6 +252,7 @@ const app = createApp({
   render: () => h(App)
 })
 app.component('font-awesome-icon', FontAwesomeIcon)
+app.component('v-otp-input', VOtpInput)
 const pinia = createPinia()
 pinia.use(({ store }) => {
   store.$router = markRaw(router)
