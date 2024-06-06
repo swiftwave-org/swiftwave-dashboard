@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth_details', () => {
   const IsLoggedIn = ref(false)
   const AccessToken = ref('')
   const IsLoggingInProgress = ref(false)
+  const currentUsername = ref('')
   let currentTime = ref(Date.now())
 
   function FetchBearerToken() {
@@ -124,6 +125,7 @@ export const useAuthStore = defineStore('auth_details', () => {
         const token = localStorage.getItem('token')
         if (token) {
           const decoded = jwtDecode(token)
+          currentUsername.value = decoded.username ?? ''
           const exp = moment(new Date(decoded.exp * 1000))
           return moment.duration(exp.diff(currentTime.value)).humanize(true)
         }
@@ -164,6 +166,7 @@ export const useAuthStore = defineStore('auth_details', () => {
     SetCredential,
     StartAuthChecker,
     sessionRelativeTimeoutStatus,
-    fetchSWVersion
+    fetchSWVersion,
+    currentUsername
   }
 })

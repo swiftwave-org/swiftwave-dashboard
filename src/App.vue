@@ -117,4 +117,19 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
 .border-color-4 {
   @apply border-gray-400 !important;
 }
+
+/* v-otp-input custom class */
+.otp-input-container {
+  @apply flex flex-row justify-center;
+}
+
+.otp-input {
+  @apply mx-1 h-10 w-10 !rounded-md !border !border-gray-300 !p-1 !text-center !text-base focus:!border-primary-500 focus:!ring-primary-500;
+}
+
+.otp-input::-webkit-inner-spin-button,
+.otp-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 </style>
