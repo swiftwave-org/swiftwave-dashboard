@@ -94,6 +94,7 @@ onUserDeleteFail((err) => {
 // User list query
 const {
   result: userListResult,
+  loading: isUserListLoading,
   refetch: refetchUserList,
   onError: onUserListFetchFailed
 } = useQuery(
@@ -309,7 +310,17 @@ onDisableTotpError((err) => {
         features
       </template>
       <template v-slot:buttons>
-        <FilledButton :click="openModal" type="primary"> Create User</FilledButton>
+        <FilledButton :click="openModal" type="primary">
+          <font-awesome-icon icon="fa-solid fa-plus" class="mr-2" />
+          Create User
+        </FilledButton>
+        <FilledButton type="ghost" :click="refetchUserList">
+          <font-awesome-icon
+            icon="fa-solid fa-arrows-rotate"
+            :class="{
+              'animate-spin ': isUserListLoading
+            }" />&nbsp;&nbsp; Refresh List
+        </FilledButton>
       </template>
     </PageBar>
 
