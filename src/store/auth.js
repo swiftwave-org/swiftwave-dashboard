@@ -29,11 +29,11 @@ export const useAuthStore = defineStore('auth_details', () => {
     }, 1000)
   }
 
-  async function Login(username, password) {
-    // login
+  async function Login(username, password, totp) {
     let data = new FormData()
     data.append('username', username)
     data.append('password', password)
+    data.append('totp', totp)
 
     // environment variable
     const HTTP_BASE_URL = getHttpBaseUrl()
@@ -50,18 +50,21 @@ export const useAuthStore = defineStore('auth_details', () => {
       SetCredential(resData.token)
       return {
         success: true,
-        message: 'Logged in successfully !'
+        message: 'Logged in successfully !',
+        totp_required: false
       }
     } catch (e) {
       if (e.response) {
         return {
           success: false,
-          message: e.response.data.message || 'Unexpected error'
+          message: e.response.data.message || 'Unexpected error',
+          totp_required: e.response.data.totp_required
         }
       } else {
         return {
           success: false,
-          message: 'Failed to send request'
+          message: 'Failed to send request',
+          totp_required: false
         }
       }
     }
