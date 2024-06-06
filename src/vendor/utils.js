@@ -67,6 +67,7 @@ const getHttpBaseUrl = () => {
 }
 
 const preventSpaceInput = (event) => {
+  if (event.keyCode === 9) return
   if (event.keyCode === 32 || event.keyCode === 9 || event.keyCode === 13) {
     event.preventDefault()
   }
