@@ -53,6 +53,14 @@
     <RouterLink
       class="nav-element"
       :to="{
+        name: 'Application Details Config Mounts',
+        params: { id: $route.params.id }
+      }">
+      Static App Config
+    </RouterLink>
+    <RouterLink
+      class="nav-element"
+      :to="{
         name: 'Application Details Update Source',
         params: { id: $route.params.id }
       }">

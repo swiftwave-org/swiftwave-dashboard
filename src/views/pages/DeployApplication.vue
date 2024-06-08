@@ -31,6 +31,7 @@ const newApplicationState = reactive({
   buildArgs: [],
   environmentVariables: [],
   persistentVolumeBindings: [],
+  configMounts: [],
   gitCredentialID: 0,
   repositoryUrl: '',
   repositoryBranch: '',
@@ -139,6 +140,7 @@ const finalizeApplicationAdditionalSettings = (additionalSettings) => {
   newApplicationState.replicas = additionalSettings.replicas
   newApplicationState.environmentVariables = additionalSettings.environmentVariables
   newApplicationState.persistentVolumeBindings = additionalSettings.persistentVolumeBindings
+  newApplicationState.configMounts = additionalSettings.configMounts
 }
 
 const finalizeApplicationAdditionalSettingsAndDeploy = (additionalSettings) => {

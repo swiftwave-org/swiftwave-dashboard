@@ -14,6 +14,7 @@ import ApplicationDetailsRuntimeLogsPage from '@/views/pages/ApplicationDetails/
 import ApplicationDetailsIngressRulesPage from '@/views/pages/ApplicationDetails/IngressRules.vue'
 import ApplicationDetailsUpdateSourcePage from '@/views/pages/ApplicationDetails/UpdateSourceCode.vue'
 import ApplicationDetailsEnvironmentVariablesPage from '@/views/pages/ApplicationDetails/EnvironmentVariables.vue'
+import ApplicationDetailsConfigMountsPage from '@/views/pages/ApplicationDetails/ConfigMounts.vue'
 import ApplicationDetailsPersistentVolumesPage from '@/views/pages/ApplicationDetails/PersistentVolumes.vue'
 import ApplicationDetailsDeploymentConfigPage from '@/views/pages/ApplicationDetails/DeploymentConfig.vue'
 import ApplicationDetailsDangerZonePage from '@/views/pages/ApplicationDetails/Destroy.vue'
@@ -125,6 +126,11 @@ const router = createRouter({
           path: 'persistent_volumes',
           name: 'Application Details Persistent Volumes',
           component: ApplicationDetailsPersistentVolumesPage
+        },
+        {
+          path: 'config_mounts',
+          name: 'Application Details Config Mounts',
+          component: ApplicationDetailsConfigMountsPage
         },
         {
           path: 'deployment_config',
