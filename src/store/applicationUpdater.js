@@ -76,6 +76,12 @@ export default function newApplicationUpdater(applicationId) {
               persistentVolumeID
               mountingPath
             }
+            configMounts {
+              content
+              mountingPath
+              uid
+              gid
+            }
             latestDeployment {
               upstreamType
               dockerfile
@@ -138,6 +144,22 @@ export default function newApplicationUpdater(applicationId) {
       persistentVolumeBindingsDetails.keys = keys
       persistentVolumeBindingsDetails.map = map
 
+      const configMounts = applicationDetailsRaw.value?.application?.configMounts ?? []
+      keys = []
+      map = {}
+      configMounts.forEach((binding) => {
+        const z = uuidv4()
+        keys.push(z)
+        map[z] = {
+          content: binding.content,
+          mountingPath: binding.mountingPath,
+          uid: binding.uid,
+          gid: binding.gid
+        }
+      })
+      configMountDetails.keys = keys
+      configMountDetails.map = map
+
       const applicationConfiguration = applicationDetailsRaw.value?.application ?? {}
       deploymentConfigurationDetails.deploymentMode = applicationConfiguration.deploymentMode
       deploymentConfigurationDetails.replicas = applicationConfiguration.replicas
@@ -169,6 +191,11 @@ export default function newApplicationUpdater(applicationId) {
     })
 
     const persistentVolumeBindingsDetails = reactive({
+      keys: [],
+      map: {}
+    })
+
+    const configMountDetails = reactive({
       keys: [],
       map: {}
     })
@@ -255,6 +282,33 @@ export default function newApplicationUpdater(applicationId) {
       triggerUpdateHook()
     }
 
+    const addConfigMount = (details) => {
+      const mountingPath = details.mountingPath
+      // check if mounting path is already used
+      for (const key in configMountDetails.map) {
+        if (configMountDetails.map[key].mountingPath === mountingPath) {
+          throw new Error('Mounting path already used')
+        }
+      }
+      const key = uuidv4()
+      configMountDetails.keys.push(key)
+      configMountDetails.map[key] = details
+      triggerUpdateHook()
+    }
+
+    const deleteConfigMount = (key) => {
+      let keys
+      keys = configMountDetails.keys.filter((k) => k !== key)
+      configMountDetails.keys = keys
+      delete configMountDetails.map[key]
+      triggerUpdateHook()
+    }
+
+    const onConfigMountContentChange = (key, value) => {
+      configMountDetails.map[key].content = value
+      triggerUpdateHook()
+    }
+
     // eslint-disable-next-line no-unused-vars
     const changeDeploymentStrategy = (switchStatus) => {
       alert(
@@ -312,6 +366,12 @@ export default function newApplicationUpdater(applicationId) {
             persistentVolumeBindings {
               id
               mountingPath
+            }
+            configMounts {
+              content
+              mountingPath
+              uid
+              gid
             }
             latestDeployment {
               upstreamType
@@ -385,6 +445,31 @@ export default function newApplicationUpdater(applicationId) {
       for (let i = 0; i < existingEnvironmentVariableKeys.length; i++) {
         const key = existingEnvironmentVariableKeys[i]
         if (existingEnvironmentVariableMap[key] !== newEnvironmentVariableMap[key]) {
+          return true
+        }
+      }
+      // check if config mounts are changed
+      const existingConfigMounts = applicationExistingDetails.configMounts ?? []
+      const existingConfigMountKeys = existingConfigMounts.map((mount) => mount.mountingPath)
+      const existingConfigMountMap = existingConfigMounts.reduce((map, mount) => {
+        map[mount.mountingPath] = mount
+        return map
+      }, {})
+      const newConfigMountKeys = configMountDetails.keys
+      const newConfigMountMap = configMountDetails.keys.reduce((map, key) => {
+        map[configMountDetails.map[key].mountingPath] = configMountDetails.map[key]
+        return map
+      }, {})
+      if (existingConfigMountKeys.length !== newConfigMountKeys.length) {
+        return true
+      }
+      for (let i = 0; i < existingConfigMountKeys.length; i++) {
+        const key = existingConfigMountKeys[i]
+        if (
+          existingConfigMountMap[key].content !== newConfigMountMap[key].content ||
+          existingConfigMountMap[key].uid !== newConfigMountMap[key].uid ||
+          existingConfigMountMap[key].gid !== newConfigMountMap[key].gid
+        ) {
           return true
         }
       }
@@ -496,6 +581,7 @@ export default function newApplicationUpdater(applicationId) {
             value: environmentVariableDetails.map[key].value
           }
         }),
+        configMounts: configMountDetails.keys.map((key) => configMountDetails.map[key]),
         persistentVolumeBindings: persistentVolumeBindingsDetails.keys.map((key) => {
           return {
             persistentVolumeID: persistentVolumeBindingsDetails.map[key].persistentVolumeID,
@@ -549,6 +635,10 @@ export default function newApplicationUpdater(applicationId) {
       deleteEnvironmentVariable,
       onEnvironmentVariableNameChange,
       onEnvironmentVariableValueChange,
+      configMountDetails,
+      addConfigMount,
+      onConfigMountContentChange,
+      deleteConfigMount,
       persistentVolumeBindingsDetails,
       addPersistentVolumeBinding,
       deletePersistentVolumeBinding,
