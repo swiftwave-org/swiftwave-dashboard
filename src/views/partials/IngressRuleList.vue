@@ -140,8 +140,12 @@ const enableHttpsRedirect = (ingress_rule) => {
   })
 }
 
-onEnableHttpsRedirectSuccess(() => {
-  toast.success('Requested to enable HTTPS redirect. Refresh after few seconds')
+onEnableHttpsRedirectSuccess((res) => {
+  if (res.data.enableHttpsRedirectIngressRule) {
+    toast.success('Requested to enable HTTPS redirect. Refresh after few seconds')
+  } else {
+    toast.error('Failed to enable HTTPS redirect')
+  }
 })
 
 onEnableHttpsRedirectFail((err) => {
@@ -164,8 +168,12 @@ const disableHttpsRedirect = (ingress_rule) => {
   })
 }
 
-onDisableHttpsRedirectSuccess(() => {
-  toast.success('Requested to disable HTTPS redirect. Refresh after few seconds')
+onDisableHttpsRedirectSuccess((res) => {
+  if (res.data.disableHttpsRedirectIngressRule) {
+    toast.success('Requested to disable HTTPS redirect. Refresh after few seconds')
+  } else {
+    toast.error('Failed to disable HTTPS redirect')
+  }
 })
 
 onDisableHttpsRedirectFail((err) => {
