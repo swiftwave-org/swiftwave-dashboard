@@ -9,6 +9,7 @@ import { useToast } from 'vue-toastification'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
+import FilledButton from '@/views/components/FilledButton.vue'
 
 const props = defineProps({
   applicationId: {
@@ -18,41 +19,6 @@ const props = defineProps({
   }
 })
 const toast = useToast()
-
-// Delete ingress rule
-const {
-  mutate: deleteIngressRule,
-  onDone: onIngressDeleteSuccess,
-  onError: onIngressRuleDeleteFail
-} = useMutation(
-  gql`
-    mutation ($id: Uint!) {
-      deleteIngressRule(id: $id)
-    }
-  `,
-  {
-    variables: {
-      id: 0
-    }
-  }
-)
-
-const deleteIngressRulesWithConfirmation = (ingress_rule) => {
-  if (confirm('Are you sure you want to delete this ingress rule ?')) {
-    deleteIngressRule({
-      id: ingress_rule.id
-    })
-  }
-}
-
-onIngressDeleteSuccess(() => {
-  toast.success('Ingress Rule will be deleted shortly\nThis can take upto 5 minutes to reflect in the system')
-  refetchIngressRules()
-})
-
-onIngressRuleDeleteFail((err) => {
-  toast.error(err.message)
-})
 
 // Queries
 const fetchAllIngressRulesQuery = gql`
@@ -64,6 +30,7 @@ const fetchAllIngressRulesQuery = gql`
       domain {
         name
       }
+      httpsRedirect
       port
       targetType
       externalService
@@ -84,6 +51,7 @@ const applicationSpecificIngressRulesQuery = gql`
         domain {
           name
         }
+        httpsRedirect
         port
         application {
           name
@@ -120,6 +88,126 @@ onIngressRulesError((err) => {
   toast.error(err.message)
 })
 
+// Delete ingress rule
+const {
+  mutate: deleteIngressRule,
+  onDone: onIngressDeleteSuccess,
+  onError: onIngressRuleDeleteFail
+} = useMutation(
+  gql`
+    mutation ($id: Uint!) {
+      deleteIngressRule(id: $id)
+    }
+  `,
+  {
+    variables: {
+      id: 0
+    }
+  }
+)
+
+const deleteIngressRulesWithConfirmation = (ingress_rule) => {
+  if (confirm('Are you sure you want to delete this ingress rule ?')) {
+    deleteIngressRule({
+      id: ingress_rule.id
+    })
+  }
+}
+
+onIngressDeleteSuccess(() => {
+  toast.success('Ingress Rule will be deleted shortly\nThis can take upto 5 minutes to reflect in the system')
+  refetchIngressRules()
+})
+
+onIngressRuleDeleteFail((err) => {
+  toast.error(err.message)
+})
+
+// Enable/Disable HTTPS Redirect
+const {
+  mutate: enableHttpsRedirectRaw,
+  onDone: onEnableHttpsRedirectSuccess,
+  onError: onEnableHttpsRedirectFail
+} = useMutation(gql`
+  mutation ($id: Uint!) {
+    enableHttpsRedirectIngressRule(id: $id)
+  }
+`)
+
+const enableHttpsRedirect = (ingress_rule) => {
+  enableHttpsRedirectRaw({
+    id: ingress_rule.id
+  })
+}
+
+onEnableHttpsRedirectSuccess((res) => {
+  if (res.data.enableHttpsRedirectIngressRule) {
+    toast.success('Requested to enable HTTPS redirect. Refresh after few seconds')
+  } else {
+    toast.error('Failed to enable HTTPS redirect')
+  }
+})
+
+onEnableHttpsRedirectFail((err) => {
+  toast.error(err.message)
+})
+
+const {
+  mutate: disableHttpsRedirectRaw,
+  onDone: onDisableHttpsRedirectSuccess,
+  onError: onDisableHttpsRedirectFail
+} = useMutation(gql`
+  mutation ($id: Uint!) {
+    disableHttpsRedirectIngressRule(id: $id)
+  }
+`)
+
+const disableHttpsRedirect = (ingress_rule) => {
+  disableHttpsRedirectRaw({
+    id: ingress_rule.id
+  })
+}
+
+onDisableHttpsRedirectSuccess((res) => {
+  if (res.data.disableHttpsRedirectIngressRule) {
+    toast.success('Requested to disable HTTPS redirect. Refresh after few seconds')
+  } else {
+    toast.error('Failed to disable HTTPS redirect')
+  }
+})
+
+onDisableHttpsRedirectFail((err) => {
+  toast.error(err.message)
+})
+
+// Recreate ingress rule
+const {
+  mutate: recreateIngressRule,
+  onDone: onRecreateIngressRuleSuccess,
+  onError: onRecreateIngressRuleFail
+} = useMutation(gql`
+  mutation ($id: Uint!) {
+    recreateIngressRule(id: $id)
+  }
+`)
+
+const recreateIngressRuleWithConfirmation = (ingress_rule) => {
+  if (confirm('Are you sure you want to recreate this ingress rule ?')) {
+    recreateIngressRule({
+      id: ingress_rule.id
+    })
+  }
+}
+
+onRecreateIngressRuleSuccess(() => {
+  toast.success('Ingress Rule will be recreated shortly')
+  refetchIngressRules()
+})
+
+onRecreateIngressRuleFail((err) => {
+  toast.error(err.message)
+})
+
 defineExpose({
   refetchIngressRules,
   isIngressRulesLoading
@@ -137,7 +225,9 @@ defineExpose({
         <font-awesome-icon icon="fa-solid fa-arrow-right" />
       </TableHeader>
       <TableHeader align="center">Target</TableHeader>
-      <TableHeader align="right">Actions</TableHeader>
+      <TableHeader align="center">HTTPS Redirect</TableHeader>
+      <TableHeader align="center">Recreate</TableHeader>
+      <TableHeader align="right">Delete</TableHeader>
     </template>
     <template v-slot:message>
       <TableMessage v-if="ingressRules.length === 0">
@@ -165,10 +255,10 @@ defineExpose({
               >{{ ingressRule.protocol }}://{{ ingressRule.domain.name }}:{{ ingressRule.port }}</a
             >
             <a v-else-if="ingressRule.protocol === 'tcp'" href="javascript:void(0);"
-              >tcp://&lt;server-ip&gt;:{{ ingressRule.port }}</a
+              >tcp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
             >
             <a v-else-if="ingressRule.protocol === 'udp'" href="javascript:void(0);"
-              >udp://&lt;server-ip&gt;:{{ ingressRule.port }}</a
+              >udp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
             >
             <a v-else href="javascript:void(0);"><i>Unknown</i></a>
           </div>
@@ -186,6 +276,26 @@ defineExpose({
             >
             <a v-else href="javascript:void(0);">{{ ingressRule.externalService }}:{{ ingressRule.targetPort }}</a>
           </div>
+        </TableRow>
+        <TableRow align="center" flex v-if="ingressRule.protocol === 'https'">
+          <FilledButton
+            slim
+            type="danger"
+            v-if="ingressRule.httpsRedirect"
+            :click="() => disableHttpsRedirect(ingressRule)"
+            >Disable HTTPS Redirect
+          </FilledButton>
+          <FilledButton slim type="success" v-else :click="() => enableHttpsRedirect(ingressRule)"
+            >Enable HTTPS Redirect
+          </FilledButton>
+        </TableRow>
+        <TableRow align="center" v-else>
+          <p class="text-sm font-medium italic text-gray-900">N/A</p>
+        </TableRow>
+        <TableRow align="center">
+          <FilledButton slim :click="() => recreateIngressRuleWithConfirmation(ingressRule)" type="primary"
+            >Recreate
+          </FilledButton>
         </TableRow>
         <TableRow align="right">
           <TextButton :click="() => deleteIngressRulesWithConfirmation(ingressRule)" type="danger">Delete</TextButton>
