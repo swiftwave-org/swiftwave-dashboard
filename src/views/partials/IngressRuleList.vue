@@ -1,15 +1,16 @@
 <script setup>
 import TableMessage from '@/views/components/Table/TableMessage.vue'
-import TextButton from '@/views/components/TextButton.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import Table from '@/views/components/Table/Table.vue'
-import Badge from '@/views/components/Badge.vue'
-import TableRow from '@/views/components/Table/TableRow.vue'
 import { useToast } from 'vue-toastification'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import IngressRuleRow from '@/views/partials/IngressRuleRow.vue'
+import ModalDialog from '@/views/components/ModalDialog.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
+import router from '@/router/index.js'
 
 const props = defineProps({
   applicationId: {
@@ -37,6 +38,8 @@ const fetchAllIngressRulesQuery = gql`
       application {
         name
       }
+      authenticationType
+      basicAuthAccessControlListName
       targetPort
     }
   }
@@ -56,6 +59,8 @@ const applicationSpecificIngressRulesQuery = gql`
         application {
           name
         }
+        authenticationType
+        basicAuthAccessControlListName
         targetType
         targetPort
       }
@@ -208,6 +213,159 @@ onRecreateIngressRuleFail((err) => {
   toast.error(err.message)
 })
 
+// Setup Authentication
+const { result: appBasicAuthAccessControlListsRaw, onError: onAppBasicAuthAccessControlListsError } = useQuery(
+  gql`
+    query {
+      appBasicAuthAccessControlLists {
+        id
+        name
+      }
+    }
+  `,
+  null,
+  {
+    pollInterval: 30000
+  }
+)
+
+const appBasicAuthAccessControlLists = computed(
+  () => appBasicAuthAccessControlListsRaw.value?.appBasicAuthAccessControlLists ?? []
+)
+
+onAppBasicAuthAccessControlListsError((err) => {
+  toast.error(err.message)
+})
+
+const isSetupAuthenticationModalOpen = ref(false)
+const selectedIngressRuleForSetupAuthentication = ref(null)
+const selectedAuthenticationType = ref('basic')
+
+const selectedACLIdForSetupAuthentication = ref(0)
+
+const openSetupAuthenticationModal = (ingress_rule) => {
+  selectedIngressRuleForSetupAuthentication.value = ingress_rule
+  isSetupAuthenticationModalOpen.value = true
+}
+
+const closeSetupAuthenticationModal = () => {
+  isSetupAuthenticationModalOpen.value = false
+  selectedIngressRuleForSetupAuthentication.value = null
+}
+
+watch(isSetupAuthenticationModalOpen, (isOpening) => {
+  if (!isOpening) {
+    selectedIngressRuleForSetupAuthentication.value = null
+  }
+  selectedACLIdForSetupAuthentication.value = 0
+})
+
+const isSetupAuthenticationButtonEnabled = computed(() => {
+  if (!selectedAuthenticationType.value) return false
+  if (selectedAuthenticationType.value === 'basic') {
+    if (!selectedACLIdForSetupAuthentication.value) return false
+    else return true
+  }
+  return false
+})
+
+const {
+  mutate: setupAuthenticationRaw,
+  loading: isSetupAuthenticationLoading,
+  onError: onSetupAuthenticationError,
+  onDone: onSetupAuthenticationDone
+} = useMutation(gql`
+  mutation ($id: Uint!, $appBasicAuthAccessControlListId: Uint!) {
+    protectIngressRuleUsingBasicAuth(id: $id, appBasicAuthAccessControlListId: $appBasicAuthAccessControlListId)
+  }
+`)
+
+const setupAuthentication = () => {
+  if (
+    !confirm(
+      `This operation can take 5~6 seconds to apply.\nDon't leave this page until the request is completed.\n\nAre you sure you want to continue?`
+    )
+  ) {
+    return
+  }
+  setupAuthenticationRaw({
+    id: selectedIngressRuleForSetupAuthentication.value.id,
+    appBasicAuthAccessControlListId: selectedACLIdForSetupAuthentication.value
+  })
+}
+
+onSetupAuthenticationError((err) => {
+  toast.error(err.message)
+})
+
+onSetupAuthenticationDone(() => {
+  toast.success('Ingress Rule is now protected')
+  refetchIngressRules()
+  closeSetupAuthenticationModal()
+})
+
+const openCreateACLPage = () => {
+  window.open(router.resolve({ name: 'Application Auth Basic ACL' }).href, '_blank')
+}
+
+// disable authentication
+const isDisableAuthenticationModalOpen = ref(false)
+const selectedIngressRuleForDisableAuthentication = ref(null)
+
+const openDisableAuthenticationModal = (ingress_rule) => {
+  selectedIngressRuleForDisableAuthentication.value = ingress_rule
+  isDisableAuthenticationModalOpen.value = true
+}
+
+const closeDisableAuthenticationModal = () => {
+  isDisableAuthenticationModalOpen.value = false
+  selectedIngressRuleForDisableAuthentication.value = null
+}
+
+watch(isDisableAuthenticationModalOpen, (isOpening) => {
+  if (!isOpening) {
+    selectedIngressRuleForDisableAuthentication.value = null
+  }
+})
+
+const {
+  mutate: disableAuthenticationRaw,
+  loading: isDisableAuthenticationLoading,
+  onError: onDisableAuthenticationError,
+  onDone: onDisableAuthenticationDone
+} = useMutation(gql`
+  mutation ($id: Uint!) {
+    disableIngressRuleProtection(id: $id)
+  }
+`)
+
+const disableAuthentication = () => {
+  if (
+    !confirm(
+      "This operation can take 5~6 seconds to apply.\nDon't leave this page until the request is completed.\n\nAre you sure you want to continue?"
+    )
+  ) {
+    return
+  }
+  disableAuthenticationRaw({
+    id: selectedIngressRuleForDisableAuthentication.value.id
+  })
+}
+
+onDisableAuthenticationError((err) => {
+  toast.error(err.message)
+})
+
+onDisableAuthenticationDone((res) => {
+  if (res.data.disableIngressRuleProtection) {
+    toast.success('Requested to disable authentication. Refresh after few seconds')
+  } else {
+    toast.error('Failed to disable authentication')
+  }
+  refetchIngressRules()
+  closeDisableAuthenticationModal()
+})
+
 defineExpose({
   refetchIngressRules,
   isIngressRulesLoading
@@ -225,9 +383,9 @@ defineExpose({
         <font-awesome-icon icon="fa-solid fa-arrow-right" />
       </TableHeader>
       <TableHeader align="center">Target</TableHeader>
+      <TableHeader align="center">Authentication</TableHeader>
       <TableHeader align="center">HTTPS Redirect</TableHeader>
-      <TableHeader align="center">Recreate</TableHeader>
-      <TableHeader align="right">Delete</TableHeader>
+      <TableHeader align="right">Actions</TableHeader>
     </template>
     <template v-slot:message>
       <TableMessage v-if="ingressRules.length === 0">
@@ -236,73 +394,79 @@ defineExpose({
       </TableMessage>
     </template>
     <template v-slot:body>
-      <tr v-for="ingressRule in ingressRules" :key="ingressRule.id">
-        <TableRow align="left">
-          <div class="text-sm font-medium text-gray-900">{{ ingressRule.id }}</div>
-        </TableRow>
-        <TableRow align="center">
-          <Badge v-if="ingressRule.status === 'pending'" type="warning">Pending</Badge>
-          <Badge v-else-if="ingressRule.status === 'applied'" type="success">Applied</Badge>
-          <Badge v-else-if="ingressRule.status === 'failed'" type="danger">Failed</Badge>
-          <Badge v-else-if="ingressRule.status === 'deleting'" type="danger">Deleting</Badge>
-        </TableRow>
-        <TableRow align="center">
-          <div class="text-sm text-gray-900">
-            <a
-              v-if="ingressRule.protocol === 'http' || ingressRule.protocol === 'https'"
-              :href="ingressRule.protocol + '://' + ingressRule.domain.name + ':' + ingressRule.port.toString()"
-              target="_blank"
-              >{{ ingressRule.protocol }}://{{ ingressRule.domain.name }}:{{ ingressRule.port }}</a
-            >
-            <a v-else-if="ingressRule.protocol === 'tcp'" href="javascript:void(0);"
-              >tcp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
-            >
-            <a v-else-if="ingressRule.protocol === 'udp'" href="javascript:void(0);"
-              >udp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
-            >
-            <a v-else href="javascript:void(0);"><i>Unknown</i></a>
-          </div>
-        </TableRow>
-        <TableRow align="center">
-          <font-awesome-icon icon="fa-solid fa-arrow-right" />
-        </TableRow>
-        <TableRow align="center">
-          <div class="text-sm text-gray-900">
-            <Badge v-if="ingressRule.targetType === 'externalService'" type="warning">External Service</Badge>
-            <Badge v-else-if="ingressRule.targetType === 'application'" type="success">Application</Badge>
-            &nbsp;&nbsp;
-            <a v-if="ingressRule.targetType === 'application'" href="javascript:void(0);"
-              >{{ ingressRule.application.name }}:{{ ingressRule.targetPort }}</a
-            >
-            <a v-else href="javascript:void(0);">{{ ingressRule.externalService }}:{{ ingressRule.targetPort }}</a>
-          </div>
-        </TableRow>
-        <TableRow align="center" flex v-if="ingressRule.protocol === 'https'">
-          <FilledButton
-            slim
-            type="danger"
-            v-if="ingressRule.httpsRedirect"
-            :click="() => disableHttpsRedirect(ingressRule)"
-            >Disable HTTPS Redirect
-          </FilledButton>
-          <FilledButton slim type="success" v-else :click="() => enableHttpsRedirect(ingressRule)"
-            >Enable HTTPS Redirect
-          </FilledButton>
-        </TableRow>
-        <TableRow align="center" v-else>
-          <p class="text-sm font-medium italic text-gray-900">N/A</p>
-        </TableRow>
-        <TableRow align="center">
-          <FilledButton slim :click="() => recreateIngressRuleWithConfirmation(ingressRule)" type="primary"
-            >Recreate
-          </FilledButton>
-        </TableRow>
-        <TableRow align="right">
-          <TextButton :click="() => deleteIngressRulesWithConfirmation(ingressRule)" type="danger">Delete</TextButton>
-        </TableRow>
-      </tr>
+      <IngressRuleRow
+        v-for="ingressRule in ingressRules"
+        :key="ingressRule.id"
+        :ingress-rule="ingressRule"
+        :disable-https-redirect="() => disableHttpsRedirect(ingressRule)"
+        :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
+        :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
+        :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
+        :setup-authentication="() => openSetupAuthenticationModal(ingressRule)"
+        :disable-authentication="() => openDisableAuthenticationModal(ingressRule)" />
     </template>
   </Table>
+  <!-- Modal to protect ingress rule -->
+  <ModalDialog :close-modal="closeSetupAuthenticationModal" :is-open="isSetupAuthenticationModalOpen">
+    <template v-slot:header>Protect Ingress Rule</template>
+    <template v-slot:body>
+      Provide all the details to protect the ingress rule.
+      <form @submit.prevent="">
+        <!--   Auth Type     -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700" for="name"> Authentication Type </label>
+          <div class="mt-1">
+            <select
+              v-model="selectedAuthenticationType"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option value="basic">Basic Authentication</option>
+            </select>
+          </div>
+        </div>
+        <!--  User List Field   -->
+        <div class="mt-4" v-if="selectedAuthenticationType === 'basic'">
+          <label class="block text-sm font-medium text-gray-700" for="name"> Select User List </label>
+          <div class="mt-1">
+            <select
+              v-model="selectedACLIdForSetupAuthentication"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option :value="acl.id" :key="acl.id" v-for="acl in appBasicAuthAccessControlLists">
+                {{ acl.name }}
+              </option>
+            </select>
+          </div>
+          <p class="mt-2 flex items-center text-sm">
+            Need to create a user list ?
+            <a @click="openCreateACLPage" class="ml-1.5 cursor-pointer font-bold text-primary-600">Create ACL </a>
+          </p>
+        </div>
+      </form>
+    </template>
+    <template v-slot:footer>
+      <FilledButton
+        :click="setupAuthentication"
+        :loading="isSetupAuthenticationLoading"
+        :disabled="!isSetupAuthenticationButtonEnabled"
+        type="primary"
+        class="w-full"
+        >Confirm & Protect
+      </FilledButton>
+    </template>
+  </ModalDialog>
+  <!-- Modal to disable authentication -->
+  <ModalDialog :close-modal="closeDisableAuthenticationModal" :is-open="isDisableAuthenticationModalOpen">
+    <template v-slot:header>Disable Authentication</template>
+    <template v-slot:body> Are you sure you want to disable authentication for this ingress rule ?</template>
+    <template v-slot:footer>
+      <FilledButton
+        :click="disableAuthentication"
+        :loading="isDisableAuthenticationLoading"
+        type="primary"
+        class="w-full"
+        >Confirm & Disable
+      </FilledButton>
+    </template>
+  </ModalDialog>
 </template>
 
 <style scoped></style>

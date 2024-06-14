@@ -1,4 +1,6 @@
 <script setup>
+import DotLoader from '@/views/components/DotLoader.vue'
+
 const props = defineProps({
   type: {
     type: String,
@@ -13,6 +15,10 @@ const props = defineProps({
     default: () => {}
   },
   disabled: {
+    type: Boolean,
+    default: false
+  },
+  loading: {
     type: Boolean,
     default: false
   }
@@ -37,7 +43,8 @@ const onClick = () => {
     }"
     class="cursor-pointer"
     @click.prevent="onClick">
-    <slot></slot>
+    <slot v-if="!loading"></slot>
+    <DotLoader v-else />
   </a>
 </template>
 
