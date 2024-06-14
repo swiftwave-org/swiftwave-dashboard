@@ -308,6 +308,64 @@ const openCreateACLPage = () => {
   window.open(router.resolve({ name: 'Application Auth Basic ACL' }).href, '_blank')
 }
 
+// disable authentication
+const isDisableAuthenticationModalOpen = ref(false)
+const selectedIngressRuleForDisableAuthentication = ref(null)
+
+const openDisableAuthenticationModal = (ingress_rule) => {
+  selectedIngressRuleForDisableAuthentication.value = ingress_rule
+  isDisableAuthenticationModalOpen.value = true
+}
+
+const closeDisableAuthenticationModal = () => {
+  isDisableAuthenticationModalOpen.value = false
+  selectedIngressRuleForDisableAuthentication.value = null
+}
+
+watch(isDisableAuthenticationModalOpen, (isOpening) => {
+  if (!isOpening) {
+    selectedIngressRuleForDisableAuthentication.value = null
+  }
+})
+
+const {
+  mutate: disableAuthenticationRaw,
+  loading: isDisableAuthenticationLoading,
+  onError: onDisableAuthenticationError,
+  onDone: onDisableAuthenticationDone
+} = useMutation(gql`
+  mutation ($id: Uint!) {
+    disableIngressRuleProtection(id: $id)
+  }
+`)
+
+const disableAuthentication = () => {
+  if (
+    !confirm(
+      "This operation can take 5~6 seconds to apply.\nDon't leave this page until the request is completed.\n\nAre you sure you want to continue?"
+    )
+  ) {
+    return
+  }
+  disableAuthenticationRaw({
+    id: selectedIngressRuleForDisableAuthentication.value.id
+  })
+}
+
+onDisableAuthenticationError((err) => {
+  toast.error(err.message)
+})
+
+onDisableAuthenticationDone((res) => {
+  if (res.data.disableIngressRuleProtection) {
+    toast.success('Requested to disable authentication. Refresh after few seconds')
+  } else {
+    toast.error('Failed to disable authentication')
+  }
+  refetchIngressRules()
+  closeDisableAuthenticationModal()
+})
+
 defineExpose({
   refetchIngressRules,
   isIngressRulesLoading
@@ -344,7 +402,8 @@ defineExpose({
         :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
         :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
         :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
-        :setup-authentication="() => openSetupAuthenticationModal(ingressRule)" />
+        :setup-authentication="() => openSetupAuthenticationModal(ingressRule)"
+        :disable-authentication="() => openDisableAuthenticationModal(ingressRule)" />
     </template>
   </Table>
   <!-- Modal to protect ingress rule -->
@@ -391,6 +450,20 @@ defineExpose({
         type="primary"
         class="w-full"
         >Confirm & Protect
+      </FilledButton>
+    </template>
+  </ModalDialog>
+  <!-- Modal to disable authentication -->
+  <ModalDialog :close-modal="closeDisableAuthenticationModal" :is-open="isDisableAuthenticationModalOpen">
+    <template v-slot:header>Disable Authentication</template>
+    <template v-slot:body> Are you sure you want to disable authentication for this ingress rule ?</template>
+    <template v-slot:footer>
+      <FilledButton
+        :click="disableAuthentication"
+        :loading="isDisableAuthenticationLoading"
+        type="primary"
+        class="w-full"
+        >Confirm & Disable
       </FilledButton>
     </template>
   </ModalDialog>

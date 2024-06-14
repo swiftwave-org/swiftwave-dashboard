@@ -29,6 +29,10 @@ defineProps({
   setupAuthentication: {
     type: Function,
     required: true
+  },
+  disableAuthentication: {
+    type: Function,
+    required: true
   }
 })
 
@@ -117,15 +121,13 @@ window.addEventListener('click', (e) => {
       </div>
     </TableRow>
     <TableRow align="center" flex>
-      <div
-        v-if="ingressRule.protocol === 'https' || ingressRule.protocol === 'http'"
-        class="text-sm italic text-gray-900">
-        <div v-if="ingressRule.authenticationType === 'none'">No Authentication</div>
+      <div v-if="ingressRule.protocol === 'https' || ingressRule.protocol === 'http'" class="text-sm text-gray-900">
+        <div v-if="ingressRule.authenticationType === 'none'" class="italic">No Authentication</div>
         <div
           v-else-if="ingressRule.authenticationType === 'basic'"
           class="flex items-center gap-2 text-sm text-gray-900">
           <font-awesome-icon icon="fa-solid fa-shield-halved" class="text-success-600" />
-          <p>ACL - {{ ingressRule.basicAuthAccessControlListName }}</p>
+          <p><span class="font-medium">ACL</span> - {{ ingressRule.basicAuthAccessControlListName }}</p>
         </div>
       </div>
       <div v-else class="text-sm italic text-gray-900">N/A</div>
@@ -154,6 +156,9 @@ window.addEventListener('click', (e) => {
       </li>
       <li @click="setupAuthentication" v-if="ingressRule.authenticationType === 'none'">
         <font-awesome-icon icon="fa-solid fa-shield-halved" />&nbsp;&nbsp;&nbsp;Setup Authentication
+      </li>
+      <li @click="disableAuthentication" v-if="ingressRule.authenticationType !== 'none'">
+        <font-awesome-icon icon="fa-solid fa-shield-halved" />&nbsp;&nbsp;&nbsp;Disable Authentication
       </li>
       <li @click="recreateIngressRule">
         <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Recreate & Fix
