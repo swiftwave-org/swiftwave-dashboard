@@ -50,7 +50,7 @@ const isDisabled = computed(() => {
       'hover:bg-[type]-600/80': !disabled,
       'cursor-progress': loading,
       'py-2 text-sm': !slim,
-      'px-2 py-1 text-xs': slim,
+      'px-1.5 py-1 text-xs': slim,
       'rounded-full': rounded,
       'rounded-md': !rounded
     }"
