@@ -5,9 +5,12 @@ import Table from '@/views/components/Table/Table.vue'
 import { useToast } from 'vue-toastification'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import IngressRuleRow from '@/views/partials/IngressRuleRow.vue'
+import ModalDialog from '@/views/components/ModalDialog.vue'
+import FilledButton from '@/views/components/FilledButton.vue'
+import router from '@/router/index.js'
 
 const props = defineProps({
   applicationId: {
@@ -210,6 +213,101 @@ onRecreateIngressRuleFail((err) => {
   toast.error(err.message)
 })
 
+// Setup Authentication
+const { result: appBasicAuthAccessControlListsRaw, onError: onAppBasicAuthAccessControlListsError } = useQuery(
+  gql`
+    query {
+      appBasicAuthAccessControlLists {
+        id
+        name
+      }
+    }
+  `,
+  null,
+  {
+    pollInterval: 30000
+  }
+)
+
+const appBasicAuthAccessControlLists = computed(
+  () => appBasicAuthAccessControlListsRaw.value?.appBasicAuthAccessControlLists ?? []
+)
+
+onAppBasicAuthAccessControlListsError((err) => {
+  toast.error(err.message)
+})
+
+const isSetupAuthenticationModalOpen = ref(false)
+const selectedIngressRuleForSetupAuthentication = ref(null)
+const selectedAuthenticationType = ref('basic')
+
+const selectedACLIdForSetupAuthentication = ref(0)
+
+const openSetupAuthenticationModal = (ingress_rule) => {
+  selectedIngressRuleForSetupAuthentication.value = ingress_rule
+  isSetupAuthenticationModalOpen.value = true
+}
+
+const closeSetupAuthenticationModal = () => {
+  isSetupAuthenticationModalOpen.value = false
+  selectedIngressRuleForSetupAuthentication.value = null
+}
+
+watch(isSetupAuthenticationModalOpen, (isOpening) => {
+  if (!isOpening) {
+    selectedIngressRuleForSetupAuthentication.value = null
+  }
+  selectedACLIdForSetupAuthentication.value = 0
+})
+
+const isSetupAuthenticationButtonEnabled = computed(() => {
+  if (!selectedAuthenticationType.value) return false
+  if (selectedAuthenticationType.value === 'basic') {
+    if (!selectedACLIdForSetupAuthentication.value) return false
+    else return true
+  }
+  return false
+})
+
+const {
+  mutate: setupAuthenticationRaw,
+  loading: isSetupAuthenticationLoading,
+  onError: onSetupAuthenticationError,
+  onDone: onSetupAuthenticationDone
+} = useMutation(gql`
+  mutation ($id: Uint!, $appBasicAuthAccessControlListId: Uint!) {
+    protectIngressRuleUsingBasicAuth(id: $id, appBasicAuthAccessControlListId: $appBasicAuthAccessControlListId)
+  }
+`)
+
+const setupAuthentication = () => {
+  if (
+    !confirm(
+      `This operation can take 5~6 seconds to apply.\nDon't leave this page until the request is completed.\n\nAre you sure you want to continue?`
+    )
+  ) {
+    return
+  }
+  setupAuthenticationRaw({
+    id: selectedIngressRuleForSetupAuthentication.value.id,
+    appBasicAuthAccessControlListId: selectedACLIdForSetupAuthentication.value
+  })
+}
+
+onSetupAuthenticationError((err) => {
+  toast.error(err.message)
+})
+
+onSetupAuthenticationDone(() => {
+  toast.success('Ingress Rule is now protected')
+  refetchIngressRules()
+  closeSetupAuthenticationModal()
+})
+
+const openCreateACLPage = () => {
+  window.open(router.resolve({ name: 'Application Auth Basic ACL' }).href, '_blank')
+}
+
 defineExpose({
   refetchIngressRules,
   isIngressRulesLoading
@@ -245,9 +343,57 @@ defineExpose({
         :disable-https-redirect="() => disableHttpsRedirect(ingressRule)"
         :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
         :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
-        :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)" />
+        :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
+        :setup-authentication="() => openSetupAuthenticationModal(ingressRule)" />
     </template>
   </Table>
+  <!-- Modal to protect ingress rule -->
+  <ModalDialog :close-modal="closeSetupAuthenticationModal" :is-open="isSetupAuthenticationModalOpen">
+    <template v-slot:header>Protect Ingress Rule</template>
+    <template v-slot:body>
+      Provide all the details to protect the ingress rule.
+      <form @submit.prevent="">
+        <!--   Auth Type     -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700" for="name"> Authentication Type </label>
+          <div class="mt-1">
+            <select
+              v-model="selectedAuthenticationType"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option value="basic">Basic Authentication</option>
+            </select>
+          </div>
+        </div>
+        <!--  User List Field   -->
+        <div class="mt-4" v-if="selectedAuthenticationType === 'basic'">
+          <label class="block text-sm font-medium text-gray-700" for="name"> Select User List </label>
+          <div class="mt-1">
+            <select
+              v-model="selectedACLIdForSetupAuthentication"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+              <option :value="acl.id" :key="acl.id" v-for="acl in appBasicAuthAccessControlLists">
+                {{ acl.name }}
+              </option>
+            </select>
+          </div>
+          <p class="mt-2 flex items-center text-sm">
+            Need to create a user list ?
+            <a @click="openCreateACLPage" class="ml-1.5 cursor-pointer font-bold text-primary-600">Create ACL </a>
+          </p>
+        </div>
+      </form>
+    </template>
+    <template v-slot:footer>
+      <FilledButton
+        :click="setupAuthentication"
+        :loading="isSetupAuthenticationLoading"
+        :disabled="!isSetupAuthenticationButtonEnabled"
+        type="primary"
+        class="w-full"
+        >Confirm & Protect
+      </FilledButton>
+    </template>
+  </ModalDialog>
 </template>
 
 <style scoped></style>

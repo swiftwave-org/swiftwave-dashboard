@@ -25,6 +25,10 @@ defineProps({
   recreateIngressRule: {
     type: Function,
     required: true
+  },
+  setupAuthentication: {
+    type: Function,
+    required: true
   }
 })
 
@@ -147,6 +151,9 @@ window.addEventListener('click', (e) => {
       </li>
       <li v-else-if="ingressRule.protocol === 'https'" @click="enableHttpsRedirect">
         <font-awesome-icon icon="fa-solid fa-location-arrow" />&nbsp;&nbsp;&nbsp;Enable HTTPS Redirect
+      </li>
+      <li @click="setupAuthentication" v-if="ingressRule.authenticationType === 'none'">
+        <font-awesome-icon icon="fa-solid fa-shield-halved" />&nbsp;&nbsp;&nbsp;Setup Authentication
       </li>
       <li @click="recreateIngressRule">
         <font-awesome-icon icon="fa-solid fa-hammer" />&nbsp;&nbsp;&nbsp;Recreate & Fix
