@@ -213,6 +213,23 @@ const startCountDown = () => {
           </template>
         </SideBarOption>
 
+        <SideBarOption :active-urls="['Application Auth Basic ACL']">
+          <template #icon>
+            <font-awesome-icon icon="fa-solid fa-shield-halved" />
+          </template>
+          <template #title>Protect Application</template>
+          <template #content>
+            <div class="space-y-2">
+              <RouterLink
+                class="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
+                to="/app_auth/basic_authentication">
+                <font-awesome-icon icon="fa-solid fa-user-shield" />
+                <span class="mx-2 text-sm font-medium">Basic Authentication</span>
+              </RouterLink>
+            </div>
+          </template>
+        </SideBarOption>
+
         <SideBarOption :active-urls="['Servers']">
           <template #icon>
             <font-awesome-icon icon="fa-solid fa-server" />

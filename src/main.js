@@ -81,6 +81,7 @@ import {
   faTriangleExclamation,
   faUpload,
   faUsers,
+  faUserShield,
   faUserTie,
   faVault,
   faWrench,
@@ -182,7 +183,9 @@ library.add(
   faLayerGroup,
   faCircleNotch,
   faPersonDigging,
-  faShieldHalved
+  faShieldHalved,
+  faUserShield,
+  faKey
 )
 
 // Environment variables

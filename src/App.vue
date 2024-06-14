@@ -132,4 +132,13 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* tooltip */
+.tooltip {
+  @apply invisible absolute -ms-12 -mt-9 rounded bg-black px-2 py-1 text-sm text-white shadow-sm;
+}
+
+.has-tooltip:hover .tooltip {
+  @apply visible z-50;
+}
 </style>

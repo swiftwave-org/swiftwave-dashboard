@@ -33,6 +33,7 @@ import ServerManagementPage from '@/views/pages/ServerManagement.vue'
 import ServerLogsPage from '@/views/pages/ServerLogs.vue'
 import ServerAnalyticsPage from '@/views/pages/ServerAnalytics.vue'
 import SystemLogsPage from '@/views/pages/SystemLogs.vue'
+import AppAuthBasicAccessControlList from '@/views/pages/AppAuthBasicAccessControlList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -156,6 +157,16 @@ const router = createRouter({
           path: 'resource_stats',
           name: 'Application Details Resource Stats',
           component: ApplicationDetailsResourceStatsPage
+        }
+      ]
+    },
+    {
+      path: '/app_auth',
+      children: [
+        {
+          path: 'basic_authentication',
+          name: 'Application Auth Basic ACL',
+          component: AppAuthBasicAccessControlList
         }
       ]
     },
