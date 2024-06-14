@@ -1,15 +1,13 @@
 <script setup>
 import TableMessage from '@/views/components/Table/TableMessage.vue'
-import TextButton from '@/views/components/TextButton.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import Table from '@/views/components/Table/Table.vue'
-import Badge from '@/views/components/Badge.vue'
-import TableRow from '@/views/components/Table/TableRow.vue'
 import { useToast } from 'vue-toastification'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
-import FilledButton from '@/views/components/FilledButton.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import IngressRuleRow from '@/views/partials/IngressRuleRow.vue'
 
 const props = defineProps({
   applicationId: {
@@ -37,6 +35,8 @@ const fetchAllIngressRulesQuery = gql`
       application {
         name
       }
+      authenticationType
+      basicAuthAccessControlListName
       targetPort
     }
   }
@@ -56,6 +56,8 @@ const applicationSpecificIngressRulesQuery = gql`
         application {
           name
         }
+        authenticationType
+        basicAuthAccessControlListName
         targetType
         targetPort
       }
@@ -225,9 +227,9 @@ defineExpose({
         <font-awesome-icon icon="fa-solid fa-arrow-right" />
       </TableHeader>
       <TableHeader align="center">Target</TableHeader>
+      <TableHeader align="center">Authentication</TableHeader>
       <TableHeader align="center">HTTPS Redirect</TableHeader>
-      <TableHeader align="center">Recreate</TableHeader>
-      <TableHeader align="right">Delete</TableHeader>
+      <TableHeader align="right">Actions</TableHeader>
     </template>
     <template v-slot:message>
       <TableMessage v-if="ingressRules.length === 0">
@@ -236,71 +238,14 @@ defineExpose({
       </TableMessage>
     </template>
     <template v-slot:body>
-      <tr v-for="ingressRule in ingressRules" :key="ingressRule.id">
-        <TableRow align="left">
-          <div class="text-sm font-medium text-gray-900">{{ ingressRule.id }}</div>
-        </TableRow>
-        <TableRow align="center">
-          <Badge v-if="ingressRule.status === 'pending'" type="warning">Pending</Badge>
-          <Badge v-else-if="ingressRule.status === 'applied'" type="success">Applied</Badge>
-          <Badge v-else-if="ingressRule.status === 'failed'" type="danger">Failed</Badge>
-          <Badge v-else-if="ingressRule.status === 'deleting'" type="danger">Deleting</Badge>
-        </TableRow>
-        <TableRow align="center">
-          <div class="text-sm text-gray-900">
-            <a
-              v-if="ingressRule.protocol === 'http' || ingressRule.protocol === 'https'"
-              :href="ingressRule.protocol + '://' + ingressRule.domain.name + ':' + ingressRule.port.toString()"
-              target="_blank"
-              >{{ ingressRule.protocol }}://{{ ingressRule.domain.name }}:{{ ingressRule.port }}</a
-            >
-            <a v-else-if="ingressRule.protocol === 'tcp'" href="javascript:void(0);"
-              >tcp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
-            >
-            <a v-else-if="ingressRule.protocol === 'udp'" href="javascript:void(0);"
-              >udp://&lt;proxy-server-ip&gt;:{{ ingressRule.port }}</a
-            >
-            <a v-else href="javascript:void(0);"><i>Unknown</i></a>
-          </div>
-        </TableRow>
-        <TableRow align="center">
-          <font-awesome-icon icon="fa-solid fa-arrow-right" />
-        </TableRow>
-        <TableRow align="center">
-          <div class="text-sm text-gray-900">
-            <Badge v-if="ingressRule.targetType === 'externalService'" type="warning">External Service</Badge>
-            <Badge v-else-if="ingressRule.targetType === 'application'" type="success">Application</Badge>
-            &nbsp;&nbsp;
-            <a v-if="ingressRule.targetType === 'application'" href="javascript:void(0);"
-              >{{ ingressRule.application.name }}:{{ ingressRule.targetPort }}</a
-            >
-            <a v-else href="javascript:void(0);">{{ ingressRule.externalService }}:{{ ingressRule.targetPort }}</a>
-          </div>
-        </TableRow>
-        <TableRow align="center" flex v-if="ingressRule.protocol === 'https'">
-          <FilledButton
-            slim
-            type="danger"
-            v-if="ingressRule.httpsRedirect"
-            :click="() => disableHttpsRedirect(ingressRule)"
-            >Disable HTTPS Redirect
-          </FilledButton>
-          <FilledButton slim type="success" v-else :click="() => enableHttpsRedirect(ingressRule)"
-            >Enable HTTPS Redirect
-          </FilledButton>
-        </TableRow>
-        <TableRow align="center" v-else>
-          <p class="text-sm font-medium italic text-gray-900">N/A</p>
-        </TableRow>
-        <TableRow align="center">
-          <FilledButton slim :click="() => recreateIngressRuleWithConfirmation(ingressRule)" type="primary"
-            >Recreate
-          </FilledButton>
-        </TableRow>
-        <TableRow align="right">
-          <TextButton :click="() => deleteIngressRulesWithConfirmation(ingressRule)" type="danger">Delete</TextButton>
-        </TableRow>
-      </tr>
+      <IngressRuleRow
+        v-for="ingressRule in ingressRules"
+        :key="ingressRule.id"
+        :ingress-rule="ingressRule"
+        :disable-https-redirect="() => disableHttpsRedirect(ingressRule)"
+        :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
+        :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
+        :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)" />
     </template>
   </Table>
 </template>

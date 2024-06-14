@@ -70,6 +70,7 @@ import {
   faRotateRight,
   faRoute,
   faServer,
+  faShieldHalved,
   faSignal,
   faSkullCrossbones,
   faSpinner,
@@ -180,7 +181,8 @@ library.add(
   faPeopleGroup,
   faLayerGroup,
   faCircleNotch,
-  faPersonDigging
+  faPersonDigging,
+  faShieldHalved
 )
 
 // Environment variables
