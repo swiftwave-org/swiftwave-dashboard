@@ -373,100 +373,102 @@ defineExpose({
 </script>
 
 <template>
-  <!-- Table -->
-  <Table>
-    <template v-slot:header>
-      <TableHeader align="left">ID</TableHeader>
-      <TableHeader align="center">Status</TableHeader>
-      <TableHeader align="center">Ingress</TableHeader>
-      <TableHeader align="center">
-        <font-awesome-icon icon="fa-solid fa-arrow-right" />
-      </TableHeader>
-      <TableHeader align="center">Target</TableHeader>
-      <TableHeader align="center">Authentication</TableHeader>
-      <TableHeader align="center">HTTPS Redirect</TableHeader>
-      <TableHeader align="right">Actions</TableHeader>
-    </template>
-    <template v-slot:message>
-      <TableMessage v-if="ingressRules.length === 0">
-        No Ingress Rules found.<br />
-        Click on the "Add New" button to create a new Ingress rule.
-      </TableMessage>
-    </template>
-    <template v-slot:body>
-      <IngressRuleRow
-        v-for="ingressRule in ingressRules"
-        :key="ingressRule.id"
-        :ingress-rule="ingressRule"
-        :disable-https-redirect="() => disableHttpsRedirect(ingressRule)"
-        :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
-        :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
-        :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
-        :setup-authentication="() => openSetupAuthenticationModal(ingressRule)"
-        :disable-authentication="() => openDisableAuthenticationModal(ingressRule)" />
-    </template>
-  </Table>
-  <!-- Modal to protect ingress rule -->
-  <ModalDialog :close-modal="closeSetupAuthenticationModal" :is-open="isSetupAuthenticationModalOpen">
-    <template v-slot:header>Protect Ingress Rule</template>
-    <template v-slot:body>
-      Provide all the details to protect the ingress rule.
-      <form @submit.prevent="">
-        <!--   Auth Type     -->
-        <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700" for="name"> Authentication Type </label>
-          <div class="mt-1">
-            <select
-              v-model="selectedAuthenticationType"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-              <option value="basic">Basic Authentication</option>
-            </select>
+  <div class="w-full">
+    <!-- Table -->
+    <Table>
+      <template v-slot:header>
+        <TableHeader align="left">ID</TableHeader>
+        <TableHeader align="center">Status</TableHeader>
+        <TableHeader align="center">Ingress</TableHeader>
+        <TableHeader align="center">
+          <font-awesome-icon icon="fa-solid fa-arrow-right" />
+        </TableHeader>
+        <TableHeader align="center">Target</TableHeader>
+        <TableHeader align="center">Authentication</TableHeader>
+        <TableHeader align="center">HTTPS Redirect</TableHeader>
+        <TableHeader align="right">Actions</TableHeader>
+      </template>
+      <template v-slot:message>
+        <TableMessage v-if="ingressRules.length === 0">
+          No Ingress Rules found.<br />
+          Click on the "Add New" button to create a new Ingress rule.
+        </TableMessage>
+      </template>
+      <template v-slot:body>
+        <IngressRuleRow
+          v-for="ingressRule in ingressRules"
+          :key="ingressRule.id"
+          :ingress-rule="ingressRule"
+          :disable-https-redirect="() => disableHttpsRedirect(ingressRule)"
+          :enable-https-redirect="() => enableHttpsRedirect(ingressRule)"
+          :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
+          :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
+          :setup-authentication="() => openSetupAuthenticationModal(ingressRule)"
+          :disable-authentication="() => openDisableAuthenticationModal(ingressRule)" />
+      </template>
+    </Table>
+    <!-- Modal to protect ingress rule -->
+    <ModalDialog :close-modal="closeSetupAuthenticationModal" :is-open="isSetupAuthenticationModalOpen">
+      <template v-slot:header>Protect Ingress Rule</template>
+      <template v-slot:body>
+        Provide all the details to protect the ingress rule.
+        <form @submit.prevent="">
+          <!--   Auth Type     -->
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700" for="name"> Authentication Type </label>
+            <div class="mt-1">
+              <select
+                v-model="selectedAuthenticationType"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                <option value="basic">Basic Authentication</option>
+              </select>
+            </div>
           </div>
-        </div>
-        <!--  User List Field   -->
-        <div class="mt-4" v-if="selectedAuthenticationType === 'basic'">
-          <label class="block text-sm font-medium text-gray-700" for="name"> Select User List </label>
-          <div class="mt-1">
-            <select
-              v-model="selectedACLIdForSetupAuthentication"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
-              <option :value="acl.id" :key="acl.id" v-for="acl in appBasicAuthAccessControlLists">
-                {{ acl.name }}
-              </option>
-            </select>
+          <!--  User List Field   -->
+          <div class="mt-4" v-if="selectedAuthenticationType === 'basic'">
+            <label class="block text-sm font-medium text-gray-700" for="name"> Select User List </label>
+            <div class="mt-1">
+              <select
+                v-model="selectedACLIdForSetupAuthentication"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                <option :value="acl.id" :key="acl.id" v-for="acl in appBasicAuthAccessControlLists">
+                  {{ acl.name }}
+                </option>
+              </select>
+            </div>
+            <p class="mt-2 flex items-center text-sm">
+              Need to create a user list ?
+              <a @click="openCreateACLPage" class="ml-1.5 cursor-pointer font-bold text-primary-600">Create ACL </a>
+            </p>
           </div>
-          <p class="mt-2 flex items-center text-sm">
-            Need to create a user list ?
-            <a @click="openCreateACLPage" class="ml-1.5 cursor-pointer font-bold text-primary-600">Create ACL </a>
-          </p>
-        </div>
-      </form>
-    </template>
-    <template v-slot:footer>
-      <FilledButton
-        :click="setupAuthentication"
-        :loading="isSetupAuthenticationLoading"
-        :disabled="!isSetupAuthenticationButtonEnabled"
-        type="primary"
-        class="w-full"
-        >Confirm & Protect
-      </FilledButton>
-    </template>
-  </ModalDialog>
-  <!-- Modal to disable authentication -->
-  <ModalDialog :close-modal="closeDisableAuthenticationModal" :is-open="isDisableAuthenticationModalOpen">
-    <template v-slot:header>Disable Authentication</template>
-    <template v-slot:body> Are you sure you want to disable authentication for this ingress rule ?</template>
-    <template v-slot:footer>
-      <FilledButton
-        :click="disableAuthentication"
-        :loading="isDisableAuthenticationLoading"
-        type="primary"
-        class="w-full"
-        >Confirm & Disable
-      </FilledButton>
-    </template>
-  </ModalDialog>
+        </form>
+      </template>
+      <template v-slot:footer>
+        <FilledButton
+          :click="setupAuthentication"
+          :loading="isSetupAuthenticationLoading"
+          :disabled="!isSetupAuthenticationButtonEnabled"
+          type="primary"
+          class="w-full"
+          >Confirm & Protect
+        </FilledButton>
+      </template>
+    </ModalDialog>
+    <!-- Modal to disable authentication -->
+    <ModalDialog :close-modal="closeDisableAuthenticationModal" :is-open="isDisableAuthenticationModalOpen">
+      <template v-slot:header>Disable Authentication</template>
+      <template v-slot:body> Are you sure you want to disable authentication for this ingress rule ?</template>
+      <template v-slot:footer>
+        <FilledButton
+          :click="disableAuthentication"
+          :loading="isDisableAuthenticationLoading"
+          type="primary"
+          class="w-full"
+          >Confirm & Disable
+        </FilledButton>
+      </template>
+    </ModalDialog>
+  </div>
 </template>
 
 <style scoped></style>

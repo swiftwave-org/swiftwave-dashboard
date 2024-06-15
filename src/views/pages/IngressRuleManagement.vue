@@ -37,7 +37,7 @@ const refetchIngressRuleList = computed(() => ingressRuleListRef.value?.refetchI
       </template>
     </PageBar>
     <!--  Ingress Rule List  -->
-    <IngressRuleList class="mt-4" ref="ingressRuleListRef" />
+    <IngressRuleList class="mt-8" ref="ingressRuleListRef" />
   </section>
 </template>
 
