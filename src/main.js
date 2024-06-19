@@ -89,7 +89,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 import { useAuthStore } from '@/store/auth.js'
-import Toast from 'vue-toastification'
+import Toast, { TYPE } from 'vue-toastification'
 import VueApexCharts from 'vue3-apexcharts'
 
 import App from './App.vue'
@@ -276,7 +276,19 @@ app.use(Toast, {
   hideProgressBar: false,
   closeButton: 'button',
   icon: true,
-  rtl: false
+  rtl: false,
+  toastDefaults: {
+    // ToastOptions object for each type of toast
+    [TYPE.ERROR]: {
+      timeout: 5000
+    },
+    [TYPE.SUCCESS]: {
+      timeout: 2000
+    },
+    [TYPE.INFO]: {
+      timeout: 2000
+    }
+  }
 })
 app.use(VueApexCharts)
 app.directive('debounce', vueDebounce({ lock: true }))
