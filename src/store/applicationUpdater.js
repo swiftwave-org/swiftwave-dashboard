@@ -326,7 +326,12 @@ export default function newApplicationUpdater(applicationId) {
       }
     })
 
-    const preferredServerHostnames = computed(() => {
+    const updatePreferredServerHostnames = (hostnames) => {
+      deploymentConfigurationDetails.preferredServerHostnames = [...hostnames]
+      triggerUpdateHook()
+    }
+
+    const preferredServerHostnamesStr = computed(() => {
       return deploymentConfigurationDetails.preferredServerHostnames.join(', ')
     })
 
@@ -639,18 +644,11 @@ export default function newApplicationUpdater(applicationId) {
         deploymentConfigurationDetails.preferredServerHostnames.length
       ) {
         return true
-      }
-      for (let i = 0; i < applicationExistingDetails.preferredServerHostnames.length; i++) {
-        let found = false
-        for (let j = 0; j < deploymentConfigurationDetails.preferredServerHostnames.length; j++) {
-          if (
-            applicationExistingDetails.preferredServerHostnames[i] ===
-            deploymentConfigurationDetails.preferredServerHostnames[j]
-          ) {
-            found = true
-          }
-        }
-        if (!found) {
+      } else {
+        if (
+          JSON.stringify(applicationExistingDetails.preferredServerHostnames.sort()) !==
+          JSON.stringify(deploymentConfigurationDetails.preferredServerHostnames.sort())
+        ) {
           return true
         }
       }
@@ -915,7 +913,8 @@ export default function newApplicationUpdater(applicationId) {
       onMemoryLimitChanged,
       onMemoryReservedChanged,
       deploymentConfigurationDetails,
-      preferredServerHostnames,
+      updatePreferredServerHostnames,
+      preferredServerHostnamesStr,
       enableDockerProxy,
       disableDockerProxy,
       dockerProxyPermissionChanged,

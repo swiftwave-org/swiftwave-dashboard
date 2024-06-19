@@ -4,12 +4,25 @@ import { useRouter } from 'vue-router'
 import newApplicationUpdater from '@/store/applicationUpdater.js'
 import DockerProxyPermissionChoose from '@/views/partials/DockerProxyPermissionChoose.vue'
 import Disclosure from '@/views/components/Disclosure.vue'
+import ConfigureDeploymentPreferredServers from '@/views/partials/ConfigureDeploymentPreferredServers.vue'
+import { ref } from 'vue'
 
 const router = useRouter()
 const applicationUpdater = newApplicationUpdater(router.currentRoute.value.params.id)()
+const configureDeploymentPreferredServersRef = ref(null)
+const openConfigureDeploymentPreferredServers = () => {
+  if (configureDeploymentPreferredServersRef.value === null) {
+    return
+  }
+  configureDeploymentPreferredServersRef.value.openModal()
+}
 </script>
 
 <template>
+  <ConfigureDeploymentPreferredServers
+    ref="configureDeploymentPreferredServersRef"
+    :update-hostnames="applicationUpdater.updatePreferredServerHostnames"
+    :hostnames="applicationUpdater.deploymentConfigurationDetails.preferredServerHostnames" />
   <div class="mt-3 flex flex-row items-center">
     <p class="font-medium text-black">Deployment Strategy</p>
     <font-awesome-icon class="px-4" icon="fa-solid fa-arrow-right" />
@@ -35,13 +48,16 @@ const applicationUpdater = newApplicationUpdater(router.currentRoute.value.param
   <div class="mt-2">
     <p class="font-medium text-black">Deployment Preferred Servers</p>
     <div class="mt-1">
-      <label class="block text-sm font-medium text-gray-700" for="no_of_replicase">Click below to select server </label>
+      <label class="block cursor-pointer text-sm font-medium text-gray-700" for="no_of_replicase"
+        >Click below to select server
+      </label>
       <input
-        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+        class="mt-1 block w-full cursor-pointer rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
         placeholder="Click to add servers"
         type="text"
-        v-model="applicationUpdater.preferredServerHostnames"
-        disabled />
+        @click="openConfigureDeploymentPreferredServers"
+        v-model="applicationUpdater.preferredServerHostnamesStr"
+        readonly />
     </div>
   </div>
   <!-- Memory Config -->
