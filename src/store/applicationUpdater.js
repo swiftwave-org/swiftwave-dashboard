@@ -103,6 +103,36 @@ export default function newApplicationUpdater(applicationId) {
             }
             capabilities
             sysctls
+            dockerProxyHost
+            preferredServerHostnames
+            dockerProxyConfig {
+              enabled
+              permission {
+                ping
+                version
+                info
+                events
+                auth
+                secrets
+                build
+                commit
+                configs
+                containers
+                distribution
+                exec
+                grpc
+                images
+                networks
+                nodes
+                plugins
+                services
+                session
+                swarm
+                system
+                tasks
+                volumes
+              }
+            }
           }
         }
       `,
@@ -113,6 +143,14 @@ export default function newApplicationUpdater(applicationId) {
 
     watch(applicationDetailsRaw, () => {
       resetDetailsToApplicationDetails()
+    })
+
+    const dockerProxyHost = computed(() => {
+      const applicationExistingDetails = applicationDetailsRaw.value?.application ?? {}
+      if (applicationExistingDetails.length === 0) {
+        return ''
+      }
+      return applicationExistingDetails.dockerProxyHost
     })
 
     const resetDetailsToApplicationDetails = () => {
@@ -165,6 +203,54 @@ export default function newApplicationUpdater(applicationId) {
       deploymentConfigurationDetails.replicas = applicationConfiguration.replicas
       deploymentConfigurationDetails.resourceLimit.memoryMb = applicationConfiguration.resourceLimit.memoryMb
       deploymentConfigurationDetails.reservedResource.memoryMb = applicationConfiguration.reservedResource.memoryMb
+      deploymentConfigurationDetails.preferredServerHostnames = applicationConfiguration.preferredServerHostnames
+      deploymentConfigurationDetails.dockerProxyConfig.enabled = applicationConfiguration.dockerProxyConfig.enabled
+      deploymentConfigurationDetails.dockerProxyConfig.permission.ping =
+        applicationConfiguration.dockerProxyConfig.permission.ping
+      deploymentConfigurationDetails.dockerProxyConfig.permission.version =
+        applicationConfiguration.dockerProxyConfig.permission.version
+      deploymentConfigurationDetails.dockerProxyConfig.permission.info =
+        applicationConfiguration.dockerProxyConfig.permission.info
+      deploymentConfigurationDetails.dockerProxyConfig.permission.events =
+        applicationConfiguration.dockerProxyConfig.permission.events
+      deploymentConfigurationDetails.dockerProxyConfig.permission.auth =
+        applicationConfiguration.dockerProxyConfig.permission.auth
+      deploymentConfigurationDetails.dockerProxyConfig.permission.secrets =
+        applicationConfiguration.dockerProxyConfig.permission.secrets
+      deploymentConfigurationDetails.dockerProxyConfig.permission.build =
+        applicationConfiguration.dockerProxyConfig.permission.build
+      deploymentConfigurationDetails.dockerProxyConfig.permission.commit =
+        applicationConfiguration.dockerProxyConfig.permission.commit
+      deploymentConfigurationDetails.dockerProxyConfig.permission.configs =
+        applicationConfiguration.dockerProxyConfig.permission.configs
+      deploymentConfigurationDetails.dockerProxyConfig.permission.containers =
+        applicationConfiguration.dockerProxyConfig.permission.containers
+      deploymentConfigurationDetails.dockerProxyConfig.permission.distribution =
+        applicationConfiguration.dockerProxyConfig.permission.distribution
+      deploymentConfigurationDetails.dockerProxyConfig.permission.exec =
+        applicationConfiguration.dockerProxyConfig.permission.exec
+      deploymentConfigurationDetails.dockerProxyConfig.permission.grpc =
+        applicationConfiguration.dockerProxyConfig.permission.grpc
+      deploymentConfigurationDetails.dockerProxyConfig.permission.images =
+        applicationConfiguration.dockerProxyConfig.permission.images
+      deploymentConfigurationDetails.dockerProxyConfig.permission.networks =
+        applicationConfiguration.dockerProxyConfig.permission.networks
+      deploymentConfigurationDetails.dockerProxyConfig.permission.nodes =
+        applicationConfiguration.dockerProxyConfig.permission.nodes
+      deploymentConfigurationDetails.dockerProxyConfig.permission.plugins =
+        applicationConfiguration.dockerProxyConfig.permission.plugins
+      deploymentConfigurationDetails.dockerProxyConfig.permission.services =
+        applicationConfiguration.dockerProxyConfig.permission.services
+      deploymentConfigurationDetails.dockerProxyConfig.permission.session =
+        applicationConfiguration.dockerProxyConfig.permission.session
+      deploymentConfigurationDetails.dockerProxyConfig.permission.swarm =
+        applicationConfiguration.dockerProxyConfig.permission.swarm
+      deploymentConfigurationDetails.dockerProxyConfig.permission.system =
+        applicationConfiguration.dockerProxyConfig.permission.system
+      deploymentConfigurationDetails.dockerProxyConfig.permission.tasks =
+        applicationConfiguration.dockerProxyConfig.permission.tasks
+      deploymentConfigurationDetails.dockerProxyConfig.permission.volumes =
+        applicationConfiguration.dockerProxyConfig.permission.volumes
       sourceConfigurationRef.command = applicationConfiguration.command
       sourceConfigurationRef.gitCredentialID = applicationConfiguration.latestDeployment.gitCredentialID
       sourceConfigurationRef.gitProvider = applicationConfiguration.latestDeployment.gitProvider
@@ -208,8 +294,56 @@ export default function newApplicationUpdater(applicationId) {
       },
       reservedResource: {
         memoryMb: 0
+      },
+      preferredServerHostnames: [],
+      dockerProxyConfig: {
+        enabled: false,
+        permission: {
+          ping: 'none',
+          version: 'none',
+          info: 'none',
+          events: 'none',
+          auth: 'none',
+          secrets: 'none',
+          build: 'none',
+          commit: 'none',
+          configs: 'none',
+          containers: 'none',
+          distribution: 'none',
+          exec: 'none',
+          grpc: 'none',
+          images: 'none',
+          networks: 'none',
+          nodes: 'none',
+          plugins: 'none',
+          services: 'none',
+          session: 'none',
+          swarm: 'none',
+          system: 'none',
+          tasks: 'none',
+          volumes: 'none'
+        }
       }
     })
+
+    const preferredServerHostnames = computed(() => {
+      return deploymentConfigurationDetails.preferredServerHostnames.join(', ')
+    })
+
+    const enableDockerProxy = () => {
+      deploymentConfigurationDetails.dockerProxyConfig.enabled = true
+      triggerUpdateHook()
+    }
+
+    const disableDockerProxy = () => {
+      deploymentConfigurationDetails.dockerProxyConfig.enabled = false
+      triggerUpdateHook()
+    }
+
+    const dockerProxyPermissionChanged = () => {
+      // do the changes in ui directly and trigger this hook
+      triggerUpdateHook()
+    }
 
     const sourceConfigurationRef = reactive({
       command: '',
@@ -393,6 +527,35 @@ export default function newApplicationUpdater(applicationId) {
             capabilities
             sysctls
             group
+            preferredServerHostnames
+            dockerProxyConfig {
+              enabled
+              permission {
+                ping
+                version
+                info
+                events
+                auth
+                secrets
+                build
+                commit
+                configs
+                containers
+                distribution
+                exec
+                grpc
+                images
+                networks
+                nodes
+                plugins
+                services
+                session
+                swarm
+                system
+                tasks
+                volumes
+              }
+            }
           }
         }
       `,
@@ -416,6 +579,82 @@ export default function newApplicationUpdater(applicationId) {
       if (applicationExistingDetails.replicas.toString() !== deploymentConfigurationDetails.replicas.toString()) {
         return true
       }
+      // check if deploy proxy config changed
+      if (
+        applicationExistingDetails.dockerProxyConfig.enabled !==
+          deploymentConfigurationDetails.dockerProxyConfig.enabled ||
+        applicationExistingDetails.dockerProxyConfig.permission.ping !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.ping ||
+        applicationExistingDetails.dockerProxyConfig.permission.version !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.version ||
+        applicationExistingDetails.dockerProxyConfig.permission.info !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.info ||
+        applicationExistingDetails.dockerProxyConfig.permission.events !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.events ||
+        applicationExistingDetails.dockerProxyConfig.permission.auth !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.auth ||
+        applicationExistingDetails.dockerProxyConfig.permission.secrets !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.secrets ||
+        applicationExistingDetails.dockerProxyConfig.permission.build !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.build ||
+        applicationExistingDetails.dockerProxyConfig.permission.commit !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.commit ||
+        applicationExistingDetails.dockerProxyConfig.permission.configs !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.configs ||
+        applicationExistingDetails.dockerProxyConfig.permission.containers !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.containers ||
+        applicationExistingDetails.dockerProxyConfig.permission.distribution !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.distribution ||
+        applicationExistingDetails.dockerProxyConfig.permission.exec !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.exec ||
+        applicationExistingDetails.dockerProxyConfig.permission.grpc !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.grpc ||
+        applicationExistingDetails.dockerProxyConfig.permission.images !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.images ||
+        applicationExistingDetails.dockerProxyConfig.permission.networks !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.networks ||
+        applicationExistingDetails.dockerProxyConfig.permission.nodes !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.nodes ||
+        applicationExistingDetails.dockerProxyConfig.permission.plugins !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.plugins ||
+        applicationExistingDetails.dockerProxyConfig.permission.services !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.services ||
+        applicationExistingDetails.dockerProxyConfig.permission.session !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.session ||
+        applicationExistingDetails.dockerProxyConfig.permission.swarm !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.swarm ||
+        applicationExistingDetails.dockerProxyConfig.permission.system !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.system ||
+        applicationExistingDetails.dockerProxyConfig.permission.tasks !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.tasks ||
+        applicationExistingDetails.dockerProxyConfig.permission.volumes !==
+          deploymentConfigurationDetails.dockerProxyConfig.permission.volumes
+      ) {
+        return true
+      }
+
+      // check if preferred server hostnames are changed
+      if (
+        applicationExistingDetails.preferredServerHostnames.length !==
+        deploymentConfigurationDetails.preferredServerHostnames.length
+      ) {
+        return true
+      }
+      for (let i = 0; i < applicationExistingDetails.preferredServerHostnames.length; i++) {
+        let found = false
+        for (let j = 0; j < deploymentConfigurationDetails.preferredServerHostnames.length; j++) {
+          if (
+            applicationExistingDetails.preferredServerHostnames[i] ===
+            deploymentConfigurationDetails.preferredServerHostnames[j]
+          ) {
+            found = true
+          }
+        }
+        if (!found) {
+          return true
+        }
+      }
+
       // check if resource limit is changed
       if (applicationExistingDetails.resourceLimit.memoryMb !== deploymentConfigurationDetails.resourceLimit.memoryMb) {
         return true
@@ -599,7 +838,36 @@ export default function newApplicationUpdater(applicationId) {
         dockerfile: sourceConfigurationRef.dockerfile,
         capabilities: applicationExistingDetails.capabilities,
         sysctls: applicationExistingDetails.sysctls,
-        group: applicationExistingDetails.group
+        group: applicationExistingDetails.group,
+        preferredServerHostnames: deploymentConfigurationDetails.preferredServerHostnames,
+        dockerProxyConfig: {
+          enabled: deploymentConfigurationDetails.dockerProxyConfig.enabled,
+          permission: {
+            ping: deploymentConfigurationDetails.dockerProxyConfig.permission.ping,
+            version: deploymentConfigurationDetails.dockerProxyConfig.permission.version,
+            info: deploymentConfigurationDetails.dockerProxyConfig.permission.info,
+            events: deploymentConfigurationDetails.dockerProxyConfig.permission.events,
+            auth: deploymentConfigurationDetails.dockerProxyConfig.permission.auth,
+            secrets: deploymentConfigurationDetails.dockerProxyConfig.permission.secrets,
+            build: deploymentConfigurationDetails.dockerProxyConfig.permission.build,
+            commit: deploymentConfigurationDetails.dockerProxyConfig.permission.commit,
+            configs: deploymentConfigurationDetails.dockerProxyConfig.permission.configs,
+            containers: deploymentConfigurationDetails.dockerProxyConfig.permission.containers,
+            distribution: deploymentConfigurationDetails.dockerProxyConfig.permission.distribution,
+            exec: deploymentConfigurationDetails.dockerProxyConfig.permission.exec,
+            grpc: deploymentConfigurationDetails.dockerProxyConfig.permission.grpc,
+            images: deploymentConfigurationDetails.dockerProxyConfig.permission.images,
+            networks: deploymentConfigurationDetails.dockerProxyConfig.permission.networks,
+            nodes: deploymentConfigurationDetails.dockerProxyConfig.permission.nodes,
+            plugins: deploymentConfigurationDetails.dockerProxyConfig.permission.plugins,
+            services: deploymentConfigurationDetails.dockerProxyConfig.permission.services,
+            session: deploymentConfigurationDetails.dockerProxyConfig.permission.session,
+            swarm: deploymentConfigurationDetails.dockerProxyConfig.permission.swarm,
+            system: deploymentConfigurationDetails.dockerProxyConfig.permission.system,
+            tasks: deploymentConfigurationDetails.dockerProxyConfig.permission.tasks,
+            volumes: deploymentConfigurationDetails.dockerProxyConfig.permission.volumes
+          }
+        }
       }
     }
 
@@ -647,12 +915,18 @@ export default function newApplicationUpdater(applicationId) {
       onMemoryLimitChanged,
       onMemoryReservedChanged,
       deploymentConfigurationDetails,
+      preferredServerHostnames,
+      enableDockerProxy,
+      disableDockerProxy,
+      dockerProxyPermissionChanged,
       changeDeploymentStrategy,
       replicasCountChanged,
       isDeployRequestSubmitting,
       gitRepoURL,
       applicationExistingDetailsResult,
-      updateApplicationSource
+      updateApplicationSource,
+      triggerUpdateHook,
+      dockerProxyHost
     }
   })
 }
