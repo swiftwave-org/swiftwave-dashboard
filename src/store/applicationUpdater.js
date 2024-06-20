@@ -103,6 +103,15 @@ export default function newApplicationUpdater(applicationId) {
             }
             capabilities
             sysctls
+            customHealthCheck {
+              enabled
+              test_command
+              interval_seconds
+              timeout_seconds
+              start_period_seconds
+              start_interval_seconds
+              retries
+            }
             dockerProxyHost
             preferredServerHostnames
             dockerProxyConfig {
@@ -251,6 +260,18 @@ export default function newApplicationUpdater(applicationId) {
         applicationConfiguration.dockerProxyConfig.permission.tasks
       deploymentConfigurationDetails.dockerProxyConfig.permission.volumes =
         applicationConfiguration.dockerProxyConfig.permission.volumes
+      deploymentConfigurationDetails.customHealthCheck.enabled = applicationConfiguration.customHealthCheck.enabled
+      deploymentConfigurationDetails.customHealthCheck.test_command =
+        applicationConfiguration.customHealthCheck.test_command
+      deploymentConfigurationDetails.customHealthCheck.interval_seconds =
+        applicationConfiguration.customHealthCheck.interval_seconds
+      deploymentConfigurationDetails.customHealthCheck.timeout_seconds =
+        applicationConfiguration.customHealthCheck.timeout_seconds
+      deploymentConfigurationDetails.customHealthCheck.start_period_seconds =
+        applicationConfiguration.customHealthCheck.start_period_seconds
+      deploymentConfigurationDetails.customHealthCheck.start_interval_seconds =
+        applicationConfiguration.customHealthCheck.start_interval_seconds
+      deploymentConfigurationDetails.customHealthCheck.retries = applicationConfiguration.customHealthCheck.retries
       sourceConfigurationRef.command = applicationConfiguration.command
       sourceConfigurationRef.gitCredentialID = applicationConfiguration.latestDeployment.gitCredentialID
       sourceConfigurationRef.gitProvider = applicationConfiguration.latestDeployment.gitProvider
@@ -294,6 +315,15 @@ export default function newApplicationUpdater(applicationId) {
       },
       reservedResource: {
         memoryMb: 0
+      },
+      customHealthCheck: {
+        enabled: false,
+        test_command: '',
+        interval_seconds: 0,
+        timeout_seconds: 0,
+        start_period_seconds: 0,
+        start_interval_seconds: 0,
+        retries: 0
       },
       preferredServerHostnames: [],
       dockerProxyConfig: {
@@ -532,6 +562,15 @@ export default function newApplicationUpdater(applicationId) {
             capabilities
             sysctls
             group
+            customHealthCheck {
+              enabled
+              test_command
+              interval_seconds
+              timeout_seconds
+              start_period_seconds
+              start_interval_seconds
+              retries
+            }
             preferredServerHostnames
             dockerProxyConfig {
               enabled
@@ -638,6 +677,26 @@ export default function newApplicationUpdater(applicationId) {
         return true
       }
 
+      // check if custom health check is changed
+      if (
+        applicationExistingDetails.customHealthCheck.enabled !==
+          deploymentConfigurationDetails.customHealthCheck.enabled ||
+        applicationExistingDetails.customHealthCheck.test_command !==
+          deploymentConfigurationDetails.customHealthCheck.test_command ||
+        applicationExistingDetails.customHealthCheck.interval_seconds !==
+          deploymentConfigurationDetails.customHealthCheck.interval_seconds ||
+        applicationExistingDetails.customHealthCheck.timeout_seconds !==
+          deploymentConfigurationDetails.customHealthCheck.timeout_seconds ||
+        applicationExistingDetails.customHealthCheck.start_period_seconds !==
+          deploymentConfigurationDetails.customHealthCheck.start_period_seconds ||
+        applicationExistingDetails.customHealthCheck.start_interval_seconds !==
+          deploymentConfigurationDetails.customHealthCheck.start_interval_seconds ||
+        applicationExistingDetails.customHealthCheck.retries !==
+          deploymentConfigurationDetails.customHealthCheck.retries
+      ) {
+        return true
+      }
+
       // check if preferred server hostnames are changed
       if (
         applicationExistingDetails.preferredServerHostnames.length !==
@@ -712,9 +771,9 @@ export default function newApplicationUpdater(applicationId) {
       }
       // check if persistent volume bindings are changed
       const existingPersistentVolumeBindings = applicationExistingDetails.persistentVolumeBindings ?? []
-      const existingPersistentVolumeBindingKeys = existingPersistentVolumeBindings.map((binding) => binding.key)
+      const existingPersistentVolumeBindingKeys = existingPersistentVolumeBindings.map((binding) => binding.id)
       const existingPersistentVolumeBindingMap = existingPersistentVolumeBindings.reduce((map, binding) => {
-        map[binding.key] = binding.mountingPath
+        map[binding.id] = binding.mountingPath
         return map
       }, {})
       const newPersistentVolumeBindingKeys = persistentVolumeBindingsDetails.keys
@@ -837,6 +896,15 @@ export default function newApplicationUpdater(applicationId) {
         capabilities: applicationExistingDetails.capabilities,
         sysctls: applicationExistingDetails.sysctls,
         group: applicationExistingDetails.group,
+        customHealthCheck: {
+          enabled: deploymentConfigurationDetails.customHealthCheck.enabled,
+          test_command: deploymentConfigurationDetails.customHealthCheck.test_command,
+          interval_seconds: deploymentConfigurationDetails.customHealthCheck.interval_seconds,
+          timeout_seconds: deploymentConfigurationDetails.customHealthCheck.timeout_seconds,
+          start_period_seconds: deploymentConfigurationDetails.customHealthCheck.start_period_seconds,
+          start_interval_seconds: deploymentConfigurationDetails.customHealthCheck.start_interval_seconds,
+          retries: deploymentConfigurationDetails.customHealthCheck.retries
+        },
         preferredServerHostnames: deploymentConfigurationDetails.preferredServerHostnames,
         dockerProxyConfig: {
           enabled: deploymentConfigurationDetails.dockerProxyConfig.enabled,
