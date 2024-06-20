@@ -31,6 +31,15 @@ const stateRef = reactive({
   persistentVolumeBindingsMap: {},
   configMountKeys: [],
   configMountsMap: {},
+  customHealthCheck: {
+    enabled: false,
+    test_command: '',
+    interval_seconds: 0,
+    timeout_seconds: 0,
+    start_period_seconds: 0,
+    start_interval_seconds: 0,
+    retries: 0
+  },
   preferredServerHostnames: [],
   dockerProxyConfig: {
     enabled: false,
@@ -162,7 +171,8 @@ const submitDetails = () => {
     persistentVolumeBindings: Object.values(stateRef.persistentVolumeBindingsMap),
     configMounts: Object.values(stateRef.configMountsMap),
     preferredServerHostnames: Object.values(stateRef.preferredServerHostnames),
-    dockerProxyConfig: JSON.parse(JSON.stringify(stateRef.dockerProxyConfig))
+    dockerProxyConfig: JSON.parse(JSON.stringify(stateRef.dockerProxyConfig)),
+    customHealthCheck: JSON.parse(JSON.stringify(stateRef.customHealthCheck))
   }
   props.finalizeApplicationAdditionalSettingsAndDeploy(details)
 }
@@ -255,18 +265,110 @@ const openConfigureDeploymentPreferredServers = () => {
             :delete-config-mount="deleteConfigMount"
             :on-config-content-change="onConfigMountContentChange" />
         </div>
+        <!--   Healthcheck     -->
+        <div class="mt-3 w-full">
+          <div class="flex flex-row items-center gap-2">
+            <p class="text-sm font-medium">Custom Healthcheck</p>
+            <div class="multi-select">
+              <div
+                @click="() => (stateRef.customHealthCheck.enabled = true)"
+                :class="{
+                  active: stateRef.customHealthCheck.enabled
+                }">
+                Enabled
+              </div>
+              <div
+                @click="() => (stateRef.customHealthCheck.enabled = false)"
+                :class="{
+                  active: !stateRef.customHealthCheck.enabled
+                }">
+                Disabled
+              </div>
+            </div>
+          </div>
+          <div class="mt-2" v-if="stateRef.customHealthCheck.enabled">
+            <label class="block text-sm font-medium"
+              >Healthcheck Test Command<span class="text-red-600"> *</span>
+            </label>
+            <div class="mt-1">
+              <input
+                autocomplete="off"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                type="text"
+                @input="(e) => (stateRef.customHealthCheck.test_command = e.target.value) || true"
+                :value="stateRef.customHealthCheck.test_command" />
+            </div>
+          </div>
+          <div class="mt-3 flex w-full flex-row gap-5" v-if="stateRef.customHealthCheck.enabled">
+            <div class="w-1/5">
+              <label class="block text-sm font-medium"
+                >Check Interval (Seconds)<span class="text-red-600"> *</span>
+              </label>
+              <div class="mt-1">
+                <input
+                  autocomplete="off"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  type="number"
+                  @change="(e) => (stateRef.customHealthCheck.interval_seconds = parseInt(e.target.value) || 0)"
+                  :value="stateRef.customHealthCheck.interval_seconds" />
+              </div>
+            </div>
+            <div class="w-1/5">
+              <label class="block text-sm font-medium"
+                >Check Timeout (Seconds)<span class="text-red-600"> *</span>
+              </label>
+              <div class="mt-1">
+                <input
+                  autocomplete="off"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  type="number"
+                  @change="(e) => (stateRef.customHealthCheck.timeout_seconds = parseInt(e.target.value) || 0)"
+                  :value="stateRef.customHealthCheck.timeout_seconds" />
+              </div>
+            </div>
+            <div class="w-1/5">
+              <label class="block text-sm font-medium"
+                >Start Period (Seconds)<span class="text-red-600"> *</span>
+              </label>
+              <div class="mt-1">
+                <input
+                  autocomplete="off"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  type="number"
+                  @change="(e) => (stateRef.customHealthCheck.start_period_seconds = parseInt(e.target.value) || 0)"
+                  :value="stateRef.customHealthCheck.start_period_seconds" />
+              </div>
+            </div>
+            <div class="w-1/5">
+              <label class="block text-sm font-medium"
+                >Start Interval (Seconds)<span class="text-red-600"> *</span>
+              </label>
+              <div class="mt-1">
+                <input
+                  autocomplete="off"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  type="number"
+                  @change="(e) => (stateRef.customHealthCheck.start_interval_seconds = parseInt(e.target.value) || 0)"
+                  :value="stateRef.customHealthCheck.start_interval_seconds" />
+              </div>
+            </div>
+            <div class="w-1/5">
+              <label class="block text-sm font-medium">Retries<span class="text-red-600"> *</span> </label>
+              <div class="mt-1">
+                <input
+                  autocomplete="off"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  type="number"
+                  @change="(e) => (stateRef.customHealthCheck.retries = parseInt(e.target.value) || 0)"
+                  :value="stateRef.customHealthCheck.retries" />
+              </div>
+            </div>
+          </div>
+        </div>
         <!--   Docker Proxy     -->
-        <div>
-          <p class="italic">
-            <span class="text-red-600">* </span>Don't enable it if your application doesn't need access to the Docker
-            socket.
-          </p>
-          <p class="mt-1 italic">
-            <span class="text-red-600">* </span>The security of the server may be compromised if this feature is not
-            used properly.
-          </p>
+        <div class="mt-5">
           <!-- Proxy Status   -->
-          <div class="mt-4 flex flex-row gap-2">
+          <div class="flex flex-row gap-2">
             <p class="font-medium">Docker Proxy Status</p>
             <div class="multi-select">
               <div
@@ -285,6 +387,10 @@ const openConfigureDeploymentPreferredServers = () => {
               </div>
             </div>
           </div>
+          <p class="my-2 italic">
+            <span class="text-red-600">* </span>Don't enable <b>Docker Proxy</b> if your application doesn't need access
+            to the Docker socket and it increase attack surface of your serer if not configured and used properly.
+          </p>
           <!--  Proxy Permission  -->
           <div
             class="mt-4 flex w-full flex-row gap-20 rounded-md border-2 border-secondary-300 p-2"

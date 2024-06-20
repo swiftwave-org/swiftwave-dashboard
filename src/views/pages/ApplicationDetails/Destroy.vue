@@ -32,7 +32,6 @@ function deleteApplicationWithConfirmation() {
 }
 
 deleteApplicationDone((result) => {
-  console.log(result)
   if (result.data.deleteApplication) {
     toast.success('Application deleted successfully !')
     router.push('/applications')
