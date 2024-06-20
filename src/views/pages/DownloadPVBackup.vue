@@ -30,8 +30,6 @@ const isStartDownloadButtonShown = computed(() => {
 const fileBlob = ref(null)
 
 onMounted(function () {
-  console.log(pvBackupId)
-
   fetchFileName(fileNameUrl)
     .then((filename) => {
       data.filename = filename
