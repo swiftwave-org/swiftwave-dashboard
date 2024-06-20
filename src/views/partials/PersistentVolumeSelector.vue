@@ -1,7 +1,7 @@
 <script setup>
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import CreatePersistentVolumeModal from '@/views/partials/CreatePersistentVolumeModal.vue'
 
 const props = defineProps({
@@ -10,6 +10,11 @@ const props = defineProps({
     required: false,
     default: 'id',
     validator: (value) => ['id', 'name'].includes(value)
+  },
+  initialValue: {
+    type: String,
+    required: false,
+    default: ''
   },
   onSelect: {
     type: Function,
@@ -72,6 +77,12 @@ const callbackOnCreate = (e) => {
     selectedPersistentVolume.value = e.name
   }
 }
+
+onMounted(() => {
+  if (props.initialValue) {
+    selectedPersistentVolume.value = props.initialValue
+  }
+})
 </script>
 
 <template>

@@ -16,6 +16,7 @@ import { preventSpaceInput } from '@/vendor/utils.js'
 import Divider from '@/views/components/Divider.vue'
 import CreateDomainModal from '@/views/partials/CreateDomainModal.vue'
 import OutlinedButton from '@/views/components/OutlinedButton.vue'
+import ServerSelector from '@/views/partials/ServerSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -544,11 +545,13 @@ const noOfBlankFields = computed(() => {
             </label>
             <div class="mt-1">
               <input
+                :key="key"
                 v-if="stackDetails.docs.variables[key].type === 'text'"
                 v-model="formStateRef[key]"
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 type="text" />
               <select
+                :key="key"
                 v-if="stackDetails.docs.variables[key].type === 'options'"
                 v-model="formStateRef[key]"
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
@@ -557,10 +560,17 @@ const noOfBlankFields = computed(() => {
                 </option>
               </select>
               <PersistentVolumeSelector
+                :key="key"
+                :initial-value="formStateRef[key]"
                 v-if="stackDetails.docs.variables[key].type === 'volume'"
                 :on-select="(volume) => (formStateRef[key] = volume)"
                 selector="name"
                 show-create-link />
+              <ServerSelector
+                :key="key"
+                :initial-value="formStateRef[key]"
+                v-if="stackDetails.docs.variables[key].type === 'server'"
+                :on-select="(server) => (formStateRef[key] = server)" />
             </div>
           </div>
 

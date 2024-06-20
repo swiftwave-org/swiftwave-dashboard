@@ -1,13 +1,15 @@
 <script setup>
 import { TabPanel } from '@headlessui/vue'
 import Switch from '@/views/components/Switch.vue'
-import { reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import EnvironmentVariablesEditor from '@/views/partials/DeployApplication/EnvironmentVariablesEditor.vue'
 import { v4 as uuidv4 } from 'uuid'
 import PersistentVolumeBindingEditor from '@/views/partials/DeployApplication/PersistentVolumeBindingEditor.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import Disclosure from '@/views/components/Disclosure.vue'
 import ConfigMountsEditor from '@/views/partials/DeployApplication/ConfigMountsEditor.vue'
+import ConfigureDeploymentPreferredServers from '@/views/partials/ConfigureDeploymentPreferredServers.vue'
+import DockerProxyPermissionChoose from '@/views/partials/DockerProxyPermissionChoose.vue'
 
 const props = defineProps({
   finalizeApplicationAdditionalSettingsAndDeploy: {
@@ -28,7 +30,36 @@ const stateRef = reactive({
   persistentVolumeBindingKeys: [],
   persistentVolumeBindingsMap: {},
   configMountKeys: [],
-  configMountsMap: {}
+  configMountsMap: {},
+  preferredServerHostnames: [],
+  dockerProxyConfig: {
+    enabled: false,
+    permission: {
+      ping: 'none',
+      version: 'none',
+      info: 'none',
+      events: 'none',
+      auth: 'none',
+      secrets: 'none',
+      build: 'none',
+      commit: 'none',
+      configs: 'none',
+      containers: 'none',
+      distribution: 'none',
+      exec: 'none',
+      grpc: 'none',
+      images: 'none',
+      networks: 'none',
+      nodes: 'none',
+      plugins: 'none',
+      services: 'none',
+      session: 'none',
+      swarm: 'none',
+      system: 'none',
+      tasks: 'none',
+      volumes: 'none'
+    }
+  }
 })
 
 // Environment Variables Functions
@@ -129,9 +160,23 @@ const submitDetails = () => {
     replicas: stateRef.replicas,
     environmentVariables: environmentVariables,
     persistentVolumeBindings: Object.values(stateRef.persistentVolumeBindingsMap),
-    configMounts: Object.values(stateRef.configMountsMap)
+    configMounts: Object.values(stateRef.configMountsMap),
+    preferredServerHostnames: Object.values(stateRef.preferredServerHostnames),
+    dockerProxyConfig: JSON.parse(JSON.stringify(stateRef.dockerProxyConfig))
   }
   props.finalizeApplicationAdditionalSettingsAndDeploy(details)
+}
+
+const preferredServerHostnamesStr = computed(() => {
+  return stateRef.preferredServerHostnames.join(', ')
+})
+
+const configureDeploymentPreferredServersRef = ref(null)
+const openConfigureDeploymentPreferredServers = () => {
+  if (configureDeploymentPreferredServersRef.value === null) {
+    return
+  }
+  configureDeploymentPreferredServersRef.value.openModal()
 }
 </script>
 
@@ -182,15 +227,220 @@ const submitDetails = () => {
             class="mx-4" />
           <p class="font-medium">Global</p>
         </div>
+        <!--    Deployment Preferred Server    -->
+        <ConfigureDeploymentPreferredServers
+          ref="configureDeploymentPreferredServersRef"
+          :update-hostnames="(e) => (stateRef.preferredServerHostnames = e)"
+          :hostnames="stateRef.preferredServerHostnames" />
+        <!-- Preferred Servers  -->
+        <div class="mt-3">
+          <p class="font-medium text-black">Deployment Preferred Servers</p>
+          <div class="mt-1">
+            <input
+              class="mt-1 block w-full cursor-pointer rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Click to add servers"
+              type="text"
+              @click="openConfigureDeploymentPreferredServers"
+              v-model="preferredServerHostnamesStr"
+              readonly />
+          </div>
+        </div>
         <!--    Config mounts    -->
-        <div class="mt-2 w-full">
-          <p class="mb-2 text-base font-medium">Config Mounts</p>
+        <div class="mt-3 w-full">
+          <p class="mb-2 text-sm font-medium">Config Mounts</p>
           <ConfigMountsEditor
             :config-mounts-keys="stateRef.configMountKeys"
             :config-mounts-map="stateRef.configMountsMap"
             :add-config-mount="addConfigMount"
             :delete-config-mount="deleteConfigMount"
             :on-config-content-change="onConfigMountContentChange" />
+        </div>
+        <!--   Docker Proxy     -->
+        <div>
+          <p class="italic">
+            <span class="text-red-600">* </span>Don't enable it if your application doesn't need access to the Docker
+            socket.
+          </p>
+          <p class="mt-1 italic">
+            <span class="text-red-600">* </span>The security of the server may be compromised if this feature is not
+            used properly.
+          </p>
+          <!-- Proxy Status   -->
+          <div class="mt-4 flex flex-row gap-2">
+            <p class="font-medium">Docker Proxy Status</p>
+            <div class="multi-select">
+              <div
+                @click="stateRef.dockerProxyConfig.enabled = true"
+                :class="{
+                  active: stateRef.dockerProxyConfig.enabled
+                }">
+                Enabled
+              </div>
+              <div
+                @click="stateRef.dockerProxyConfig.enabled = false"
+                :class="{
+                  active: !stateRef.dockerProxyConfig.enabled
+                }">
+                Disabled
+              </div>
+            </div>
+          </div>
+          <!--  Proxy Permission  -->
+          <div
+            class="mt-4 flex w-full flex-row gap-20 rounded-md border-2 border-secondary-300 p-2"
+            v-if="stateRef.dockerProxyConfig.enabled">
+            <div class="flex w-1/3 flex-col gap-2">
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Ping</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.ping"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.ping = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Version</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.version"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.version = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Info</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.info"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.info = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Events</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.events"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.events = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Auth</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.auth"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.auth = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Secrets</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.secrets"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.secrets = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Build</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.build"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.build = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Commit</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.commit"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.commit = value)" />
+              </div>
+            </div>
+            <div class="flex w-1/3 flex-col gap-2">
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Configs</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.configs"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.configs = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Containers</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.containers"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.containers = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Distribution</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.distribution"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.distribution = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Exec</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.exec"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.exec = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Grpc</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.grpc"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.grpc = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Images</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.images"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.images = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Networks</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.networks"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.networks = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Nodes</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.nodes"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.nodes = value)" />
+              </div>
+            </div>
+            <div class="flex w-1/3 flex-col gap-2">
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Plugins</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.plugins"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.plugins = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Services</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.services"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.services = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Session</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.session"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.session = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Swarm</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.swarm"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.swarm = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">System</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.system"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.system = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Tasks</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.tasks"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.tasks = value)" />
+              </div>
+              <div class="flex flex-row justify-between gap-2">
+                <p class="w-1/3 font-normal text-gray-800">Volumes</p>
+                <DockerProxyPermissionChoose
+                  :value="stateRef.dockerProxyConfig.permission.volumes"
+                  :on-change="(value) => (stateRef.dockerProxyConfig.permission.volumes = value)" />
+              </div>
+            </div>
+          </div>
+          <div class="mt-4" v-if="stateRef.dockerProxyConfig.enabled">
+            <p class="font-medium">Docker Socket Proxy Usage Guide</p>
+            <p class="mt-2">
+              1. Use <span class="font-semibold" v-html="`{{DOCKER_PROXY_HOST}}`"></span> as value of environment
+              variable. While deploying app, swiftwave will inject the docker proxy host.
+            </p>
+          </div>
         </div>
       </template>
     </Disclosure>
@@ -204,4 +454,20 @@ const submitDetails = () => {
   </TabPanel>
 </template>
 
-<style scoped></style>
+<style scoped>
+.multi-select {
+  @apply flex h-fit w-min overflow-hidden rounded-md border border-secondary-400;
+
+  div {
+    @apply cursor-pointer border-r border-secondary-400 bg-secondary-100 px-2.5 py-0.5 text-sm transition-all;
+  }
+
+  div:last-child {
+    @apply border-0;
+  }
+
+  .active {
+    @apply bg-primary-600  text-white;
+  }
+}
+</style>
