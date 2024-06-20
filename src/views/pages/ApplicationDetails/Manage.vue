@@ -117,7 +117,7 @@ const openWebConsole = () => {
       <div>
         <p class="inline-flex items-center gap-2 text-lg font-medium">Restart Application</p>
         <p class="text-sm text-secondary-700">
-          This will restart all the deployments of this application. <b>Your application will be down for a while.</b>
+          This will restart latest deployment of this app. <b>No configuration will be updated</b>
         </p>
       </div>
       <FilledButton type="primary" @click="restartApplicationWithConfirmation" :loading="restartApplicationLoading">
@@ -128,12 +128,12 @@ const openWebConsole = () => {
 
     <div class="flex w-full flex-row items-center justify-between rounded-md p-2">
       <div>
-        <p class="inline-flex items-center gap-2 text-lg font-medium">Rebuild Application</p>
+        <p class="inline-flex items-center gap-2 text-lg font-medium">Redeploy Application</p>
         <p class="text-sm text-secondary-700">This will trigger a new deployment with the latest source code.</p>
       </div>
       <FilledButton type="primary" @click="rebuildApplicationWithConfirmation" :loading="rebuildApplicationLoading">
         <font-awesome-icon icon="fa-solid fa-hammer" class="mr-2" />
-        Click to Rebuild
+        Click to Redeploy
       </FilledButton>
     </div>
   </div>
