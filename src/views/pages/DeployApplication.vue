@@ -48,6 +48,15 @@ const newApplicationState = reactive({
     memoryMb: 0
   },
   group: '',
+  customHealthCheck: {
+    enabled: false,
+    test_command: '',
+    interval_seconds: 0,
+    timeout_seconds: 0,
+    start_period_seconds: 0,
+    start_interval_seconds: 0,
+    retries: 0
+  },
   preferredServerHostnames: [],
   dockerProxyConfig: {
     enabled: false,
@@ -163,7 +172,6 @@ const finalizeApplicationSourceConfigurationAndMoveToNextTab = (configuration) =
 }
 
 const finalizeApplicationAdditionalSettings = (additionalSettings) => {
-  console.log(additionalSettings)
   // Store the configuration in the state
   // NOTE: Don't modify as configuration is a reference to the state of `ApplicationAdditionalSettings.vue`
   newApplicationState.deploymentMode = additionalSettings.deploymentMode
@@ -198,6 +206,14 @@ const finalizeApplicationAdditionalSettings = (additionalSettings) => {
   newApplicationState.dockerProxyConfig.permission.system = additionalSettings.dockerProxyConfig.permission.system
   newApplicationState.dockerProxyConfig.permission.tasks = additionalSettings.dockerProxyConfig.permission.tasks
   newApplicationState.dockerProxyConfig.permission.volumes = additionalSettings.dockerProxyConfig.permission.volumes
+  newApplicationState.customHealthCheck.enabled = additionalSettings.customHealthCheck.enabled
+  newApplicationState.customHealthCheck.test_command = additionalSettings.customHealthCheck.test_command
+  newApplicationState.customHealthCheck.interval_seconds = additionalSettings.customHealthCheck.interval_seconds
+  newApplicationState.customHealthCheck.timeout_seconds = additionalSettings.customHealthCheck.timeout_seconds
+  newApplicationState.customHealthCheck.start_period_seconds = additionalSettings.customHealthCheck.start_period_seconds
+  newApplicationState.customHealthCheck.start_interval_seconds =
+    additionalSettings.customHealthCheck.start_interval_seconds
+  newApplicationState.customHealthCheck.retries = additionalSettings.customHealthCheck.retries
 }
 
 const finalizeApplicationAdditionalSettingsAndDeploy = (additionalSettings) => {

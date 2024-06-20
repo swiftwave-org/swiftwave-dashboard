@@ -48,9 +48,7 @@ const openConfigureDeploymentPreferredServers = () => {
   <div class="mt-2">
     <p class="font-medium text-black">Deployment Preferred Servers</p>
     <div class="mt-1">
-      <label class="block cursor-pointer text-sm font-medium text-gray-700" for="no_of_replicase"
-        >Click below to select server
-      </label>
+      <label class="block cursor-pointer text-sm font-medium text-gray-700">Click below to select server </label>
       <input
         class="mt-1 block w-full cursor-pointer rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
         placeholder="Click to add servers"
@@ -66,7 +64,7 @@ const openConfigureDeploymentPreferredServers = () => {
     <template v-slot:body>
       <div class="flex w-full flex-row gap-5">
         <div>
-          <label class="block text-sm font-medium text-gray-700" for="no_of_replicase"
+          <label class="block text-sm font-medium text-gray-700"
             >Memory Limit (MB)<span class="text-red-600"> *</span>
           </label>
           <div class="mt-1">
@@ -79,7 +77,7 @@ const openConfigureDeploymentPreferredServers = () => {
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700" for="no_of_replicase"
+          <label class="block text-sm font-medium text-gray-700"
             >Reserved Memory (MB)<span class="text-red-600"> *</span>
           </label>
           <div class="mt-1">
@@ -100,6 +98,153 @@ const openConfigureDeploymentPreferredServers = () => {
         <span class="text-red-600">* </span>If you want to provide <span class="font-medium">unlimited memory</span>,
         set the value to <span class="font-medium">0</span>
       </p>
+    </template>
+  </Disclosure>
+
+  <!-- Health Check Config -->
+  <Disclosure class="mt-4">
+    <template v-slot:title
+      >Custom Healthcheck Configuration
+      <b
+        >&nbsp;&nbsp;[
+        {{ applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled ? 'ENABLED' : 'DISABLED' }}
+        ]&nbsp;&nbsp;</b
+      >
+      (Click to expand)
+    </template>
+    <template v-slot:body>
+      <div class="flex flex-row items-center gap-2">
+        <p class="text-sm font-medium text-gray-700">Custom Healthcheck</p>
+        <div class="multi-select">
+          <div
+            @click="
+              () =>
+                ((applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled = true) || true) &&
+                applicationUpdater.triggerUpdateHook()
+            "
+            :class="{
+              active: applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled
+            }">
+            Enabled
+          </div>
+          <div
+            @click="
+              () =>
+                ((applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled = false) || true) &&
+                applicationUpdater.triggerUpdateHook()
+            "
+            :class="{
+              active: !applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled
+            }">
+            Disabled
+          </div>
+        </div>
+      </div>
+      <div class="mt-2" v-if="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled">
+        <label class="block text-sm font-medium text-gray-700"
+          >Healthcheck Test Command<span class="text-red-600"> *</span>
+        </label>
+        <div class="mt-1">
+          <input
+            autocomplete="off"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            type="text"
+            @input="
+              (e) =>
+                ((applicationUpdater.deploymentConfigurationDetails.customHealthCheck.test_command = e.target.value) ||
+                  true) &&
+                applicationUpdater.triggerUpdateHook()
+            "
+            :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.test_command" />
+        </div>
+      </div>
+      <div
+        class="mt-3 flex w-full flex-row gap-5"
+        v-if="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.enabled">
+        <div class="w-1/5">
+          <label class="block text-sm font-medium text-gray-700"
+            >Check Interval (Seconds)<span class="text-red-600"> *</span>
+          </label>
+          <div class="mt-1">
+            <input
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              type="number"
+              @change="
+                (e) =>
+                  (applicationUpdater.deploymentConfigurationDetails.customHealthCheck.interval_seconds =
+                    parseInt(e.target.value) || 0) && applicationUpdater.triggerUpdateHook()
+              "
+              :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.interval_seconds" />
+          </div>
+        </div>
+        <div class="w-1/5">
+          <label class="block text-sm font-medium text-gray-700"
+            >Check Timeout (Seconds)<span class="text-red-600"> *</span>
+          </label>
+          <div class="mt-1">
+            <input
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              type="number"
+              @change="
+                (e) =>
+                  (applicationUpdater.deploymentConfigurationDetails.customHealthCheck.timeout_seconds =
+                    parseInt(e.target.value) || 0) && applicationUpdater.triggerUpdateHook()
+              "
+              :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.timeout_seconds" />
+          </div>
+        </div>
+        <div class="w-1/5">
+          <label class="block text-sm font-medium text-gray-700"
+            >Start Period (Seconds)<span class="text-red-600"> *</span>
+          </label>
+          <div class="mt-1">
+            <input
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              type="number"
+              @change="
+                (e) =>
+                  (applicationUpdater.deploymentConfigurationDetails.customHealthCheck.start_period_seconds =
+                    parseInt(e.target.value) || 0) && applicationUpdater.triggerUpdateHook()
+              "
+              :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.start_period_seconds" />
+          </div>
+        </div>
+        <div class="w-1/5">
+          <label class="block text-sm font-medium text-gray-700"
+            >Start Interval (Seconds)<span class="text-red-600"> *</span>
+          </label>
+          <div class="mt-1">
+            <input
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              type="number"
+              @change="
+                (e) =>
+                  (applicationUpdater.deploymentConfigurationDetails.customHealthCheck.start_interval_seconds =
+                    parseInt(e.target.value) || 0) && applicationUpdater.triggerUpdateHook()
+              "
+              :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.start_interval_seconds" />
+          </div>
+        </div>
+        <div class="w-1/5">
+          <label class="block text-sm font-medium text-gray-700">Retries<span class="text-red-600"> *</span> </label>
+          <div class="mt-1">
+            <input
+              autocomplete="off"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              type="number"
+              @change="
+                (e) =>
+                  (applicationUpdater.deploymentConfigurationDetails.customHealthCheck.retries =
+                    parseInt(e.target.value) || 0) && applicationUpdater.triggerUpdateHook()
+              "
+              :value="applicationUpdater.deploymentConfigurationDetails.customHealthCheck.retries" />
+          </div>
+        </div>
+      </div>
     </template>
   </Disclosure>
 
