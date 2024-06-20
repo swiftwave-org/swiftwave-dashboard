@@ -47,7 +47,36 @@ const newApplicationState = reactive({
   reservedResource: {
     memoryMb: 0
   },
-  group: ''
+  group: '',
+  preferredServerHostnames: [],
+  dockerProxyConfig: {
+    enabled: false,
+    permission: {
+      ping: 'none',
+      version: 'none',
+      info: 'none',
+      events: 'none',
+      auth: 'none',
+      secrets: 'none',
+      build: 'none',
+      commit: 'none',
+      configs: 'none',
+      containers: 'none',
+      distribution: 'none',
+      exec: 'none',
+      grpc: 'none',
+      images: 'none',
+      networks: 'none',
+      nodes: 'none',
+      plugins: 'none',
+      services: 'none',
+      session: 'none',
+      swarm: 'none',
+      system: 'none',
+      tasks: 'none',
+      volumes: 'none'
+    }
+  }
 })
 
 // Deploy application
@@ -92,8 +121,8 @@ onDeployApplicationMutationDone((result) => {
   }, 2000)
 })
 
-onDeployApplicationMutationError((msg) => {
-  toast.error(msg)
+onDeployApplicationMutationError((err) => {
+  toast.error(err.message)
 })
 
 // functions
@@ -134,6 +163,7 @@ const finalizeApplicationSourceConfigurationAndMoveToNextTab = (configuration) =
 }
 
 const finalizeApplicationAdditionalSettings = (additionalSettings) => {
+  console.log(additionalSettings)
   // Store the configuration in the state
   // NOTE: Don't modify as configuration is a reference to the state of `ApplicationAdditionalSettings.vue`
   newApplicationState.deploymentMode = additionalSettings.deploymentMode
@@ -141,6 +171,33 @@ const finalizeApplicationAdditionalSettings = (additionalSettings) => {
   newApplicationState.environmentVariables = additionalSettings.environmentVariables
   newApplicationState.persistentVolumeBindings = additionalSettings.persistentVolumeBindings
   newApplicationState.configMounts = additionalSettings.configMounts
+  newApplicationState.preferredServerHostnames = additionalSettings.preferredServerHostnames
+  newApplicationState.dockerProxyConfig.enabled = additionalSettings.dockerProxyConfig.enabled
+  newApplicationState.dockerProxyConfig.permission.ping = additionalSettings.dockerProxyConfig.permission.ping
+  newApplicationState.dockerProxyConfig.permission.version = additionalSettings.dockerProxyConfig.permission.version
+  newApplicationState.dockerProxyConfig.permission.info = additionalSettings.dockerProxyConfig.permission.info
+  newApplicationState.dockerProxyConfig.permission.events = additionalSettings.dockerProxyConfig.permission.events
+  newApplicationState.dockerProxyConfig.permission.auth = additionalSettings.dockerProxyConfig.permission.auth
+  newApplicationState.dockerProxyConfig.permission.secrets = additionalSettings.dockerProxyConfig.permission.secrets
+  newApplicationState.dockerProxyConfig.permission.build = additionalSettings.dockerProxyConfig.permission.build
+  newApplicationState.dockerProxyConfig.permission.commit = additionalSettings.dockerProxyConfig.permission.commit
+  newApplicationState.dockerProxyConfig.permission.configs = additionalSettings.dockerProxyConfig.permission.configs
+  newApplicationState.dockerProxyConfig.permission.containers =
+    additionalSettings.dockerProxyConfig.permission.containers
+  newApplicationState.dockerProxyConfig.permission.distribution =
+    additionalSettings.dockerProxyConfig.permission.distribution
+  newApplicationState.dockerProxyConfig.permission.exec = additionalSettings.dockerProxyConfig.permission.exec
+  newApplicationState.dockerProxyConfig.permission.grpc = additionalSettings.dockerProxyConfig.permission.grpc
+  newApplicationState.dockerProxyConfig.permission.images = additionalSettings.dockerProxyConfig.permission.images
+  newApplicationState.dockerProxyConfig.permission.networks = additionalSettings.dockerProxyConfig.permission.networks
+  newApplicationState.dockerProxyConfig.permission.nodes = additionalSettings.dockerProxyConfig.permission.nodes
+  newApplicationState.dockerProxyConfig.permission.plugins = additionalSettings.dockerProxyConfig.permission.plugins
+  newApplicationState.dockerProxyConfig.permission.services = additionalSettings.dockerProxyConfig.permission.services
+  newApplicationState.dockerProxyConfig.permission.session = additionalSettings.dockerProxyConfig.permission.session
+  newApplicationState.dockerProxyConfig.permission.swarm = additionalSettings.dockerProxyConfig.permission.swarm
+  newApplicationState.dockerProxyConfig.permission.system = additionalSettings.dockerProxyConfig.permission.system
+  newApplicationState.dockerProxyConfig.permission.tasks = additionalSettings.dockerProxyConfig.permission.tasks
+  newApplicationState.dockerProxyConfig.permission.volumes = additionalSettings.dockerProxyConfig.permission.volumes
 }
 
 const finalizeApplicationAdditionalSettingsAndDeploy = (additionalSettings) => {

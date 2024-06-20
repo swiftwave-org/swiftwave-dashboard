@@ -112,7 +112,9 @@ defineExpose({
       </form>
     </template>
     <template v-slot:footer>
-      <FilledButton type="primary" :click="registerConfigMount" :disabled="!isAllFieldsFilled">Register</FilledButton>
+      <FilledButton type="primary" :click="registerConfigMount" :disabled="!isAllFieldsFilled"
+        >Confirm & Add
+      </FilledButton>
     </template>
   </ModalDialog>
 </template>
