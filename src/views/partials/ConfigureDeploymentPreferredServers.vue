@@ -74,7 +74,7 @@ defineExpose({
           <div
             v-for="server in serversDetails"
             :key="server.hostname"
-            @click.stop="() => toggleHostnameEntry(hostname)">
+            @click.stop="() => toggleHostnameEntry(server.hostname)">
             <input
               type="checkbox"
               :checked="hostnames.includes(server.hostname)"
