@@ -52,7 +52,7 @@ const openConfigureDeploymentPreferredServers = () => {
         >Click below to select server
       </label>
       <input
-        class="mt-1 block w-full cursor-pointer rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        class="mt-1 block w-full cursor-pointer rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
         placeholder="Click to add servers"
         type="text"
         @click="openConfigureDeploymentPreferredServers"
