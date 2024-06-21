@@ -534,6 +534,7 @@ export default function newApplicationUpdater(applicationId) {
             }
             persistentVolumeBindings {
               id
+              persistentVolumeID
               mountingPath
             }
             configMounts {
@@ -771,9 +772,11 @@ export default function newApplicationUpdater(applicationId) {
       }
       // check if persistent volume bindings are changed
       const existingPersistentVolumeBindings = applicationExistingDetails.persistentVolumeBindings ?? []
-      const existingPersistentVolumeBindingKeys = existingPersistentVolumeBindings.map((binding) => binding.id)
+      const existingPersistentVolumeBindingKeys = existingPersistentVolumeBindings.map(
+        (binding) => binding.persistentVolumeID
+      )
       const existingPersistentVolumeBindingMap = existingPersistentVolumeBindings.reduce((map, binding) => {
-        map[binding.id] = binding.mountingPath
+        map[binding.persistentVolumeID] = binding.mountingPath
         return map
       }, {})
       const newPersistentVolumeBindingKeys = persistentVolumeBindingsDetails.keys
