@@ -70,7 +70,20 @@ defineExpose({
       <template v-slot:header>Configure Preferred Servers</template>
       <template v-slot:body>
         <p>Select the servers on which you wish to run your application.</p>
-        <div class="mt-3 flex flex-row gap-1">
+        <div class="mt-3 flex flex-col gap-1.5">
+          <div
+            v-for="server in serversDetails"
+            :key="server.hostname"
+            @click.stop="() => toggleHostnameEntry(server.hostname)">
+            <input
+              type="checkbox"
+              :checked="hostnames.includes(server.hostname)"
+              class="me-2 h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-1 focus:ring-primary-500" />
+            {{ server.hostname }}&nbsp;&nbsp;[{{ (server.swarmMode ?? '').toUpperCase() }}]&nbsp;&nbsp;<span
+              v-if="server.scheduleDeployments === false">
+              class="font-medium text-danger-500" >Deployment Disabled</span
+            >
+          </div>
           <div
             v-for="server in serversDetails"
             :key="server.hostname"
