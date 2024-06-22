@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/auth.js'
 import { RouterLink, useRouter } from 'vue-router'
 import Logo from '@/assets/images/logo-full-inverse-subtitle.png'
 import ChangePasswordModal from '@/views/partials/ChangePasswordModal.vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import SideBarOption from '@/views/partials/SideBarOption.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
@@ -44,12 +44,17 @@ const fetchSWVersion = () => {
   }
 }
 
-watch(authStore.IsLoggedIn, () => {
-  fetchSWVersion()
-})
-
 onMounted(() => {
   fetchSWVersion()
+  const intervalId = setInterval(() => {
+    if (authStore.IsLoggedIn) {
+      if (swVersion.value === '') {
+        fetchSWVersion()
+      } else {
+        clearInterval(intervalId)
+      }
+    }
+  }, 2000)
 })
 
 // Restart system
