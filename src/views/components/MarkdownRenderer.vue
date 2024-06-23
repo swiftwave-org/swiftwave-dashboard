@@ -7,12 +7,21 @@ import MarkdownItHighlightjs from 'markdown-it-highlightjs'
 import MarkdownItSub from 'markdown-it-sub'
 import MarkdownItSup from 'markdown-it-sup'
 import MarkdownItTasklists from 'markdown-it-task-lists'
+import { onMounted } from 'vue'
 
-defineProps({
+const props = defineProps({
   source: {
     type: String,
     default: ''
+  },
+  isSmallText: {
+    type: Boolean,
+    default: false
   }
+})
+
+onMounted(() => {
+  console.log(props.source)
 })
 
 const markdown = new MarkdownIt()
@@ -38,5 +47,10 @@ markdown.renderer.rules.link_open = function (tokens, idx, options, env, self) {
 </script>
 
 <template>
-  <div class="prose max-w-full" v-html="markdown.render(source)" />
+  <div
+    class="prose max-w-full"
+    :class="{
+      'prose-sm font-normal': isSmallText
+    }"
+    v-html="markdown.render(source)" />
 </template>
