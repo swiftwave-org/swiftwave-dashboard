@@ -125,7 +125,7 @@ const openCreateConfigMountModal = () => {
     </template>
   </Table>
   <!-- More actions  -->
-  <div class="mt-4 flex items-center justify-center gap-3">
+  <div class="mt-4 flex items-center justify-center gap-3 text-sm">
     Need to add static config in your application ?
     <FilledButton slim type="primary" :click="openCreateConfigMountModal">Add config mount</FilledButton>
   </div>
