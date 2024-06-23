@@ -26,7 +26,7 @@ const groupReplicasPercentage = computed(() => {
   let liveApps = (props.applications || []).filter(
     (item) => item.latestDeployment && item.latestDeployment.status === 'live'
   ).length
-  return (liveApps / props.applications.length) * 100
+  return Math.round((liveApps / props.applications.length) * 100)
 })
 
 const placeGroupDiv = () => {

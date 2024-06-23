@@ -99,7 +99,7 @@ const regenerateWebhookTokenWithConfirmation = () => {
   </div>
 
   <p class="inline-flex items-center gap-2 text-lg font-medium">Webhook Based CI</p>
-  <p class="text-sm text-gray-500">
+  <p class="text-sm text-secondary-700">
     You can configure your git/docker repository to trigger a new deployment on every push.
   </p>
 
@@ -114,7 +114,7 @@ const regenerateWebhookTokenWithConfirmation = () => {
         <font-awesome-icon icon="fa-solid fa-copy" />
       </button>
     </div>
-    <p class="mt-2 text-sm text-gray-500">
+    <p class="mt-2 text-sm text-secondary-700">
       Copy the above link and paste it in your git/docker repository's webhook configuration.
     </p>
   </div>

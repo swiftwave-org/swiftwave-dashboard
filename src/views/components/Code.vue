@@ -52,7 +52,7 @@ const copyToClipboard = () => {
     :class="{
       'ring-2 ring-primary-300': showCopyBorder
     }">
-    <div ref="textDivRef" class="select-text whitespace-pre">
+    <div ref="textDivRef" class="select-text whitespace-pre-wrap break-words">
       <slot></slot>
     </div>
     <div
