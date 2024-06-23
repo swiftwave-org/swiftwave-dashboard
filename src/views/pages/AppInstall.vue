@@ -540,10 +540,27 @@ const noOfBlankFields = computed(() => {
           </div>
           <div v-for="key in formVariables">
             <label class="block text-base font-medium text-gray-700">
-              <p>{{ stackDetails.docs.variables[key].title }} <span class="text-red-600"> *</span></p>
-              <p class="text-sm font-normal">{{ stackDetails.docs.variables[key].description }}</p>
+              <p v-if="stackDetails.docs.variables[key].title.length > 0">
+                {{ stackDetails.docs.variables[key].title }}
+                <span class="text-red-600" v-if="stackDetails.docs.variables[key].type !== 'markdown'"> *</span>
+              </p>
+              <p
+                v-if="
+                  stackDetails.docs.variables[key].description.length > 0 &&
+                  stackDetails.docs.variables[key].type !== 'markdown'
+                "
+                class="text-sm font-normal">
+                {{ stackDetails.docs.variables[key].description }}
+              </p>
+              <MarkdownRenderer
+                v-if="
+                  stackDetails.docs.variables[key].description.length > 0 &&
+                  stackDetails.docs.variables[key].type === 'markdown'
+                "
+                :source="stackDetails.docs.variables[key].description"
+                :is-small-text="true" />
             </label>
-            <div class="mt-1">
+            <div class="mt-1" v-if="stackDetails.docs.variables[key].type !== 'markdown'">
               <input
                 :key="key"
                 v-if="stackDetails.docs.variables[key].type === 'text'"
