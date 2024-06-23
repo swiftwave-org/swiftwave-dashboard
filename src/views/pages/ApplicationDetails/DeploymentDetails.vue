@@ -88,7 +88,6 @@ const { result: deploymentLogRaw, onError: onDeploymentLogError } = useSubscript
 )
 
 onDeploymentLogError((err) => {
-  console.log(err)
   toast.error(err.message)
 })
 

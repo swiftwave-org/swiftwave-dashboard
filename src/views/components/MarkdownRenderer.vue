@@ -7,9 +7,8 @@ import MarkdownItHighlightjs from 'markdown-it-highlightjs'
 import MarkdownItSub from 'markdown-it-sub'
 import MarkdownItSup from 'markdown-it-sup'
 import MarkdownItTasklists from 'markdown-it-task-lists'
-import { onMounted } from 'vue'
 
-const props = defineProps({
+defineProps({
   source: {
     type: String,
     default: ''
@@ -18,10 +17,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
-})
-
-onMounted(() => {
-  console.log(props.source)
 })
 
 const markdown = new MarkdownIt()
