@@ -274,7 +274,7 @@ const fetchAllAnalytics = () => {
           :y-axis-formatter="humanizeNetworkSpeed" />
         <!--    Disk usage    -->
         <div class="w-full">
-          <p class="break-words text-base font-medium">Disk Usage (Last 24 hours)</p>
+          <p class="text-base font-medium">Disk Usage (Last 24 hours)</p>
           <div class="mt-2 grid w-full grid-cols-2 gap-4">
             <div v-for="(diskUsage, diskPath) in diskUsageSeries" :key="diskPath" class="w-full">
               <AreaChartTimeSeries
