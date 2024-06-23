@@ -305,10 +305,10 @@ onNetworkInterfacesOfServerResult((result) => {
             <p class="my-2 text-sm text-gray-500" v-if="isFetchingPublicSSHKey">Fetching Instructions...</p>
             <div v-if="info.sshVerified === 0" class="mt-4">
               <p>Put this key in <b>/root/.ssh/authorized_keys</b></p>
-              <Code> {{ publicSSHKey }} </Code>
+              <Code>{{ publicSSHKey }}</Code>
               <p>Or, run this commands:</p>
-              <Code>
-                sudo mkdir -p /root/.ssh && echo "{{ publicSSHKey }}" | sudo tee -a /root/.ssh/authorized_keys</Code
+              <Code
+                >sudo mkdir -p /root/.ssh && echo "{{ publicSSHKey }}" | sudo tee -a /root/.ssh/authorized_keys</Code
               >
               <p class="font-medium italic">After adding the key, verify the SSH connection to proceed further</p>
             </div>

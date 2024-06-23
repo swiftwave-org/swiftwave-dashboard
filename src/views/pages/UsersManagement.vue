@@ -232,9 +232,7 @@ onDisableTotpError((err) => {
         <p class="font-medium">Scan the QR code with Authenticator app.</p>
         <VueQrcode class="my-4" :value="enableTotpRequest.totpProvisioningUri" />
         <p class="font-medium">Or Paste the secret code in authenticator app.</p>
-        <Code :show-copy-button="false">
-          {{ enableTotpRequest.totpSecret }}
-        </Code>
+        <Code :show-copy-button="false">{{ enableTotpRequest.totpSecret }}</Code>
       </div>
       <Divider />
       <div class="flex w-full flex-col items-center gap-4">
