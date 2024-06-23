@@ -5,6 +5,7 @@ import { getRandomBackgroundAndBorderColourClass } from '@/vendor/utils.js'
 import TableRow from '@/views/components/Table/TableRow.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import UptimeChart from '@/views/components/UptimeChart.vue'
+import Badge from '@/views/components/Badge.vue'
 
 const props = defineProps({
   groupIndex: {
@@ -22,11 +23,26 @@ const props = defineProps({
 })
 
 const isExpanded = ref(false)
-const groupReplicasPercentage = computed(() => {
+const groupLivePercentage = computed(() => {
   let liveApps = (props.applications || []).filter(
     (item) => item.latestDeployment && item.latestDeployment.status === 'live'
   ).length
   return Math.round((liveApps / props.applications.length) * 100)
+})
+const groupReplicaPercentage = computed(() => {
+  let applications = props.applications || []
+  let desiredReplicas = 0
+  let runningReplicas = 0
+  for (let i = 0; i < applications.length; i++) {
+    if (applications[i].realtimeInfo.InfoFound) {
+      runningReplicas += applications[i].realtimeInfo.RunningReplicas
+    }
+    if (applications[i].replicas > 0) {
+      desiredReplicas += applications[i].replicas
+    }
+  }
+  if (desiredReplicas === 0) return 0
+  return Math.round((runningReplicas / desiredReplicas) * 100)
 })
 
 const placeGroupDiv = () => {
@@ -106,14 +122,17 @@ onMounted(() => {
         {{ decodeURI(group) }}
       </div>
     </TableRow>
-    <TableRow align="center" class="text-sm text-gray-700"> {{ groupReplicasPercentage }}% live</TableRow>
+    <TableRow align="center" class="text-sm text-gray-700">
+      <Badge type="warning" v-if="groupLivePercentage < 100">{{ groupLivePercentage }}% Live</Badge>
+      <Badge type="success" v-else>All Live</Badge>
+    </TableRow>
     <TableRow align="center" flex>
       <UptimeChart
-        :label="`${groupReplicasPercentage}%`"
-        :percentage="groupReplicasPercentage"
+        :label="`${groupReplicaPercentage}%`"
+        :percentage="groupReplicaPercentage"
         :hide-label="true"
         :small="true"
-        :hide-hover="true" />
+        :hide-hover="false" />
     </TableRow>
     <TableRow align="center" class="text-sm text-gray-700">
       <font-awesome-icon icon="fa-solid fa-layer-group" class="mr-1" />
