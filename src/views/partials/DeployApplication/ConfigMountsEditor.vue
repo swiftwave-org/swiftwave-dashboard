@@ -64,9 +64,7 @@ const openCreateConfigMountModal = () => {
     <template v-slot:body>
       <div class="mt-5">
         <p v-if="selectedConfigId === null" class="italic">No config selected</p>
-        <Code v-else :show-copy-button="false">
-          {{ configMountsMap[selectedConfigId].content }}
-        </Code>
+        <Code v-else :show-copy-button="false">{{ configMountsMap[selectedConfigId].content }}</Code>
       </div>
     </template>
   </ModalDialog>
@@ -97,7 +95,7 @@ const openCreateConfigMountModal = () => {
       <TableHeader align="right">Delete</TableHeader>
     </template>
     <template v-slot:message>
-      <TableMessage v-if="configMountsKeys.length === 0"> No Config Mounts found. </TableMessage>
+      <TableMessage v-if="configMountsKeys.length === 0"> No Config Mounts found.</TableMessage>
     </template>
     <template v-slot:body>
       <tr v-for="configMountKey in configMountsKeys" :key="configMountKey">
@@ -121,13 +119,13 @@ const openCreateConfigMountModal = () => {
           </FilledButton>
         </TableRow>
         <TableRow align="right">
-          <TextButton type="danger" @click="() => deleteConfigMount(configMountKey)">Delete </TextButton>
+          <TextButton type="danger" @click="() => deleteConfigMount(configMountKey)">Delete</TextButton>
         </TableRow>
       </tr>
     </template>
   </Table>
   <!-- More actions  -->
-  <div class="mt-4 flex items-center justify-center gap-3">
+  <div class="mt-4 flex items-center justify-center gap-3 text-sm">
     Need to add static config in your application ?
     <FilledButton slim type="primary" :click="openCreateConfigMountModal">Add config mount</FilledButton>
   </div>

@@ -33,6 +33,10 @@ defineProps({
   disableAuthentication: {
     type: Function,
     required: true
+  },
+  restrictTableWidth: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -90,7 +94,11 @@ window.addEventListener('click', (e) => {
       <Badge v-else-if="ingressRule.status === 'deleting'" type="danger">Deleting</Badge>
     </TableRow>
     <TableRow align="center">
-      <div class="text-sm text-gray-900">
+      <div
+        class="text-sm text-gray-900"
+        :class="{
+          'max-w-[200px] overflow-hidden text-ellipsis text-nowrap ': restrictTableWidth
+        }">
         <a
           v-if="ingressRule.protocol === 'http' || ingressRule.protocol === 'https'"
           :href="ingressRule.protocol + '://' + ingressRule.domain.name + ':' + ingressRule.port.toString()"

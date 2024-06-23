@@ -113,7 +113,7 @@ defineExpose({
         <div class="mt-4 flex w-full flex-col gap-1" v-if="gitCredentialDetails.type === 'ssh'">
           <label class="block text-sm font-medium text-gray-700">SSH Public Key</label>
           <div>
-            <Code> {{ gitCredentialDetails.sshPublicKey ?? '' }} </Code>
+            <Code>{{ gitCredentialDetails.sshPublicKey ?? '' }}</Code>
           </div>
         </div>
       </template>

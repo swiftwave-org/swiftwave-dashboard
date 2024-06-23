@@ -86,8 +86,8 @@ const fetchAnalyticsServiceToken = async (rotate = false) => {
             show-body>
             <div>
               <p class="font-medium">For Debian/Ubuntu users,</p>
-              <Code>
-                sudo mkdir -p /etc/apt/keyrings<br />
+              <Code
+                >sudo mkdir -p /etc/apt/keyrings<br />
                 sudo mkdir -p /root/.gnupg<br />
                 sudo gpg --no-default-keyring --keyring /etc/apt/keyrings/swiftwave.gpg --keyserver keyserver.ubuntu.com
                 --recv-keys DD510C86CD3F6764<br />
@@ -98,8 +98,8 @@ const fetchAnalyticsServiceToken = async (rotate = false) => {
               </Code>
               <div class="my-4"></div>
               <p class="font-medium">For Fedora/CentOS/Almalinux/RockyLinux users,</p>
-              <Code>
-                sudo dnf config-manager --add-repo http://rpm.repo.swiftwave.org/swiftwave.repo<br />
+              <Code
+                >sudo dnf config-manager --add-repo http://rpm.repo.swiftwave.org/swiftwave.repo<br />
                 sudo dnf install -y swiftwave-stats-ninja-2.0.0-1
               </Code>
             </div>
@@ -111,7 +111,7 @@ const fetchAnalyticsServiceToken = async (rotate = false) => {
             type="primary"
             show-body>
             <p v-if="isFetchingAnalyticsServiceToken" class="italic">Fetching stats-ninja authentication token ...</p>
-            <Code v-else> sudo swiftwave-stats-ninja enable {{ managementAddress }} {{ analyticsToken }} </Code>
+            <Code v-else>sudo swiftwave-stats-ninja enable {{ managementAddress }} {{ analyticsToken }} </Code>
           </Step>
         </div>
       </template>

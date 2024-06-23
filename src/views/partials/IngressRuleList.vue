@@ -404,7 +404,8 @@ defineExpose({
           :delete-ingress-rule="() => deleteIngressRulesWithConfirmation(ingressRule)"
           :recreate-ingress-rule="() => recreateIngressRuleWithConfirmation(ingressRule)"
           :setup-authentication="() => openSetupAuthenticationModal(ingressRule)"
-          :disable-authentication="() => openDisableAuthenticationModal(ingressRule)" />
+          :disable-authentication="() => openDisableAuthenticationModal(ingressRule)"
+          :restrict-table-width="props.applicationId.length > 0" />
       </template>
     </Table>
     <!-- Modal to protect ingress rule -->
