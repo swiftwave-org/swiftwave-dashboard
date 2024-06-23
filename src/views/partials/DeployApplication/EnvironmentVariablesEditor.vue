@@ -3,8 +3,8 @@ import Table from '@/views/components/Table/Table.vue'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import TableRow from '@/views/components/Table/TableRow.vue'
 import { toRef } from 'vue'
+import EnvironmentVariableRow from '@/views/partials/DeployApplication/EnvironmentVariableRow.vue'
 
 const props = defineProps({
   environmentVariablesKeys: {
@@ -56,36 +56,15 @@ const environmentVariablesKeys = toRef(props, 'environmentVariablesKeys')
       </div>
     </template>
     <template v-slot:body>
-      <tr v-for="key in environmentVariablesKeys" :key="key">
-        <TableRow>
-          <input
-            :key="`name-${key}`"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            placeholder="Environment Variable Name"
-            type="text"
-            v-bind:value="environmentVariablesMap[key]?.name ?? ''"
-            @input="(event) => onVariableNameChange(key, event.target.value)" />
-        </TableRow>
-        <TableRow>
-          <input
-            :key="`value-${key}`"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            placeholder="Environment Variable Value"
-            type="text"
-            v-bind:value="environmentVariablesMap[key]?.value ?? ''"
-            @input="(event) => onVariableValueChange(key, event.target.value)" />
-        </TableRow>
-        <TableRow align="right" class="flex">
-          <FilledButton
-            :key="`delete-${key}`"
-            :click="() => deleteEnvironmentVariable(key)"
-            class="w-full"
-            type="danger">
-            <font-awesome-icon class="mr-2" icon="fa-solid fa-trash" />
-            Delete Variable
-          </FilledButton>
-        </TableRow>
-      </tr>
+      <EnvironmentVariableRow
+        v-for="key in environmentVariablesKeys"
+        :key="key"
+        :variable-key="key"
+        :variable-name="environmentVariablesMap[key]?.name"
+        :delete-variable="deleteEnvironmentVariable"
+        :on-variable-value-change="onVariableValueChange"
+        :on-variable-name-change="onVariableNameChange"
+        :variable-value="environmentVariablesMap[key]?.value" />
     </template>
   </Table>
 </template>
