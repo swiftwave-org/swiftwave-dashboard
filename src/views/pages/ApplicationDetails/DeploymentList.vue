@@ -109,7 +109,7 @@ onDeploymentsError((err) => {
                 </svg>
                 <p>{{ deployment.repositoryBranch }}</p>
               </div>
-              <div class="has-popover flex items-center gap-2">
+              <div class="flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -129,7 +129,6 @@ onDeploymentsError((err) => {
                 <p class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
                   {{ deployment.commitMessage }}
                 </p>
-                <div class="popover top-[calc(-100%-10px)] px-2 py-1">{{ deployment.commitMessage }}</div>
               </div>
             </div>
             <div v-if="deployment.upstreamType === 'image'" class="space-y-1">
