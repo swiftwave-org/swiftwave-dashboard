@@ -6,7 +6,7 @@ import gql from 'graphql-tag'
 import { computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Badge from '@/views/components/Badge.vue'
-import { Github, GitCommitVertical, GitBranch, Fingerprint, Upload, Building2 } from 'lucide-vue-next'
+import StatusBadge from '@/views/components/StatusBadge.vue'
 const router = useRouter()
 const toast = useToast()
 
@@ -88,23 +88,43 @@ const formatdate = (date) => {
 
         <div class="flex flex-row items-center gap-2">
 
-          <p v-if="deployment.upstreamType === 'git'" class="space-y-1">
+          <p v-if="deployment.upstreamType === 'git'" class="space-y-1 ">
           <div class="flex items-center gap-2">
-            <GitBranch class="w-4 h-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-git-branch w-4 h-4">
+              <line x1="6" x2="6" y1="3" y2="15" />
+              <circle cx="18" cy="6" r="3" />
+              <circle cx="6" cy="18" r="3" />
+              <path d="M18 9a9 9 0 0 1-9 9" />
+            </svg />
             <p class="text-sm">{{ deployment.repositoryBranch }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <GitCommitVertical class="w-4 h-4" />
-            <p class="text-sm">Commit Message Placeholder</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <Fingerprint class="w-4 h-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-git-commit-horizontal w-4 h-4">
+              <circle cx="12" cy="12" r="3" />
+              <line x1="3" x2="9" y1="12" y2="12" />
+              <line x1="15" x2="21" y1="12" y2="12" />
+            </svg>
             <p class="text-sm">{{ deployment.commitHash.slice(0, 7) }}</p>
+            <p class="text-sm">Commit Message Placeholder</p>
           </div>
           </p>
           <p v-if="deployment.upstreamType === 'image'" class="space-y-1">
           <div class="flex items-center gap-2">
-            <Building2 class="w-4 h-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-building-2 h-4 w-4">
+              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+              <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+              <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+              <path d="M10 6h4" />
+              <path d="M10 10h4" />
+              <path d="M10 14h4" />
+              <path d="M10 18h4" />
+            </svg>
             {{ deployment.dockerImage.split("/")[0] }}
           </div>
           <div class="flex items-center gap-2">
@@ -114,7 +134,13 @@ const formatdate = (date) => {
           </p>
           <p v-if="deployment.upstreamType === 'sourceCode'" class="space-y-1">
           <div class="flex items-center gap-2">
-            <Upload class="w-4 h-4" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-upload w-4 h-4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" x2="12" y1="3" y2="15" />
+            </svg>
             <p>Source Uploaded Manually</p>
           </div>
           </p>
@@ -126,26 +152,26 @@ const formatdate = (date) => {
             <p>{{ deployment.status }}</p>
           </div> -->
 
-          <Badge class="px-5 py-2" v-if="deployment.status === 'live'" type="success">{{ deployment.status }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'pending'" type="warning">{{
+          <StatusBadge class="px-5 py-2" v-if="deployment.status === 'live'" type="success">{{ deployment.status }}
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'pending'" type="warning">{{
             deployment.status }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'deployPending'" type="warning">{{
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'deployPending'" type="warning">{{
             deployment.status
           }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'deploying'" type="warning">{{
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'deploying'" type="warning">{{
             deployment.status }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'failed'" type="danger">{{ deployment.status
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'failed'" type="danger">{{ deployment.status
             }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'stopped'" type="secondary">{{
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'stopped'" type="secondary">{{
             deployment.status }}
-          </Badge>
-          <Badge class="px-5 py-2" v-else-if="deployment.status === 'stalled'" type="secondary">{{
-            deployment.status }}</Badge>
+          </StatusBadge>
+          <StatusBadge class="px-5 py-2" v-else-if="deployment.status === 'stalled'" type="secondary">{{
+            deployment.status }}</StatusBadge>
         </div>
 
       </div>
@@ -177,7 +203,7 @@ const formatdate = (date) => {
 
 .deploy-row {
   display: grid;
-  grid-template-columns: 1fr 2fr 2fr 0.5fr;
+  grid-template-columns: 1fr 1.5fr 2fr 1fr;
   border: 0;
   border-top: 2px solid;
   @apply border-gray-200;

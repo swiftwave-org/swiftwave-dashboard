@@ -219,7 +219,14 @@ const openApplicationGroupUpdateModal = () => {
               }}
             </div>
             <div class="deployment-head">
-              <font-awesome-icon :icon="['fas', 'code-branch']" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-git-branch h-4 w-4">
+                <line x1="6" x2="6" y1="3" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
+              </svg>
               {{
                 applicationDetails.latestDeployment.repositoryBranch
               }}
@@ -230,7 +237,13 @@ const openApplicationGroupUpdateModal = () => {
               {{ applicationDetails.latestDeployment.dockerImage }}
             </p>
             <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'" class="deployment-head">
-              <Upload class="h-4 w-4" /> Source-code uploaded manually
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-upload h-4 w-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" x2="12" y1="3" y2="15" />
+              </svg> Source-code uploaded manually
             </p>
           </div>
           <div class="mt-2 flex items-center gap-2 font-normal text-gray-800 ">
