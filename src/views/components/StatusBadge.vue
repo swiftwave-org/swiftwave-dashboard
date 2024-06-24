@@ -1,5 +1,5 @@
 <template>
-  <div class="status-badge flex gap-2 items-center">
+  <div class="status-badge flex gap-3 items-center">
     <div class="indicator" :class="`bg-${props.type}-500 h-${props.size} w-${props.size}`"></div>
     <p class="text capitalize">
       <slot />
@@ -18,6 +18,7 @@ const props = defineProps({
     default: '3'
   }
 })
+
 </script>
 
 <style scoped>

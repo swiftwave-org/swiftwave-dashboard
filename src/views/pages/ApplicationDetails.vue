@@ -12,6 +12,7 @@ import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
 import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
+
 import { Upload } from 'lucide-vue-next'
 
 // Toast
