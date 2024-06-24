@@ -239,7 +239,7 @@ const startCountDown = () => {
           <template #icon>
             <font-awesome-icon icon="fa-solid fa-server" />
           </template>
-          <template #title>Mange Servers</template>
+          <template #title>Manage Servers</template>
           <template #content>
             <div class="space-y-2">
               <RouterLink
