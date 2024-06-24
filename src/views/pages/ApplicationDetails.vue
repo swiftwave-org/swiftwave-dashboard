@@ -205,59 +205,114 @@ const openApplicationGroupUpdateModal = () => {
             </div>
           </div>
         </div>
-        <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'git'"
-            icon="fa-solid fa-code-branch" />
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'image'"
-            icon="fa-brands fa-docker" />
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'"
-            icon="fa-solid fa-upload" />
+        <div class="mt-3 flex gap-2">
+          <div class="flex items-center gap-2 font-medium text-gray-800">
+            <div v-if="applicationDetails.latestDeployment.upstreamType === 'git'" class="flex gap-2">
+              <div class="deployment-head">
+                <font-awesome-icon
+                  v-if="applicationDetails.latestDeployment.upstreamType === 'git'"
+                  icon="fa-brands fa-github" />
+                <font-awesome-icon
+                  v-if="applicationDetails.latestDeployment.upstreamType === 'image'"
+                  icon="fa-brands fa-docker" />
+                <font-awesome-icon
+                  v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'"
+                  icon="fa-solid fa-upload" />
 
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'git'">
-            {{ applicationDetails.latestDeployment.gitProvider }}@{{
-              applicationDetails.latestDeployment.repositoryOwner
-            }}/{{ applicationDetails.latestDeployment.repositoryName }}:{{
-              applicationDetails.latestDeployment.repositoryBranch
-            }}
-          </p>
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'">
-            {{ applicationDetails.latestDeployment.dockerImage }}
-          </p>
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'">Source-code uploaded manually</p>
-        </div>
-        <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
-          <font-awesome-icon icon="fa-solid fa-globe" />
-          <p v-if="isIngressRulesAvailable" class="max-w-[40vw]">
-            <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
-              <span v-if="index !== 0">, </span>
-              <a
-                :href="
-                  ingressRule.protocol + '://' + ingressRule.domain?.name ??
-                  'server_ip' + ':' + ingressRule.port.toString()
-                "
-                target="_blank"
-                >{{ ingressRule.protocol }}://{{ ingressRule.domain?.name ?? 'server_ip' }}:{{ ingressRule.port }}</a
-              >
-            </span>
-          </p>
-          <p v-else>
-            <b class="text-warning-600">No Ingress Rules ! </b
-            ><i
-              >(
-              <RouterLink
-                :to="{
-                  name: 'Application Details Ingress Rules',
-                  params: { id: $route.params.id }
-                }"
-                class="font-semibold text-info-600"
-                >Add ingress rules
-              </RouterLink>
-              if you want to expose the application to the internet)</i
-            >
-          </p>
+                {{ applicationDetails.latestDeployment.repositoryOwner }}/{{
+                  applicationDetails.latestDeployment.repositoryName
+                }}
+              </div>
+              <div class="deployment-head">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-git-branch h-4 w-4">
+                  <line x1="6" x2="6" y1="3" y2="15" />
+                  <circle cx="18" cy="6" r="3" />
+                  <circle cx="6" cy="18" r="3" />
+                  <path d="M18 9a9 9 0 0 1-9 9" />
+                </svg>
+                {{ applicationDetails.latestDeployment.repositoryBranch }}
+              </div>
+            </div>
+            <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'" class="deployment-head">
+              <font-awesome-icon icon="fa-brands fa-docker" />
+              {{ applicationDetails.latestDeployment.dockerImage }}
+            </p>
+            <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'" class="deployment-head">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-upload h-4 w-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" x2="12" y1="3" y2="15" />
+              </svg>
+              Source-code uploaded manually
+            </p>
+          </div>
+          <div class="flex items-center gap-2 font-normal text-gray-800">
+            <div v-if="isIngressRulesAvailable" class="deployment-head max-w-[40vw]">
+              <font-awesome-icon icon="fa-solid fa-globe" />
+              <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
+                <a
+                  :href="
+                    ingressRule.protocol +
+                    '://' +
+                    ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
+                    ':' +
+                    ingressRule.port.toString()
+                  "
+                  target="_blank"
+                  class="has-popover rounded-full bg-primary-500 px-3 py-1 text-sm text-secondary-100">
+                  <font-awesome-icon :icon="['fas', 'link']" />
+                  Link {{ index + 1 }}
+                  <div class="popover">
+                    {{
+                      ingressRule.protocol +
+                      '://' +
+                      ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
+                      ':' +
+                      ingressRule.port.toString()
+                    }}
+                  </div>
+                </a>
+              </span>
+            </div>
+            <div v-else class="has-popover flex gap-2">
+              <div class="deployment-head">
+                <font-awesome-icon icon="fa-solid fa-globe" />
+                <b class="font-normal text-warning-600">Not Exposed</b>
+                <RouterLink
+                  :to="{
+                    name: 'Application Details Ingress Rules',
+                    params: { id: $route.params.id }
+                  }"
+                  class="font-semibold hover:cursor-pointer hover:text-primary-600">
+                  <font-awesome-icon icon="fa-solid fa-plus" />
+                </RouterLink>
+              </div>
+              <div class="popover w-60">
+                No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
+                application to the internet.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <!--   right side   -->
@@ -335,4 +390,8 @@ const openApplicationGroupUpdateModal = () => {
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.deployment-head {
+  @apply relative flex items-center justify-center gap-2.5 rounded-full bg-secondary-100 px-4 py-2 font-normal;
+}
+</style>

@@ -12,6 +12,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { useToast } from 'vue-toastification'
 import StatusPulse from '@/views/components/StatusPulse.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
+import { camelCaseToSpacedCapitalized } from '../../../vendor/utils.js'
 
 const router = useRouter()
 const deploymentId = router.currentRoute.value.params.deployment_id
@@ -26,6 +27,8 @@ const { result: deploymentRaw, loading: deploymentLoading } = useQuery(
         status
         upstreamType
         gitProvider
+        commitMessage
+        commitHash
         repositoryName
         repositoryOwner
         repositoryBranch
@@ -146,24 +149,39 @@ onCancelDeploymentError((err) => {
   <div v-if="deploymentLoading">
     <p>Loading...</p>
   </div>
-  <section v-else class="mx-auto w-full max-w-7xl">
+  <section v-else class="mx-auto w-full max-w-7xl text-sm">
     <div class="flex items-center gap-2">
-      <p class="font-bold">
+      <p class="text-base font-bold">
         <font-awesome-icon icon="fa-solid fa-signal" />
         Status
       </p>
-      <Badge v-if="deployment.status === 'live'" type="success">{{ deployment.status }}</Badge>
-      <Badge v-else-if="deployment.status === 'pending'" type="warning">{{ deployment.status }}</Badge>
-      <Badge v-else-if="deployment.status === 'deployPending'" type="warning">{{ deployment.status }}</Badge>
-      <Badge v-else-if="deployment.status === 'deploying'" type="warning">{{ deployment.status }}</Badge>
-      <Badge v-else-if="deployment.status === 'failed'" type="danger">{{ deployment.status }}</Badge>
-      <Badge v-else-if="deployment.status === 'stopped'" type="secondary">{{ deployment.status }}</Badge>
+      <Badge v-if="deployment.status === 'live'" type="success"
+        >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
+      <Badge v-else-if="deployment.status === 'pending'" type="warning">
+        {{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
+      <Badge v-else-if="deployment.status === 'deployPending'" type="warning">
+        {{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
+      <Badge v-else-if="deployment.status === 'deploying'" type="warning">
+        {{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
+      <Badge v-else-if="deployment.status === 'failed'" type="danger"
+        >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
+      <Badge v-else-if="deployment.status === 'stopped'" type="secondary">
+        {{ camelCaseToSpacedCapitalized(deployment.status) }}
+      </Badge>
     </div>
-    <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
+    <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
+      <font-awesome-icon icon="fa-solid fa-fingerprint" />
+      <p>{{ deployment.id }}</p>
+    </div>
+    <div class="mt-2 flex items-center gap-2 text-gray-800">
       <font-awesome-icon v-if="deployment.upstreamType === 'git'" icon="fa-solid fa-code-branch" />
       <font-awesome-icon v-if="deployment.upstreamType === 'image'" icon="fa-brands fa-docker" />
       <font-awesome-icon v-if="deployment.upstreamType === 'sourceCode'" icon="fa-solid fa-upload" />
-
       <p v-if="deployment.upstreamType === 'git'">
         {{ deployment.gitProvider }}@{{ deployment.repositoryOwner }}/{{ deployment.repositoryName }}:{{
           deployment.repositoryBranch
@@ -172,13 +190,30 @@ onCancelDeploymentError((err) => {
       <p v-if="deployment.upstreamType === 'image'">{{ deployment.dockerImage }}</p>
       <p v-if="deployment.upstreamType === 'sourceCode'">Source-code uploaded manually</p>
     </div>
+    <div class="mt-2 flex items-center gap-2 text-gray-800" v-if="deployment.upstreamType === 'git'">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-4 w-4">
+        <circle cx="12" cy="12" r="3" />
+        <line x1="3" x2="9" y1="12" y2="12" />
+        <line x1="15" x2="21" y1="12" y2="12" />
+      </svg>
+      <p>{{ deployment.commitHash.slice(0, 7) }}</p>
+      <p class="nowrap max-w-[40vw] overflow-hidden text-ellipsis">
+        {{ deployment.commitMessage }}
+      </p>
+    </div>
     <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
       <font-awesome-icon icon="fa-solid fa-calendar-days" />
       <p>{{ deployedOn }}</p>
-    </div>
-    <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
-      <font-awesome-icon icon="fa-solid fa-fingerprint" />
-      <p>{{ deployment.id }}</p>
     </div>
     <div class="mb-2 mt-2 flex items-center gap-2 font-normal text-gray-800" v-if="buildArgs.length !== 0">
       <font-awesome-icon icon="fa-solid fa-hammer" />
@@ -199,7 +234,7 @@ onCancelDeploymentError((err) => {
     </div>
 
     <hr class="mb-2 mt-2" />
-    <p class="inline-flex items-center gap-2 text-lg font-medium">
+    <p class="inline-flex items-center gap-2 text-base font-medium">
       Deployment Logs
       <StatusPulse v-if="isTerminalLoading" type="success" />
     </p>
