@@ -59,7 +59,7 @@ onDeploymentsError((err) => {
       <TableHeader align="left">Deployment ID</TableHeader>
       <TableHeader align="left">Deploy Date</TableHeader>
       <TableHeader align="left">Source</TableHeader>
-      <TableHeader align="center">Status</TableHeader>
+      <TableHeader align="left" class="w-36">Status</TableHeader>
     </template>
     <template v-slot:message>
       <TableMessage v-if="deployments.length === 0">
@@ -182,28 +182,30 @@ onDeploymentsError((err) => {
             </div>
           </div>
         </TableRow>
-        <TableRow flex align="center" class="text-secondary-900">
-          <StatusBadge v-if="deployment.status === 'live'" type="success"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'pending'" type="warning"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'deployPending'" type="warning"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'deploying'" type="warning"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'failed'" type="danger"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'stopped'" type="secondary"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
-          <StatusBadge v-else-if="deployment.status === 'stalled'" type="secondary"
-            >{{ camelCaseToSpacedCapitalized(deployment.status) }}
-          </StatusBadge>
+        <TableRow align="center" class="w-36 text-secondary-900">
+          <div class="flex">
+            <StatusBadge v-if="deployment.status === 'live'" type="success"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'pending'" type="warning"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'deployPending'" type="warning"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'deploying'" type="warning"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'failed'" type="danger"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'stopped'" type="secondary"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+            <StatusBadge v-else-if="deployment.status === 'stalled'" type="secondary"
+              >{{ camelCaseToSpacedCapitalized(deployment.status) }}
+            </StatusBadge>
+          </div>
         </TableRow>
       </tr>
     </template>
