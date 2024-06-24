@@ -12,6 +12,7 @@ import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
 import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
+import { Upload } from 'lucide-vue-next'
 
 // Toast
 const toast = useToast()
@@ -154,11 +155,8 @@ const openApplicationGroupUpdateModal = () => {
 
 <template>
   <!-- Application group update modal -->
-  <UpdateApplicationGroupModal
-    ref="applicationGroupUpdateModalRef"
-    :current-group="applicationDetails.group"
-    :application-id="applicationDetails.id"
-    :callback-on-update="refetchApplicationDetails" />
+  <UpdateApplicationGroupModal ref="applicationGroupUpdateModalRef" :current-group="applicationDetails.group"
+    :application-id="applicationDetails.id" :callback-on-update="refetchApplicationDetails" />
 
   <!-- Main -->
   <div v-if="applicationDetailsLoading">
@@ -195,8 +193,7 @@ const openApplicationGroupUpdateModal = () => {
               </Badge>
               <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
             </div>
-            <div
-              @click="openApplicationGroupUpdateModal"
+            <div @click="openApplicationGroupUpdateModal"
               class="flex cursor-pointer items-center justify-center rounded-full bg-primary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-primary-500">
               <span v-if="applicationDetails.group !== ''">{{ applicationDetails.group }}</span>
               <span v-else>no group</span>
@@ -205,59 +202,79 @@ const openApplicationGroupUpdateModal = () => {
             </div>
           </div>
         </div>
-        <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'git'"
-            icon="fa-solid fa-code-branch" />
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'image'"
-            icon="fa-brands fa-docker" />
-          <font-awesome-icon
-            v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'"
-            icon="fa-solid fa-upload" />
+        <div class="flex gap-2">
+          <div class="mt-2 flex items-center gap-2 font-medium text-gray-800">
+            <p v-if="applicationDetails.latestDeployment.upstreamType === 'git'" class="flex gap-2">
+            <div class="deployment-head">
+              <font-awesome-icon v-if="applicationDetails.latestDeployment.upstreamType === 'git'"
+                icon="fa-brands fa-github" />
+              <font-awesome-icon v-if="applicationDetails.latestDeployment.upstreamType === 'image'"
+                icon="fa-brands fa-docker" />
+              <font-awesome-icon v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'"
+                icon="fa-solid fa-upload" />
 
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'git'">
-            {{ applicationDetails.latestDeployment.gitProvider }}@{{
-              applicationDetails.latestDeployment.repositoryOwner
-            }}/{{ applicationDetails.latestDeployment.repositoryName }}:{{
-              applicationDetails.latestDeployment.repositoryBranch
-            }}
-          </p>
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'">
-            {{ applicationDetails.latestDeployment.dockerImage }}
-          </p>
-          <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'">Source-code uploaded manually</p>
-        </div>
-        <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
-          <font-awesome-icon icon="fa-solid fa-globe" />
-          <p v-if="isIngressRulesAvailable" class="max-w-[40vw]">
-            <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
-              <span v-if="index !== 0">, </span>
-              <a
-                :href="
-                  ingressRule.protocol + '://' + ingressRule.domain?.name ??
+              {{
+                applicationDetails.latestDeployment.repositoryOwner }}/{{
+                applicationDetails.latestDeployment.repositoryName
+              }}
+            </div>
+            <div class="deployment-head">
+              <font-awesome-icon :icon="['fas', 'code-branch']" />
+              {{
+                applicationDetails.latestDeployment.repositoryBranch
+              }}
+            </div>
+            </p>
+            <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'" class="deployment-head">
+              <font-awesome-icon icon="fa-brands fa-docker" />
+              {{ applicationDetails.latestDeployment.dockerImage }}
+            </p>
+            <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'" class="deployment-head">
+              <Upload class="h-4 w-4" /> Source-code uploaded manually
+            </p>
+          </div>
+          <div class="mt-2 flex items-center gap-2 font-normal text-gray-800 ">
+            <p v-if="isIngressRulesAvailable" class="max-w-[40vw] deployment-head">
+              <font-awesome-icon icon="fa-solid fa-globe" />
+              <!-- <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
+                <span v-if="index !== 0">, </span>
+                <a :href="ingressRule.protocol + '://' + ingressRule.domain?.name ??
                   'server_ip' + ':' + ingressRule.port.toString()
-                "
-                target="_blank"
-                >{{ ingressRule.protocol }}://{{ ingressRule.domain?.name ?? 'server_ip' }}:{{ ingressRule.port }}</a
-              >
-            </span>
-          </p>
-          <p v-else>
-            <b class="text-warning-600">No Ingress Rules ! </b
-            ><i
-              >(
-              <RouterLink
-                :to="{
-                  name: 'Application Details Ingress Rules',
-                  params: { id: $route.params.id }
-                }"
-                class="font-semibold text-info-600"
-                >Add ingress rules
+                  " target="_blank">{{ ingressRule.protocol }}://{{ ingressRule.domain?.name ?? 'server_ip' }}:{{
+                    ingressRule.port }}</a>
+              </span> -->
+              <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
+
+                <a :href="ingressRule.protocol + '://' + ingressRule.domain?.name ??
+                  'server_ip' + ':' + ingressRule.port.toString()
+                  " target="_blank" class="link pop">
+                  <font-awesome-icon :icon="['fas', 'link']" />
+                  Link {{ index + 1 }}
+                  <div class="popover">
+                    {{ ingressRule.protocol + '://' + ingressRule.domain?.name ??
+                      'server_ip' + ':' + ingressRule.port.toString() }}
+                  </div>
+                </a>
+              </span>
+            </p>
+            <p v-else class="flex gap-2">
+            <div class="deployment-head pop">
+              <font-awesome-icon icon="fa-solid fa-globe" />
+              <b class="text-warning-600 font-normal">Not Exposed</b>
+              <RouterLink :to="{
+                name: 'Application Details Ingress Rules',
+                params: { id: $route.params.id }
+              }" class="font-semibold hover:text-primary-600 hover:cursor-pointer ">
+                <font-awesome-icon icon="fa-solid fa-plus" />
               </RouterLink>
-              if you want to expose the application to the internet)</i
-            >
-          </p>
+              <div class="popover">
+                No Ingress Rules available.
+                Click the plus button to add ingress rules if you want to expose the application to the internet.
+              </div>
+            </div>
+
+            </p>
+          </div>
         </div>
       </div>
       <!--   right side   -->
@@ -268,8 +285,7 @@ const openApplicationGroupUpdateModal = () => {
             Sleeping
           </p>
           <div v-else-if="realtimeInfo.InfoFound" class="flex w-full flex-col items-center text-center">
-            <UptimeChart
-              v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"
+            <UptimeChart v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"
               :percentage="realtimeReplicaCountPercentage"
               :label="`(${realtimeInfo.RunningReplicas ?? 0} / ${applicationDetails.replicas})`" />
             <p v-else-if="deploymentMode === 'global'" class="w-full text-center font-semibold text-secondary-600">
@@ -282,23 +298,14 @@ const openApplicationGroupUpdateModal = () => {
           </p>
         </div>
         <div class="mt-3 w-full">
-          <FilledButton
-            v-if="applicationDetails.isSleeping"
-            class="w-full"
-            type="primary"
-            :loading="wakeApplicationLoading"
-            :click="wakeApplication"
+          <FilledButton v-if="applicationDetails.isSleeping" class="w-full" type="primary"
+            :loading="wakeApplicationLoading" :click="wakeApplication"
             :disabled="applicationDetails.latestDeployment.status !== 'live'">
             <font-awesome-icon class="mr-2" icon="fa-solid fa-play" />
             Resume App
           </FilledButton>
-          <FilledButton
-            v-else
-            class="w-full"
-            type="primary"
-            :loading="sleepApplicationLoading"
-            :click="sleepApplication"
-            :disabled="applicationDetails.latestDeployment.status !== 'live'">
+          <FilledButton v-else class="w-full" type="primary" :loading="sleepApplicationLoading"
+            :click="sleepApplication" :disabled="applicationDetails.latestDeployment.status !== 'live'">
             <font-awesome-icon class="mr-2" icon="fa-solid fa-circle-stop" />
             Pause App
           </FilledButton>
@@ -313,20 +320,15 @@ const openApplicationGroupUpdateModal = () => {
         <!--  Nested Router View  -->
         <RouterView />
         <!--  Update Config Notify bar  -->
-        <div
-          v-if="applicationUpdater.isConfigurationUpdated"
+        <div v-if="applicationUpdater.isConfigurationUpdated"
           class="mt-4 flex flex-row items-center justify-end gap-2 rounded-md border border-gray-300 p-2">
           <span class="mr-4 font-medium">You have updated some of the configuration</span>
-          <FilledButton
-            :click="applicationUpdater.applyConfigurationChanges"
-            :loading="applicationUpdater.isDeployRequestSubmitting"
-            type="primary">
+          <FilledButton :click="applicationUpdater.applyConfigurationChanges"
+            :loading="applicationUpdater.isDeployRequestSubmitting" type="primary">
             Apply Changes
           </FilledButton>
-          <FilledButton
-            :click="applicationUpdater.cancelConfigurationChanges"
-            :disabled="applicationUpdater.isDeployRequestSubmitting"
-            type="secondary">
+          <FilledButton :click="applicationUpdater.cancelConfigurationChanges"
+            :disabled="applicationUpdater.isDeployRequestSubmitting" type="secondary">
             Cancel
           </FilledButton>
         </div>
@@ -335,4 +337,66 @@ const openApplicationGroupUpdateModal = () => {
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.deployment-head {
+  background: #f5f5f5;
+  /* border: 2px solid #e5e5e5; */
+
+  font-weight: 400;
+
+
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 20px;
+  padding: 0 15px;
+
+  gap: 10px;
+
+  position: relative;
+}
+
+.link {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  @apply bg-primary-500 text-slate-100;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 5px;
+
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: max-content;
+  max-width: 300px;
+
+  font-size: 14px;
+  /* border: 1px solid #e5e5e5; */
+  border-radius: 10px;
+
+  transform: translateX(-50%);
+
+  @apply bg-primary-500 text-slate-100;
+
+}
+
+.pop {
+  position: relative;
+}
+
+.pop:hover .popover {
+  display: flex;
+}
+</style>
