@@ -157,6 +157,14 @@ function getRandomBackgroundAndBorderColourClass(indexProvided = null) {
   return [`bg-color-${index}`, `border-color-${index}`]
 }
 
+function camelCaseToSpacedCapitalized(str) {
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export {
   getGitProvideFromGitRepoUrl,
   getGitRepoOwnerFromGitRepoUrl,
@@ -170,5 +178,6 @@ export {
   humanizeNetworkSpeed,
   humanizeDiskGB,
   formatTimestampHumannize,
-  getRandomBackgroundAndBorderColourClass
+  getRandomBackgroundAndBorderColourClass,
+  camelCaseToSpacedCapitalized
 }

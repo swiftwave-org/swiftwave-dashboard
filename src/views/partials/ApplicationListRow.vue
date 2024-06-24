@@ -5,6 +5,7 @@ import FilledButton from '@/views/components/FilledButton.vue'
 import { computed } from 'vue'
 import moment from 'moment'
 import router from '@/router/index.js'
+import { camelCaseToSpacedCapitalized } from '../../vendor/utils.js'
 
 const props = defineProps({
   application: {
@@ -33,12 +34,24 @@ const viewApplicationDetails = () => {
       </div>
     </TableRow>
     <TableRow align="center">
-      <Badge v-if="application.latestDeployment.status === 'pending'" type="warning">Pending</Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'deployPending'" type="warning">Deploy Pending</Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'deploying'" type="warning">Deploying</Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'live'" type="success">Live</Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'stopped'" type="warning">Stopped</Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'failed'" type="danger">Failed</Badge>
+      <Badge v-if="application.latestDeployment.status === 'pending'" type="warning">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
+      <Badge v-else-if="application.latestDeployment.status === 'deployPending'" type="warning">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
+      <Badge v-else-if="application.latestDeployment.status === 'deploying'" type="warning">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
+      <Badge v-else-if="application.latestDeployment.status === 'live'" type="success">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
+      <Badge v-else-if="application.latestDeployment.status === 'stopped'" type="warning">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
+      <Badge v-else-if="application.latestDeployment.status === 'failed'" type="danger">
+        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </Badge>
     </TableRow>
     <!-- Replicas -->
     <TableRow v-if="!application.isSleeping && application.realtimeInfo.InfoFound" align="center">
