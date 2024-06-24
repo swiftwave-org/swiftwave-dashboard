@@ -85,6 +85,7 @@ import {
   faUserTie,
   faVault,
   faWrench,
+  faCodeCommit,
   faXmark
 } from '@fortawesome/free-solid-svg-icons'
 
@@ -106,6 +107,7 @@ import { getGraphQlHttpBaseUrl, getGraphQlWsBaseUrl } from '@/vendor/utils.js'
 // add icons to library
 library.add(
   faHammer,
+  faCodeCommit,
   faBox,
   faHardDrive,
   faCodeBranch,
