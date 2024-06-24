@@ -267,14 +267,14 @@ const openApplicationGroupUpdateModal = () => {
             </p>
           </div>
           <div class="flex items-center gap-2 font-normal text-gray-800">
-            <p v-if="isIngressRulesAvailable" class="deployment-head max-w-[40vw]">
+            <div v-if="isIngressRulesAvailable" class="deployment-head max-w-[40vw]">
               <font-awesome-icon icon="fa-solid fa-globe" />
               <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
                 <a
                   :href="
                     ingressRule.protocol +
                     '://' +
-                    ((ingressRule.domain?.name || null) ?? 'server_ip') +
+                    ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
                     ':' +
                     ingressRule.port.toString()
                   "
@@ -286,16 +286,16 @@ const openApplicationGroupUpdateModal = () => {
                     {{
                       ingressRule.protocol +
                       '://' +
-                      ((ingressRule.domain?.name || null) ?? 'server_ip') +
+                      ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
                       ':' +
                       ingressRule.port.toString()
                     }}
                   </div>
                 </a>
               </span>
-            </p>
-            <div v-else class="flex gap-2">
-              <div class="deployment-head has-popover">
+            </div>
+            <div v-else class="has-popover flex gap-2">
+              <div class="deployment-head">
                 <font-awesome-icon icon="fa-solid fa-globe" />
                 <b class="font-normal text-warning-600">Not Exposed</b>
                 <RouterLink
@@ -306,10 +306,10 @@ const openApplicationGroupUpdateModal = () => {
                   class="font-semibold hover:cursor-pointer hover:text-primary-600">
                   <font-awesome-icon icon="fa-solid fa-plus" />
                 </RouterLink>
-                <div class="popover">
-                  No Ingress Rules available. Click the plus button to add ingress rules if you want to expose the
-                  application to the internet.
-                </div>
+              </div>
+              <div class="popover w-60">
+                No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
+                application to the internet.
               </div>
             </div>
           </div>

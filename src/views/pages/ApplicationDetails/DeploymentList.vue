@@ -51,11 +51,6 @@ const deployments = computed(() => ingressRulesRaw.value?.application?.deploymen
 onDeploymentsError((err) => {
   toast.error(err.message)
 })
-
-const formatdate = (date) => {
-  const x = new Date(date)
-  return x.toLocaleString()
-}
 </script>
 
 <template>
@@ -64,7 +59,7 @@ const formatdate = (date) => {
       <TableHeader align="left">Deployment ID</TableHeader>
       <TableHeader align="left">Deploy Date</TableHeader>
       <TableHeader align="left">Source</TableHeader>
-      <TableHeader align="center">Current Status</TableHeader>
+      <TableHeader align="center">Status</TableHeader>
     </template>
     <template v-slot:message>
       <TableMessage v-if="deployments.length === 0">
@@ -84,13 +79,13 @@ const formatdate = (date) => {
               }
             }"
             class="w-full">
-            <div class="cursor-pointer text-secondary-900 hover:text-primary-500">
+            <div class="cursor-pointer text-secondary-900 hover:text-primary-600">
               {{ deployment.id.split('-')[0] }}
             </div>
           </RouterLink>
         </TableRow>
         <TableRow align="left" flex>
-          <div>{{ formatdate(deployment.createdAt) }}</div>
+          <div>{{ new Date(deployment.createdAt).toLocaleString() }}</div>
         </TableRow>
         <TableRow align="left" flex>
           <div class="flex flex-row items-center gap-2">
@@ -139,6 +134,12 @@ const formatdate = (date) => {
             </div>
             <div v-if="deployment.upstreamType === 'image'" class="space-y-1">
               <div class="flex items-center gap-2">
+                <font-awesome-icon icon="fa-brands fa-docker" class="h-4 w-4" />
+                <p class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
+                  {{ deployment.dockerImage.split(':')[0] }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -150,19 +151,13 @@ const formatdate = (date) => {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   class="h-4 w-4">
-                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
-                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
-                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
-                  <path d="M10 6h4" />
-                  <path d="M10 10h4" />
-                  <path d="M10 14h4" />
-                  <path d="M10 18h4" />
+                  <circle cx="12" cy="12" r="3" />
+                  <line x1="3" x2="9" y1="12" y2="12" />
+                  <line x1="15" x2="21" y1="12" y2="12" />
                 </svg>
-                {{ deployment.dockerImage.split('/')[0] }}
-              </div>
-              <div class="flex items-center gap-2">
-                <font-awesome-icon icon="fa-brands fa-docker" class="h-4 w-4" />
-                {{ deployment.dockerImage.split('/')[1] }}
+                <p class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
+                  {{ deployment.dockerImage.split(':')[1] ?? 'latest' }}
+                </p>
               </div>
             </div>
             <div v-if="deployment.upstreamType === 'sourceCode'" class="space-y-1">

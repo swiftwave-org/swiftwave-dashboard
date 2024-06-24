@@ -144,14 +144,14 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
 
 /* popover */
 .popover {
-  @apply absolute left-1/2 top-[calc(100%+15px)] z-50 hidden max-w-[300px] -translate-x-1/2 flex-col items-center gap-1.5 rounded-lg bg-primary-500 p-2.5 text-sm text-slate-100 shadow-md transition-all;
+  @apply absolute left-1/2 top-[calc(100%+15px)] z-50 hidden max-w-[300px] -translate-x-1/2 flex-col items-center gap-1.5 rounded-lg bg-primary-500 p-2.5 text-sm text-secondary-100 shadow-md;
 }
 
 .has-popover {
   @apply relative;
 
   &:hover .popover {
-    @apply flex;
+    @apply block;
   }
 }
 </style>
