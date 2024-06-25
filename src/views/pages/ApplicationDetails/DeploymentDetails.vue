@@ -211,7 +211,7 @@ onCancelDeploymentError((err) => {
       </p>
       <p
         v-if="deployment.commitHash && deployment.commitMessage"
-        class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
+        class="nowrap max-w-[40vw] overflow-hidden text-ellipsis">
         {{ deployment.commitMessage }}
       </p>
       <p v-if="!(deployment.commitHash && deployment.commitMessage)" class="italic">not available</p>
