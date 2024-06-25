@@ -155,7 +155,7 @@ onCancelDeploymentError((err) => {
         <font-awesome-icon icon="fa-solid fa-signal" />
         Status
       </p>
-      <Badge v-if="deployment.status === 'live'" type="success"
+      <Badge v-if="deployment.status === 'deployed'" type="success"
         >{{ camelCaseToSpacedCapitalized(deployment.status) }}
       </Badge>
       <Badge v-else-if="deployment.status === 'pending'" type="warning">
