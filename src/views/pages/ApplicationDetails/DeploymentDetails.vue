@@ -226,7 +226,7 @@ onCancelDeploymentError((err) => {
     </div>
     <div
       v-if="deployment.status === 'pending'"
-      class="flex flex-row items-center justify-between rounded-md bg-red-100 px-3 py-2">
+      class="mt-2 flex flex-row items-center justify-between rounded-md bg-red-100 px-3 py-2">
       <div>
         <p class="inline-flex items-center gap-2 text-lg font-medium">Cancel Deployment</p>
         <p class="text-sm text-secondary-700">
