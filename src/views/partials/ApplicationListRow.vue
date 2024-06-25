@@ -43,7 +43,7 @@ const viewApplicationDetails = () => {
       <Badge v-else-if="application.latestDeployment.status === 'deploying'" type="warning">
         {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
       </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'live'" type="success">
+      <Badge v-else-if="application.latestDeployment.status === 'deployed'" type="success">
         {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
       </Badge>
       <Badge v-else-if="application.latestDeployment.status === 'stopped'" type="warning">

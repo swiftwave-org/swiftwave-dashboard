@@ -23,11 +23,11 @@ const props = defineProps({
 })
 
 const isExpanded = ref(false)
-const groupLivePercentage = computed(() => {
-  let liveApps = (props.applications || []).filter(
-    (item) => item.latestDeployment && item.latestDeployment.status === 'live'
+const groupDeployedPercentage = computed(() => {
+  let deployedApps = (props.applications || []).filter(
+    (item) => item.latestDeployment && item.latestDeployment.status === 'deployed'
   ).length
-  return Math.round((liveApps / props.applications.length) * 100)
+  return Math.round((deployedApps / props.applications.length) * 100)
 })
 const groupReplicaPercentage = computed(() => {
   let applications = props.applications || []
@@ -123,8 +123,8 @@ onMounted(() => {
       </div>
     </TableRow>
     <TableRow align="center" class="text-sm text-gray-700">
-      <Badge type="warning" v-if="groupLivePercentage < 100">{{ groupLivePercentage }}% Live</Badge>
-      <Badge type="success" v-else>All Live</Badge>
+      <Badge type="warning" v-if="groupDeployedPercentage < 100">{{ groupDeployedPercentage }}% Deployed</Badge>
+      <Badge type="success" v-else>All Deployed</Badge>
     </TableRow>
     <TableRow align="center" flex>
       <UptimeChart
