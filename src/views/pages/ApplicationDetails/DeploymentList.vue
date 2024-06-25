@@ -188,7 +188,7 @@ onDeploymentsError((err) => {
         </TableRow>
         <TableRow align="center" class="w-36 text-secondary-900">
           <div class="flex">
-            <StatusBadge v-if="deployment.status === 'live'" type="success"
+            <StatusBadge v-if="deployment.status === 'deployed'" type="success"
               >{{ camelCaseToSpacedCapitalized(deployment.status) }}
             </StatusBadge>
             <StatusBadge v-else-if="deployment.status === 'pending'" type="warning"
