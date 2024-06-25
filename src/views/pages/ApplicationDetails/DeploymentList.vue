@@ -10,7 +10,7 @@ import TableHeader from '@/views/components/Table/TableHeader.vue'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import Table from '@/views/components/Table/Table.vue'
 import TableRow from '@/views/components/Table/TableRow.vue'
-import { camelCaseToSpacedCapitalized } from '../../../vendor/utils.js'
+import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 
 const router = useRouter()
 const toast = useToast()
@@ -125,10 +125,15 @@ onDeploymentsError((err) => {
                   <line x1="3" x2="9" y1="12" y2="12" />
                   <line x1="15" x2="21" y1="12" y2="12" />
                 </svg>
-                <p>{{ deployment.commitHash.slice(0, 7) }}</p>
-                <p class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
+                <p v-if="deployment.commitHash && deployment.commitMessage">
+                  {{ deployment.commitHash.slice(0, 7) }}
+                </p>
+                <p
+                  v-if="deployment.commitHash && deployment.commitMessage"
+                  class="nowrap max-w-[200px] overflow-hidden text-ellipsis">
                   {{ deployment.commitMessage }}
                 </p>
+                <p v-if="!(deployment.commitHash && deployment.commitMessage)" class="italic">not available</p>
               </div>
             </div>
             <div v-if="deployment.upstreamType === 'image'" class="space-y-1">

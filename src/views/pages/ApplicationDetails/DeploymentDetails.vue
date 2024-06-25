@@ -12,7 +12,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { useToast } from 'vue-toastification'
 import StatusPulse from '@/views/components/StatusPulse.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { camelCaseToSpacedCapitalized } from '../../../vendor/utils.js'
+import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 
 const router = useRouter()
 const deploymentId = router.currentRoute.value.params.deployment_id
@@ -206,10 +206,15 @@ onCancelDeploymentError((err) => {
         <line x1="3" x2="9" y1="12" y2="12" />
         <line x1="15" x2="21" y1="12" y2="12" />
       </svg>
-      <p>{{ deployment.commitHash.slice(0, 7) }}</p>
-      <p class="nowrap max-w-[40vw] overflow-hidden text-ellipsis">
+      <p v-if="deployment.commitHash && deployment.commitMessage">
+        {{ deployment.commitHash.slice(0, 7) }}
+      </p>
+      <p
+        v-if="deployment.commitHash && deployment.commitMessage"
+        class="nowrap max-w-[40vw] overflow-hidden text-ellipsis">
         {{ deployment.commitMessage }}
       </p>
+      <p v-if="!(deployment.commitHash && deployment.commitMessage)" class="italic">not available</p>
     </div>
     <div class="mt-2 flex items-center gap-2 font-normal text-gray-800">
       <font-awesome-icon icon="fa-solid fa-calendar-days" />
