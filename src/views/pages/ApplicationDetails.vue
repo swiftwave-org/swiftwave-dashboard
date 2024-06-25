@@ -12,6 +12,7 @@ import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
 import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
+import { camelCaseToSpacedCapitalized } from '../../vendor/utils.js'
 
 // Toast
 const toast = useToast()
@@ -172,26 +173,26 @@ const openApplicationGroupUpdateModal = () => {
           <div class="flex overflow-hidden rounded-full border-2 border-secondary-300 text-base">
             <div class="flex items-center justify-center gap-2 py-1 pl-3 pr-2 font-medium">
               {{ applicationDetails.name }}
-              <Badge v-if="applicationDetails.latestDeployment.status === 'live'" type="success">
-                {{ applicationDetails.latestDeployment.status }}
+              <Badge v-if="applicationDetails.latestDeployment.status === 'deployed'" type="success">
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'pending'" type="warning">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'deployPending'" type="warning">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'deploying'" type="warning">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'failed'" type="danger">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'stopped'" type="secondary">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
-                {{ applicationDetails.latestDeployment.status }}
+                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
               </Badge>
               <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
             </div>
@@ -343,7 +344,7 @@ const openApplicationGroupUpdateModal = () => {
             type="primary"
             :loading="wakeApplicationLoading"
             :click="wakeApplication"
-            :disabled="applicationDetails.latestDeployment.status !== 'live'">
+            :disabled="applicationDetails.latestDeployment.status !== 'deployed'">
             <font-awesome-icon class="mr-2" icon="fa-solid fa-play" />
             Resume App
           </FilledButton>
@@ -353,7 +354,7 @@ const openApplicationGroupUpdateModal = () => {
             type="primary"
             :loading="sleepApplicationLoading"
             :click="sleepApplication"
-            :disabled="applicationDetails.latestDeployment.status !== 'live'">
+            :disabled="applicationDetails.latestDeployment.status !== 'deployed'">
             <font-awesome-icon class="mr-2" icon="fa-solid fa-circle-stop" />
             Pause App
           </FilledButton>
