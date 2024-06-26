@@ -44,7 +44,10 @@ const {
           gitProvider
           createdAt
         }
-        group
+        applicationGroup {
+          id
+          name
+        }
       }
     }
   `,
@@ -63,10 +66,14 @@ const applicationGroupWise = computed(() => {
   let applications = applicationsResult.value?.applications ?? []
   let groupedApplications = {}
   applications.forEach((application) => {
-    if (!groupedApplications[encodeURI(application.group)]) {
-      groupedApplications[encodeURI(application.group)] = []
+    let groupName = ''
+    if (application.applicationGroup) {
+      groupName = application.applicationGroup.name
     }
-    groupedApplications[encodeURI(application.group)].push(application)
+    if (!groupedApplications[encodeURI(groupName)]) {
+      groupedApplications[encodeURI(groupName)] = []
+    }
+    groupedApplications[encodeURI(groupName)].push(application)
   })
   return groupedApplications
 })
