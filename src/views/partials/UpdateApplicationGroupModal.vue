@@ -12,8 +12,8 @@ const props = defineProps({
     type: String,
     required: true
   },
-  currentGroup: {
-    type: String,
+  currentGroupId: {
+    type: Object || null,
     required: true
   },
   callbackOnUpdate: {
@@ -25,10 +25,11 @@ const props = defineProps({
 
 const toast = useToast()
 const isModalOpen = ref(false)
-const selectedGroup = ref('')
+const selectedGroupId = ref(null)
+const newGroupName = ref('')
 
 const openModal = () => {
-  selectedGroup.value = props.currentGroup
+  selectedGroupId.value = props.currentGroupId
   fetchApplicationGroups()
   isModalOpen.value = true
 }
@@ -43,7 +44,10 @@ const {
   onError: onApplicationGroupLoadFail
 } = useLazyQuery(gql`
   query {
-    applicationGroups
+    applicationGroups {
+      id
+      name
+    }
   }
 `)
 
@@ -53,7 +57,7 @@ onApplicationGroupLoadFail((error) => {
 
 const applicationGroups = computed(() => {
   let l = applicationGroupsRaw?.value?.applicationGroups ?? []
-  l.push('No Group')
+  l.push({ id: null, name: 'No Group' })
   return l
 })
 
@@ -69,15 +73,33 @@ const {
   onDone: onApplicationGroupUpdateSuccess,
   onError: onApplicationGroupUpdateFail
 } = useMutation(gql`
-  mutation ($id: String!, $group: String!) {
-    updateApplicationGroup(id: $id, group: $group)
+  mutation ($id: String!, $groupId: String) {
+    updateApplicationGroup(id: $id, groupId: $groupId)
   }
 `)
 
-const updateApplicationGroup = () => {
-  updateApplicationGroupRaw({
+const { mutate: createApplicationGroupRaw, loading: isApplicationGroupCreating } = useMutation(gql`
+  mutation ($name: String!) {
+    createApplicationGroup(input: { name: $name }) {
+      id
+      name
+    }
+  }
+`)
+
+const updateApplicationGroup = async () => {
+  if (selectedGroupId.value === 'new_group' && newGroupName.value) {
+    try {
+      const data = await createApplicationGroupRaw({ name: newGroupName.value })
+      selectedGroupId.value = data.data?.createApplicationGroup.id
+      await refetchApplicationGroups()
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+  await updateApplicationGroupRaw({
     id: props.applicationId,
-    group: selectedGroup.value === 'No Group' ? '' : selectedGroup.value
+    groupId: selectedGroupId.value
   })
 }
 
@@ -106,15 +128,21 @@ defineExpose({
     <template v-slot:header>Update application group</template>
     <template v-slot:body>
       <p class="mb-4">Create a new group or pick an existing group to assign your application to.</p>
-      <ComboBoxComponent :value="selectedGroup" :options="applicationGroups" :on-change="(e) => (selectedGroup = e)" />
+      <ComboBoxComponent
+        :value="selectedGroupId"
+        :options="applicationGroups"
+        :title-from-option="(e) => e.name"
+        :value-from-option="(e) => e.id"
+        :new-option-data="(d) => ({ id: 'new_group', name: d })"
+        :on-change="(e) => (selectedGroupId = e)"
+        :on-new-option="(e) => (newGroupName = e)" />
     </template>
     <template v-slot:footer>
       <FilledButton
         class="w-full"
         :click="updateApplicationGroup"
-        :loading="isDomainRegistering"
+        :loading="isDomainRegistering || isApplicationGroupCreating"
         type="primary"
-        :disabled="selectedGroup === ''"
         >Assign Application to Group
       </FilledButton>
     </template>
