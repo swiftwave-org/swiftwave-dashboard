@@ -61,7 +61,10 @@ const {
           protocol
           port
         }
-        group
+        applicationGroup {
+          id
+          name
+        }
       }
     }
   `,
@@ -157,7 +160,7 @@ const openApplicationGroupUpdateModal = () => {
   <!-- Application group update modal -->
   <UpdateApplicationGroupModal
     ref="applicationGroupUpdateModalRef"
-    :current-group="applicationDetails.group"
+    :current-group-id="applicationDetails.applicationGroup?.id ?? null"
     :application-id="applicationDetails.id"
     :callback-on-update="refetchApplicationDetails" />
 
@@ -199,7 +202,7 @@ const openApplicationGroupUpdateModal = () => {
             <div
               @click="openApplicationGroupUpdateModal"
               class="flex cursor-pointer items-center justify-center rounded-full bg-primary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-primary-500">
-              <span v-if="applicationDetails.group !== ''">{{ applicationDetails.group }}</span>
+              <span v-if="applicationDetails.applicationGroup">{{ applicationDetails.applicationGroup.name }}</span>
               <span v-else>no group</span>
               &nbsp;&nbsp;
               <font-awesome-icon icon="fa-solid fa-caret-down" />

@@ -562,7 +562,7 @@ export default function newApplicationUpdater(applicationId) {
             }
             capabilities
             sysctls
-            group
+            applicationGroupID
             customHealthCheck {
               enabled
               test_command
@@ -898,7 +898,7 @@ export default function newApplicationUpdater(applicationId) {
         dockerfile: sourceConfigurationRef.dockerfile,
         capabilities: applicationExistingDetails.capabilities,
         sysctls: applicationExistingDetails.sysctls,
-        group: applicationExistingDetails.group,
+        applicationGroupID: applicationExistingDetails.applicationGroupID,
         customHealthCheck: {
           enabled: deploymentConfigurationDetails.customHealthCheck.enabled,
           test_command: deploymentConfigurationDetails.customHealthCheck.test_command,
