@@ -78,15 +78,6 @@ const {
   }
 `)
 
-// mutation {
-//   createApplicationGroup(input: {
-//     name: ""
-//   }) {
-//     id
-//     name
-//   }
-// }
-
 const { mutate: createApplicationGroupRaw, loading: isApplicationGroupCreating } = useMutation(gql`
   mutation ($name: String!) {
     createApplicationGroup(input: { name: $name }) {
