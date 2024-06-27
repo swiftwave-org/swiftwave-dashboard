@@ -36,6 +36,7 @@ import {
   faClipboard,
   faCloud,
   faCodeBranch,
+  faCodeCommit,
   faCopy,
   faCubesStacked,
   faDiagramProject,
@@ -85,7 +86,6 @@ import {
   faUserTie,
   faVault,
   faWrench,
-  faCodeCommit,
   faXmark
 } from '@fortawesome/free-solid-svg-icons'
 
@@ -103,6 +103,7 @@ import { createClient } from 'graphql-ws'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions' // <-- This one uses graphql-ws
 import { getMainDefinition } from '@apollo/client/utilities'
 import { getGraphQlHttpBaseUrl, getGraphQlWsBaseUrl } from '@/vendor/utils.js'
+import { faCircle } from '@fortawesome/free-regular-svg-icons/faCircle'
 
 // add icons to library
 library.add(
@@ -183,6 +184,7 @@ library.add(
   faEnvelope,
   faPeopleGroup,
   faLayerGroup,
+  faCircle,
   faCircleNotch,
   faPersonDigging,
   faShieldHalved,
