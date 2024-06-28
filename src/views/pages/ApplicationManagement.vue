@@ -72,6 +72,7 @@ const {
       applicationGroups {
         id
         name
+        logo
         applications {
           realtimeInfo {
             InfoFound

@@ -2,6 +2,7 @@
 import TableRow from '@/views/components/Table/TableRow.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { computed } from 'vue'
+import router from '@/router/index.js'
 
 const props = defineProps({
   project: {
@@ -13,10 +14,6 @@ const props = defineProps({
     default: true
   }
 })
-
-const viewApplicationDetails = () => {
-  // router.push(`/application/${props.application.id}/deployments`)
-}
 
 const overallHealthStatus = computed(() => {
   if (props.project.applications.length === 0) {
@@ -35,12 +32,19 @@ const healthyServiceCount = computed(() => {
   }
   return props.project.applications.filter((app) => app.realtimeInfo.HealthStatus === 'healthy').length
 })
+
+const viewApplicationGroupDetails = () => {
+  router.push(`/application_group/${props.project.id}`)
+}
 </script>
 
 <template>
   <tr v-show="isVisible">
     <TableRow align="left">
-      <div class="text-sm font-medium text-gray-900">{{ project.name }}</div>
+      <div class="flex items-center gap-2 text-sm font-medium text-gray-900">
+        <img v-if="project.logo" :src="project.logo" class="h-4 w-4 rounded-sm" alt="logo" />
+        {{ project.name }}
+      </div>
     </TableRow>
     <TableRow align="center" flex>
       <div v-if="overallHealthStatus === 'healthy'" class="flex flex-row items-center text-sm text-gray-700">
@@ -63,7 +67,7 @@ const healthyServiceCount = computed(() => {
       <div class="text-sm text-danger-600">{{ project.applications.length - healthyServiceCount }}&nbsp;Unhealthy</div>
     </TableRow>
     <TableRow align="right" flex>
-      <FilledButton :click="viewApplicationDetails" slim type="primary">View Details</FilledButton>
+      <FilledButton :click="viewApplicationGroupDetails" slim type="primary">View Details</FilledButton>
     </TableRow>
   </tr>
 </template>

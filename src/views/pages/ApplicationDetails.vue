@@ -12,7 +12,7 @@ import { useToast } from 'vue-toastification'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
 import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
-import { camelCaseToSpacedCapitalized } from '../../vendor/utils.js'
+import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 
 // Toast
 const toast = useToast()
