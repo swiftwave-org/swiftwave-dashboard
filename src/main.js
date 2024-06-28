@@ -53,6 +53,9 @@ import {
   faHammer,
   faHandshakeAngle,
   faHardDrive,
+  faHeartCircleCheck,
+  faHeartCircleExclamation,
+  faHeartCircleXmark,
   faKey,
   faLayerGroup,
   faLink,
@@ -189,7 +192,10 @@ library.add(
   faPersonDigging,
   faShieldHalved,
   faUserShield,
-  faKey
+  faKey,
+  faHeartCircleCheck,
+  faHeartCircleExclamation,
+  faHeartCircleXmark
 )
 
 // Environment variables

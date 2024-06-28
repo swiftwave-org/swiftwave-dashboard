@@ -9,13 +9,18 @@ import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
 import { useToast } from 'vue-toastification'
-import ApplicationGroup from '@/views/partials/ApplicationGroup.vue'
+import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
+import ProjectListRow from '@/views/partials/ProjectListRow.vue'
 
 const router = useRouter()
 const toast = useToast()
 
 const deployNewApplication = () => {
   router.push('/deploy/application')
+}
+
+const installApplicationFromAppStore = () => {
+  router.push({ name: 'App Store' })
 }
 
 const {
@@ -26,10 +31,9 @@ const {
 } = useQuery(
   gql`
     query {
-      applications {
+      applications(includeGroupedApplications: false) {
         id
         name
-        deploymentMode
         replicas
         isSleeping
         realtimeInfo {
@@ -37,23 +41,19 @@ const {
           DesiredReplicas
           RunningReplicas
           DeploymentMode
+          HealthStatus
         }
         latestDeployment {
           status
           upstreamType
-          gitProvider
           createdAt
-        }
-        applicationGroup {
-          id
-          name
         }
       }
     }
   `,
   null,
   {
-    pollInterval: 30000
+    pollInterval: 60000
   }
 )
 
@@ -61,69 +61,126 @@ onApplicationsError((err) => {
   toast.error(err.message)
 })
 
-const applications = computed(() => applicationsResult.value?.applications ?? [])
-const applicationGroupWise = computed(() => {
-  let applications = applicationsResult.value?.applications ?? []
-  let groupedApplications = {}
-  applications.forEach((application) => {
-    let groupName = ''
-    if (application.applicationGroup) {
-      groupName = application.applicationGroup.name
+const {
+  result: applicationGroupsResult,
+  refetch: refetchApplicationGroups,
+  loading: isApplicationGroupsLoading,
+  onError: onApplicationGroupsError
+} = useQuery(
+  gql`
+    query {
+      applicationGroups {
+        id
+        name
+        applications {
+          realtimeInfo {
+            InfoFound
+            DeploymentMode
+            DesiredReplicas
+            RunningReplicas
+            HealthStatus
+          }
+        }
+      }
     }
-    if (!groupedApplications[encodeURI(groupName)]) {
-      groupedApplications[encodeURI(groupName)] = []
-    }
-    groupedApplications[encodeURI(groupName)].push(application)
-  })
-  return groupedApplications
+  `,
+  null,
+  {
+    pollInterval: 60000
+  }
+)
+
+onApplicationGroupsError((err) => {
+  toast.error(err.message)
 })
+
+const refreshData = () => {
+  refetchApplications()
+  refetchApplicationGroups()
+}
+
+const applications = computed(() => applicationsResult.value?.applications ?? [])
+const applicationGroups = computed(() => applicationGroupsResult.value?.applicationGroups ?? [])
 </script>
 
 <template>
   <section class="mx-auto w-full max-w-7xl">
-    <!-- Top Page bar   -->
+    <!-- Deploy Apps Page bar   -->
     <PageBar>
-      <template v-slot:title>Deployed Applications</template>
-      <template v-slot:subtitle>Take control of your deployed applications</template>
+      <template v-slot:title>Deployed Services</template>
+      <template v-slot:subtitle>Manage your deployed services</template>
       <template v-slot:buttons>
         <FilledButton :click="deployNewApplication" type="primary">
           <font-awesome-icon icon="fa-solid fa-hammer" class="mr-2" />
           Deploy App
         </FilledButton>
-        <FilledButton type="ghost" :click="refetchApplications">
+        <FilledButton :click="installApplicationFromAppStore" type="primary">
+          <font-awesome-icon icon="fa-solid fa-store" class="mr-2" />
+          App Store
+        </FilledButton>
+        <FilledButton type="ghost" :click="refreshData">
           <font-awesome-icon
             icon="fa-solid fa-arrows-rotate"
             :class="{
-              'animate-spin ': isApplicationsLoading
+              'animate-spin ': isApplicationsLoading || isApplicationGroupsLoading
             }" />&nbsp;&nbsp; Refresh List
         </FilledButton>
       </template>
     </PageBar>
 
-    <!-- Table -->
-    <Table class="mt-8">
+    <p class="mt-6 text-sm font-medium">
+      <font-awesome-icon icon="fa-solid fa-hammer" class="me-1" />
+      Deployed Applications
+    </p>
+
+    <!-- Applications Table -->
+    <Table class="mt-2">
       <template v-slot:header>
-        <TableHeader align="left">Application / Group</TableHeader>
-        <TableHeader align="center">Status</TableHeader>
+        <TableHeader align="left">Application Name</TableHeader>
+        <TableHeader align="center">Health Status</TableHeader>
         <TableHeader align="center">Replicas</TableHeader>
-        <TableHeader align="center">Source</TableHeader>
+        <TableHeader align="center">Deploy Status</TableHeader>
         <TableHeader align="center">Last Deployment</TableHeader>
-        <TableHeader align="right">Details</TableHeader>
+        <TableHeader align="right">View Details</TableHeader>
       </template>
       <template v-slot:message>
         <TableMessage v-if="applications.length === 0">
           No deployed applications found.<br />
-          Click on the "Deploy New" button to deploy a new application.
+          Click on the "Deploy App" button to deploy a new application.
         </TableMessage>
-        <TableMessage v-if="isApplicationsLoading"> Loading deployed applications...</TableMessage>
+        <TableMessage v-if="isApplicationsLoading && applications.length === 0">
+          Loading deployed applications...
+        </TableMessage>
       </template>
       <template v-slot:body>
-        <ApplicationGroup
-          v-for="(applications, group, index) in applicationGroupWise"
-          :key="group"
-          :group="group"
-          :group-index="index"
-          :applications="applications" />
+        <ApplicationListRow v-for="application in applications" :key="application.id" :application="application" />
+      </template>
+    </Table>
+
+    <!--  Deployed Projects Bar   -->
+    <p class="mt-6 text-sm font-medium">
+      <font-awesome-icon icon="fa-solid fa-layer-group" class="me-1" />
+      Deployed Projects
+    </p>
+
+    <!-- Projects Table -->
+    <Table class="mt-2">
+      <template v-slot:header>
+        <TableHeader align="left">Project Name</TableHeader>
+        <TableHeader align="center">Health Status</TableHeader>
+        <TableHeader align="center">Total Services</TableHeader>
+        <TableHeader align="center">Healthy Services</TableHeader>
+        <TableHeader align="center">Unhealthy Services</TableHeader>
+        <TableHeader align="right">View Details</TableHeader>
+      </template>
+      <template v-slot:message>
+        <TableMessage v-if="applicationGroups.length === 0"> No projects found.</TableMessage>
+        <TableMessage v-if="isApplicationGroupsLoading && applicationGroups.length === 0">
+          Loading deployed projects...
+        </TableMessage>
+      </template>
+      <template v-slot:body>
+        <ProjectListRow v-for="group in applicationGroups" :key="group.id" :project="group" />
       </template>
     </Table>
   </section>

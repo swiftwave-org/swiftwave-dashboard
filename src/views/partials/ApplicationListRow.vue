@@ -1,11 +1,11 @@
 <script setup>
 import TableRow from '@/views/components/Table/TableRow.vue'
-import Badge from '@/views/components/Badge.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { computed } from 'vue'
 import moment from 'moment'
 import router from '@/router/index.js'
-import { camelCaseToSpacedCapitalized } from '../../vendor/utils.js'
+import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
+import StatusBadge from '@/views/components/StatusBadge.vue'
 
 const props = defineProps({
   application: {
@@ -30,62 +30,96 @@ const viewApplicationDetails = () => {
   <tr v-show="isVisible">
     <TableRow align="left">
       <div class="text-sm font-medium text-gray-900">
-        {{ application.name }}
+        <span v-if="application.latestDeployment.upstreamType === 'git'">
+          <font-awesome-icon icon="fa-solid fa-code-branch" class="me-2" />
+          {{ application.name }}
+        </span>
+        <span v-else-if="application.latestDeployment.upstreamType === 'image'"
+          ><font-awesome-icon class="me-2" icon="fa-brands fa-docker" />{{ application.name }}</span
+        >
+        <span v-else-if="application.latestDeployment.upstreamType === 'sourceCode'">
+          <font-awesome-icon class="me-2" icon="fa-solid fa-upload" />
+          {{ application.name }}</span
+        >
       </div>
     </TableRow>
-    <TableRow align="center">
-      <Badge v-if="application.latestDeployment.status === 'pending'" type="warning">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'deployPending'" type="warning">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'deploying'" type="warning">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'deployed'" type="success">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'stopped'" type="warning">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
-      <Badge v-else-if="application.latestDeployment.status === 'failed'" type="danger">
-        {{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
-      </Badge>
+    <TableRow align="center" flex>
+      <div
+        v-if="application.realtimeInfo.HealthStatus === 'healthy'"
+        class="flex flex-row items-center text-sm text-gray-700">
+        <font-awesome-icon icon="fa-solid fa-heart-circle-check" class="me-1 text-success-500" />
+        Healthy
+      </div>
+      <div
+        v-else-if="application.realtimeInfo.HealthStatus === 'unhealthy'"
+        class="flex flex-row items-center text-sm text-gray-700">
+        <font-awesome-icon icon="fa-solid fa-heart-circle-exclamation" class="me-1 text-danger-500" />
+        Unhealthy
+      </div>
+      <div v-else class="text-sm text-gray-700">----</div>
     </TableRow>
     <!-- Replicas -->
-    <TableRow v-if="!application.isSleeping && application.realtimeInfo.InfoFound" align="center">
-      <div v-if="application.deploymentMode === 'replicated'" class="text-sm text-gray-900">
+    <TableRow v-if="application.realtimeInfo.InfoFound" align="center">
+      <div v-if="application.realtimeInfo.DeploymentMode === 'replicated'" class="text-sm text-gray-700">
         {{ application.realtimeInfo.RunningReplicas }} / {{ application.realtimeInfo.DesiredReplicas }}
       </div>
-      <div v-else-if="application.deploymentMode === 'global'" class="text-sm text-gray-900">Global</div>
-      <div v-else class="text-sm text-gray-900">----</div>
-    </TableRow>
-    <TableRow v-else-if="application.isSleeping" align="center">
-      <Badge type="warning">
-        <div class="flex flex-row items-center gap-1.5">
-          <font-awesome-icon icon="fa-solid fa-bed" />
-          Sleeping
-        </div>
-      </Badge>
+      <div v-else-if="application.realtimeInfo.DeploymentMode === 'global'" class="text-sm text-gray-700">Global</div>
     </TableRow>
     <TableRow v-else align="center">
-      <div class="text-sm text-gray-900">----</div>
+      <div class="text-sm text-gray-700">----</div>
     </TableRow>
     <!-- END Replicas -->
-    <TableRow align="center">
-      <span v-if="application.latestDeployment.upstreamType === 'git'" class="text-sm capitalize text-gray-700">
-        <font-awesome-icon icon="fa-solid fa-code-branch" class="mx-2" />
-        {{ application.latestDeployment.gitProvider }}
-      </span>
-      <span v-else-if="application.latestDeployment.upstreamType === 'image'" class="text-sm text-gray-700"
-        ><font-awesome-icon class="mx-2" icon="fa-brands fa-docker" />Docker Image</span
-      >
-      <span v-else-if="application.latestDeployment.upstreamType === 'sourceCode'" class="text-sm text-gray-700">
-        <font-awesome-icon class="mx-2" icon="fa-solid fa-upload" />
-        Source Code</span
-      >
-      <span v-else class="text-sm text-gray-700">N/A</span>
+    <TableRow align="center" flex>
+      <StatusBadge
+        class="text-gray-700"
+        v-if="application.latestDeployment.status === 'deployed'"
+        type="success"
+        small
+        animate
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'pending'"
+        type="warning"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'deployPending'"
+        type="warning"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'deploying'"
+        type="warning"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'failed'"
+        type="danger"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'stopped'"
+        type="secondary"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
+      <StatusBadge
+        class="text-gray-700"
+        v-else-if="application.latestDeployment.status === 'stalled'"
+        type="secondary"
+        small
+        >{{ camelCaseToSpacedCapitalized(application.latestDeployment.status) }}
+      </StatusBadge>
     </TableRow>
     <TableRow align="center">
       <span class="text-sm text-gray-700"> {{ createdAtFormatted }} </span>
