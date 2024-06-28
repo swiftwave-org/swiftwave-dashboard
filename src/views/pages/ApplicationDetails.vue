@@ -41,6 +41,7 @@ const {
           DesiredReplicas
           RunningReplicas
           DeploymentMode
+          HealthStatus
         }
         latestDeployment {
           id
@@ -97,7 +98,6 @@ const applicationUpdater = NewApplicationUpdaterStore(applicationId)()
 // App Doze Mode
 const {
   mutate: sleepApplication,
-  loading: sleepApplicationLoading,
   onDone: onSleepApplicationDone,
   onError: onSleepApplicationError
 } = useMutation(
@@ -124,7 +124,6 @@ onSleepApplicationError((error) => {
 
 const {
   mutate: wakeApplication,
-  loading: wakeApplicationLoading,
   onDone: onWakeApplicationDone,
   onError: onWakeApplicationError
 } = useMutation(
@@ -149,6 +148,88 @@ onWakeApplicationError((error) => {
   toast.error(error.message)
 })
 
+// Restart Application
+const {
+  mutate: restartApplication,
+  onError: restartApplicationError,
+  onDone: restartApplicationDone
+} = useMutation(
+  gql`
+    mutation ($id: String!) {
+      restartApplication(id: $id)
+    }
+  `,
+  {
+    fetchPolicy: 'no-cache',
+    variables: {
+      id: router.currentRoute.value.params.id
+    }
+  }
+)
+
+restartApplicationDone((result) => {
+  if (result.data.restartApplication) {
+    toast.success('Application restarted successfully !')
+  } else {
+    toast.error('Something went wrong !')
+  }
+})
+
+restartApplicationError((error) => {
+  toast.error(error.message)
+})
+
+const restartApplicationWithConfirmation = () => {
+  const confirmation = confirm('Are you sure that you want to restart this application ?')
+  if (confirmation) {
+    restartApplication()
+  }
+}
+
+// Rebuild Application
+const {
+  mutate: rebuildApplication,
+  onError: rebuildApplicationError,
+  onDone: rebuildApplicationDone
+} = useMutation(
+  gql`
+    mutation ($id: String!) {
+      rebuildApplication(id: $id)
+    }
+  `,
+  {
+    fetchPolicy: 'no-cache',
+    variables: {
+      id: router.currentRoute.value.params.id
+    }
+  }
+)
+
+rebuildApplicationDone((result) => {
+  if (result.data.rebuildApplication) {
+    toast.success('Application rebuild request sent successfully !')
+  } else {
+    toast.error('Something went wrong !')
+  }
+  router.push({
+    name: 'Application Details Deployments',
+    params: {
+      id: router.currentRoute.value.params.id
+    }
+  })
+})
+
+rebuildApplicationError((error) => {
+  toast.error(error.message)
+})
+
+const rebuildApplicationWithConfirmation = () => {
+  const confirmation = confirm('Are you sure that you want to rebuild this application ?')
+  if (confirmation) {
+    rebuildApplication()
+  }
+}
+
 // Application group update
 const applicationGroupUpdateModalRef = ref(null)
 const openApplicationGroupUpdateModal = () => {
@@ -169,89 +250,99 @@ const openApplicationGroupUpdateModal = () => {
     <p>Loading...</p>
   </div>
   <section v-else class="mx-auto w-full max-w-7xl">
-    <div class="flex flex-row justify-between">
-      <!--   left side   -->
-      <div>
-        <div class="flex items-center gap-2">
-          <div class="flex overflow-hidden rounded-full border-2 border-secondary-300 text-base">
-            <div class="flex items-center justify-center gap-2 py-1 pl-3 pr-2 font-medium">
-              {{ applicationDetails.name }}
-              <Badge v-if="applicationDetails.latestDeployment.status === 'deployed'" type="success">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'pending'" type="warning">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'deployPending'" type="warning">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'deploying'" type="warning">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'failed'" type="danger">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'stopped'" type="secondary">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
-                {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
-              </Badge>
-              <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
-            </div>
-            <div
-              @click="openApplicationGroupUpdateModal"
-              class="flex cursor-pointer items-center justify-center rounded-full bg-primary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-primary-500">
-              <span v-if="applicationDetails.applicationGroup">{{ applicationDetails.applicationGroup.name }}</span>
-              <span v-else>no group</span>
-              &nbsp;&nbsp;
-              <font-awesome-icon icon="fa-solid fa-caret-down" />
-            </div>
+    <!--  First line  -->
+    <div class="flex w-full flex-row items-center justify-between">
+      <!--   App name     -->
+      <div class="flex items-center gap-2">
+        <div class="flex flex-row items-center gap-2 overflow-hidden">
+          <div
+            @click="openApplicationGroupUpdateModal"
+            class="flex cursor-pointer items-center justify-center rounded-full bg-secondary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-secondary-700">
+            <span v-if="applicationDetails.applicationGroup">{{ applicationDetails.applicationGroup.name }}</span>
+            <span v-else>no group</span>
+            &nbsp;&nbsp;
+            <font-awesome-icon icon="fa-solid fa-caret-down" />
+          </div>
+          <div class="flex items-center justify-center gap-2 font-medium">
+            {{ applicationDetails.name }}
+            <Badge v-if="applicationDetails.latestDeployment.status === 'deployed'" type="success">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'pending'" type="warning">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'deployPending'" type="warning">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'deploying'" type="warning">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'failed'" type="danger">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'stopped'" type="secondary">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
+              {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
+            </Badge>
+            <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
           </div>
         </div>
-        <div class="mt-3 flex gap-2">
-          <div class="flex items-center gap-2 font-medium text-gray-800">
-            <div v-if="applicationDetails.latestDeployment.upstreamType === 'git'" class="flex gap-2">
-              <div class="deployment-head">
-                <font-awesome-icon
-                  v-if="applicationDetails.latestDeployment.upstreamType === 'git'"
-                  icon="fa-brands fa-github" />
-                <font-awesome-icon
-                  v-if="applicationDetails.latestDeployment.upstreamType === 'image'"
-                  icon="fa-brands fa-docker" />
-                <font-awesome-icon
-                  v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'"
-                  icon="fa-solid fa-upload" />
-
-                {{ applicationDetails.latestDeployment.repositoryOwner }}/{{
-                  applicationDetails.latestDeployment.repositoryName
-                }}
-              </div>
-              <div class="deployment-head">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-git-branch h-4 w-4">
-                  <line x1="6" x2="6" y1="3" y2="15" />
-                  <circle cx="18" cy="6" r="3" />
-                  <circle cx="6" cy="18" r="3" />
-                  <path d="M18 9a9 9 0 0 1-9 9" />
-                </svg>
-                {{ applicationDetails.latestDeployment.repositoryBranch }}
-              </div>
+      </div>
+      <!--     Status   -->
+      <div class="text-center font-medium text-gray-800">
+        <p v-if="applicationDetails.isSleeping" class="w-full pe-[5vw] text-center text-blue-600">
+          <font-awesome-icon icon="fa-solid fa-bed" />
+          Sleeping
+        </p>
+        <div v-else-if="realtimeInfo.InfoFound" class="flex flex-row items-center gap-5 px-3 text-center">
+          <div
+            v-if="applicationDetails.realtimeInfo.HealthStatus === 'healthy'"
+            class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-heart-circle-check" class="me-1 text-success-500" />
+            Healthy
+          </div>
+          <div
+            v-else-if="applicationDetails.realtimeInfo.HealthStatus === 'unhealthy'"
+            class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-heart-circle-exclamation" class="me-1 text-danger-500" />
+            Unhealthy
+          </div>
+          <div
+            v-else-if="applicationDetails.realtimeInfo.HealthStatus === 'unknown'"
+            class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-heart-circle-xmark" class="me-1 text-warning-600" />
+            Unknown
+          </div>
+          <UptimeChart
+            hide-hover
+            small
+            label-position="right"
+            v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"
+            :percentage="realtimeReplicaCountPercentage"
+            :label="`(${realtimeInfo.RunningReplicas ?? 0} / ${applicationDetails.replicas})`" />
+          <p v-else-if="deploymentMode === 'global'" class="w-full text-center font-semibold text-secondary-600">
+            {{ realtimeInfo.RunningReplicas ?? 0 }} Instances
+          </p>
+          <p v-else class="text-warning-600">Not Available</p>
+        </div>
+        <p v-else class="text-sm text-warning-600">Sorry, Health info not available currently</p>
+      </div>
+    </div>
+    <!--  Second line  -->
+    <div class="mt-3.5 flex w-full flex-row items-center justify-between">
+      <!--   Deployment info   -->
+      <div class="flex gap-2">
+        <div class="flex items-center gap-2 text-gray-800">
+          <div v-if="applicationDetails.latestDeployment.upstreamType === 'git'" class="flex gap-2">
+            <div class="deployment-head">
+              <font-awesome-icon icon="fa-brands fa-github" />
+              {{ applicationDetails.latestDeployment.repositoryOwner }}/{{
+                applicationDetails.latestDeployment.repositoryName
+              }}
             </div>
-            <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'" class="deployment-head">
-              <font-awesome-icon icon="fa-brands fa-docker" />
-              {{ applicationDetails.latestDeployment.dockerImage }}
-            </p>
-            <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'" class="deployment-head">
+            <div class="deployment-head">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -262,105 +353,111 @@ const openApplicationGroupUpdateModal = () => {
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="lucide lucide-upload h-4 w-4">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" x2="12" y1="3" y2="15" />
+                class="lucide lucide-git-branch h-4 w-4">
+                <line x1="6" x2="6" y1="3" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
               </svg>
-              Source-code uploaded manually
-            </p>
+              {{ applicationDetails.latestDeployment.repositoryBranch }}
+            </div>
           </div>
-          <div class="flex items-center gap-2 font-normal text-gray-800">
-            <div v-if="isIngressRulesAvailable" class="deployment-head max-w-[40vw]">
-              <font-awesome-icon icon="fa-solid fa-globe" />
-              <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
-                <a
-                  :href="
+          <p v-if="applicationDetails.latestDeployment.upstreamType === 'image'" class="deployment-head">
+            <font-awesome-icon icon="fa-brands fa-docker" />
+            {{ applicationDetails.latestDeployment.dockerImage }}
+          </p>
+          <p v-if="applicationDetails.latestDeployment.upstreamType === 'sourceCode'" class="deployment-head">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-upload h-4 w-4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" x2="12" y1="3" y2="15" />
+            </svg>
+            Source-code uploaded manually
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-gray-800">
+          <div
+            v-if="isIngressRulesAvailable"
+            class="deployment-head max-w-[40vw]"
+            :class="{
+              '!pr-0.5': applicationDetails.ingressRules.length > 0
+            }">
+            <font-awesome-icon icon="fa-solid fa-globe" />
+            <span v-for="(ingressRule, index) in applicationDetails.ingressRules" :key="index">
+              <a
+                :href="
+                  ingressRule.protocol +
+                  '://' +
+                  ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
+                  ':' +
+                  ingressRule.port.toString()
+                "
+                target="_blank"
+                class="has-popover rounded-full bg-primary-500 px-2 py-1 text-secondary-100">
+                <font-awesome-icon icon="fa-solid fa-link" class="mr-0.5 text-xs" />
+                Link {{ index + 1 }}
+                <div class="popover">
+                  {{
                     ingressRule.protocol +
                     '://' +
                     ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
                     ':' +
                     ingressRule.port.toString()
-                  "
-                  target="_blank"
-                  class="has-popover rounded-full bg-primary-500 px-3 py-1 text-sm text-secondary-100">
-                  <font-awesome-icon :icon="['fas', 'link']" />
-                  Link {{ index + 1 }}
-                  <div class="popover">
-                    {{
-                      ingressRule.protocol +
-                      '://' +
-                      ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
-                      ':' +
-                      ingressRule.port.toString()
-                    }}
-                  </div>
-                </a>
-              </span>
+                  }}
+                </div>
+              </a>
+            </span>
+          </div>
+          <div v-else class="has-popover flex gap-2">
+            <div class="deployment-head">
+              <font-awesome-icon icon="fa-solid fa-globe" />
+              <p class="text-warning-600">Not Exposed</p>
+              <RouterLink
+                :to="{
+                  name: 'Application Details Ingress Rules',
+                  params: { id: $route.params.id }
+                }"
+                class="font-semibold hover:cursor-pointer hover:text-primary-600">
+                <font-awesome-icon icon="fa-solid fa-plus" />
+              </RouterLink>
             </div>
-            <div v-else class="has-popover flex gap-2">
-              <div class="deployment-head">
-                <font-awesome-icon icon="fa-solid fa-globe" />
-                <b class="font-normal text-warning-600">Not Exposed</b>
-                <RouterLink
-                  :to="{
-                    name: 'Application Details Ingress Rules',
-                    params: { id: $route.params.id }
-                  }"
-                  class="font-semibold hover:cursor-pointer hover:text-primary-600">
-                  <font-awesome-icon icon="fa-solid fa-plus" />
-                </RouterLink>
-              </div>
-              <div class="popover w-60">
-                No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
-                application to the internet.
-              </div>
+            <div class="popover w-60">
+              No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
+              application to the internet.
             </div>
           </div>
         </div>
       </div>
-      <!--   right side   -->
-      <div class="flex flex-col items-end">
-        <div class="mt-2 flex w-full items-center gap-2 text-center font-medium text-gray-800">
-          <p v-if="applicationDetails.isSleeping" class="my-2 w-full text-center font-semibold text-blue-600">
-            <font-awesome-icon icon="fa-solid fa-bed" />
-            Sleeping
-          </p>
-          <div v-else-if="realtimeInfo.InfoFound" class="flex w-full flex-col items-center text-center">
-            <UptimeChart
-              v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"
-              :percentage="realtimeReplicaCountPercentage"
-              :label="`(${realtimeInfo.RunningReplicas ?? 0} / ${applicationDetails.replicas})`" />
-            <p v-else-if="deploymentMode === 'global'" class="w-full text-center font-semibold text-secondary-600">
-              {{ realtimeInfo.RunningReplicas ?? 0 }} Instances
-            </p>
-            <p v-else class="text-warning-600">Not Available</p>
-          </div>
-          <p v-else class="text-warning-600">
-            <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />&nbsp;&nbsp;Not Available
-          </p>
+      <!--    Quick Actions    -->
+      <div class="quick-actions">
+        <div class="button" v-if="applicationDetails.isSleeping" @click="wakeApplication">
+          <font-awesome-icon icon="fa-solid fa-play" class="mr-1" />
+          Resume
         </div>
-        <div class="mt-3 w-full">
-          <FilledButton
-            v-if="applicationDetails.isSleeping"
-            class="w-full"
-            type="primary"
-            :loading="wakeApplicationLoading"
-            :click="wakeApplication"
-            :disabled="applicationDetails.latestDeployment.status !== 'deployed'">
-            <font-awesome-icon class="mr-2" icon="fa-solid fa-play" />
-            Resume App
-          </FilledButton>
-          <FilledButton
-            v-else
-            class="w-full"
-            type="primary"
-            :loading="sleepApplicationLoading"
-            :click="sleepApplication"
-            :disabled="applicationDetails.latestDeployment.status !== 'deployed'">
-            <font-awesome-icon class="mr-2" icon="fa-solid fa-circle-stop" />
-            Pause App
-          </FilledButton>
+        <div class="divider" v-if="applicationDetails.isSleeping"></div>
+        <div class="button" v-if="!applicationDetails.isSleeping" @click="sleepApplication">
+          <font-awesome-icon icon="fa-solid fa-pause" class="mr-1" />
+          Pause
+        </div>
+        <div class="divider" v-if="!applicationDetails.isSleeping"></div>
+        <div class="button" @click="rebuildApplicationWithConfirmation">
+          <font-awesome-icon icon="fa-solid fa-hammer" class="mr-1" />
+          Rebuild
+        </div>
+        <div class="divider"></div>
+        <div class="button" @click="restartApplicationWithConfirmation">
+          <font-awesome-icon icon="fa-solid fa-rotate-right" class="mr-1" />
+          Restart
         </div>
       </div>
     </div>
@@ -396,6 +493,18 @@ const openApplicationGroupUpdateModal = () => {
 
 <style scoped>
 .deployment-head {
-  @apply relative flex items-center justify-center gap-2.5 rounded-full bg-secondary-100 px-4 py-2 font-normal;
+  @apply relative flex items-center justify-center gap-2.5  rounded-full border border-secondary-300 px-2 py-1 text-sm font-normal;
+}
+
+.quick-actions {
+  @apply flex overflow-hidden rounded-full border border-secondary-300 text-sm  text-secondary-700;
+
+  .button {
+    @apply cursor-pointer px-2.5 py-1 hover:bg-secondary-200;
+  }
+
+  .divider {
+    @apply h-auto w-[1px] bg-secondary-300;
+  }
 }
 </style>

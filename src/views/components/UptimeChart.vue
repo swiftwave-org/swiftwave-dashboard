@@ -21,6 +21,11 @@ const props = defineProps({
   small: {
     type: Boolean,
     default: false
+  },
+  labelPosition: {
+    type: String,
+    default: 'bottom',
+    validator: (value) => ['top', 'bottom', 'left', 'right'].includes(value)
   }
 })
 
@@ -31,7 +36,14 @@ const noOfRedLines = computed(() => 10 - noOfGreenLines.value)
 
 <template>
   <div class="group relative w-max">
-    <div class="flex flex-col items-center">
+    <div
+      class="flex"
+      :class="{
+        'flex-col items-center': labelPosition === 'top' || labelPosition === 'bottom',
+        'flex-row items-center': labelPosition === 'left' || labelPosition === 'right'
+      }">
+      <p v-if="!hideLabel && labelPosition === 'top'" class="mb-0.5 text-sm text-secondary-600">{{ label }}</p>
+      <p v-if="!hideLabel && labelPosition === 'left'" class="mr-2 text-sm text-secondary-600">{{ label }}</p>
       <div class="flex flex-row gap-1">
         <div
           v-for="i in noOfGreenLines"
@@ -50,7 +62,8 @@ const noOfRedLines = computed(() => 10 - noOfGreenLines.value)
             'h-4 w-[0.25rem]': small
           }"></div>
       </div>
-      <p v-if="!hideLabel" class="mt-0.5 text-sm text-secondary-600">{{ label }}</p>
+      <p v-if="!hideLabel && labelPosition === 'bottom'" class="mt-0.5 text-sm text-secondary-600">{{ label }}</p>
+      <p v-if="!hideLabel && labelPosition === 'right'" class="ml-2 text-sm text-secondary-600">{{ label }}</p>
     </div>
     <span
       v-if="!hideHover"

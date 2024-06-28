@@ -64,6 +64,7 @@ import {
   faLocationArrow,
   faMagnifyingGlass,
   faNetworkWired,
+  faPause,
   faPeopleGroup,
   faPersonDigging,
   faPlay,
@@ -195,7 +196,8 @@ library.add(
   faKey,
   faHeartCircleCheck,
   faHeartCircleExclamation,
-  faHeartCircleXmark
+  faHeartCircleXmark,
+  faPause
 )
 
 // Environment variables
@@ -275,7 +277,7 @@ pinia.use(({ store }) => {
 app.use(router)
 app.use(pinia)
 app.use(Toast, {
-  position: 'top-right',
+  position: 'top-center',
   timeout: 5000,
   closeOnClick: true,
   pauseOnFocusLoss: true,
