@@ -286,13 +286,12 @@ const openApplicationGroupUpdateModal = () => {
             <Badge v-else-if="applicationDetails.latestDeployment.status === 'stalled'" type="secondary">
               {{ camelCaseToSpacedCapitalized(applicationDetails.latestDeployment.status) }}
             </Badge>
-            <Badge v-if="applicationDetails.isSleeping" type="warning"> Sleeping</Badge>
           </div>
         </div>
       </div>
       <!--     Status   -->
       <div class="text-center font-medium text-gray-800">
-        <p v-if="applicationDetails.isSleeping" class="w-full pe-[5vw] text-center text-blue-600">
+        <p v-if="applicationDetails.isSleeping" class="w-full pe-[5vw] text-center text-sm text-blue-600">
           <font-awesome-icon icon="fa-solid fa-bed" />
           Sleeping
         </p>

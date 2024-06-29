@@ -6,6 +6,7 @@ import moment from 'moment'
 import router from '@/router/index.js'
 import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 import StatusBadge from '@/views/components/StatusBadge.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   application: {
@@ -44,8 +45,12 @@ const viewApplicationDetails = () => {
       </div>
     </TableRow>
     <TableRow align="center" flex>
+      <div v-if="application.isSleeping" class="flex flex-row items-center text-sm text-gray-700">
+        <font-awesome-icon icon="fa-solid fa-bed" class="me-1 text-blue-600" />
+        Sleeping
+      </div>
       <div
-        v-if="application.realtimeInfo.HealthStatus === 'healthy'"
+        v-else-if="application.realtimeInfo.HealthStatus === 'healthy'"
         class="flex flex-row items-center text-sm text-gray-700">
         <font-awesome-icon icon="fa-solid fa-heart-circle-check" class="me-1 text-success-500" />
         Healthy
