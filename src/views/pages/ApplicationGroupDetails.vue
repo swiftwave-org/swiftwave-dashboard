@@ -21,7 +21,8 @@ const applicationGroupId = router.currentRoute.value.params.id
 const {
   result: applicationGroupDetailsRaw,
   loading: applicationGroupDetailsLoading,
-  refetch: refetchGroupApplicationDetails
+  refetch: refetchGroupApplicationDetails,
+  onError: onErrorGroupApplicationDetails
 } = useQuery(
   gql`
     query ($id: String!) {
@@ -74,6 +75,10 @@ const {
     pollInterval: 30000
   }
 )
+
+onErrorGroupApplicationDetails(() => {
+  toast.error('Failed to fetch application group details')
+})
 
 const applicationGroupDetails = computed(() => applicationGroupDetailsRaw.value?.applicationGroup ?? {})
 const applications = computed(() => applicationGroupDetailsRaw.value?.applicationGroup?.applications ?? [])
