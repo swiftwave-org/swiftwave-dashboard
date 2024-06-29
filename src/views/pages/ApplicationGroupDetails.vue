@@ -4,7 +4,12 @@ import { useQuery } from '@vue/apollo-composable'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import gql from 'graphql-tag'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import Table from '@/views/components/Table/Table.vue'
+import TableHeader from '@/views/components/Table/TableHeader.vue'
+import TableMessage from '@/views/components/Table/TableMessage.vue'
+import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
 
 const toast = useToast()
 
@@ -26,7 +31,14 @@ const {
         logo
         applications {
           id
+          name
+          replicas
           isSleeping
+          latestDeployment {
+            upstreamType
+            status
+            createdAt
+          }
           realtimeInfo {
             InfoFound
             DeploymentMode
@@ -65,6 +77,38 @@ const {
 
 const applicationGroupDetails = computed(() => applicationGroupDetailsRaw.value?.applicationGroup ?? {})
 const applications = computed(() => applicationGroupDetailsRaw.value?.applicationGroup?.applications ?? [])
+const ingressRules = computed(() => {
+  let records = []
+  for (const application of applications.value) {
+    records.push(...application.ingressRules)
+  }
+  return records
+})
+
+const totalServiceCount = computed(() => {
+  if (applicationGroupDetails.value.applications.length === 0) {
+    return 0
+  }
+  return applicationGroupDetails.value.applications.length
+})
+
+const healthyServiceCount = computed(() => {
+  if (applicationGroupDetails.value.applications.length === 0) {
+    return 0
+  }
+  return applicationGroupDetails.value.applications.filter((app) => app.realtimeInfo.HealthStatus === 'healthy').length
+})
+
+const unhealthyServiceCount = computed(() => {
+  if (applicationGroupDetails.value.applications.length === 0) {
+    return 0
+  }
+  return applicationGroupDetails.value.applications.filter((app) => app.realtimeInfo.HealthStatus === 'unhealthy')
+    .length
+})
+
+// page
+const pageName = ref('deployed-apps')
 </script>
 
 <template>
@@ -73,26 +117,198 @@ const applications = computed(() => applicationGroupDetailsRaw.value?.applicatio
     <p>Loading...</p>
   </div>
   <section v-else class="mx-auto w-full max-w-7xl">
-    <div class="flex flex-row justify-between">
-      <!--   left side   -->
-      <div>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center justify-center gap-2 py-1 pl-3 pr-2 font-medium">
+    <!--  First line  -->
+    <div class="flex w-full flex-row items-center justify-between">
+      <!--   App name     -->
+      <div class="flex items-center gap-2">
+        <div class="flex flex-row items-center gap-2 overflow-hidden">
+          <div class="flex items-center justify-center gap-2 font-medium">
+            <img
+              v-if="applicationGroupDetails.logo"
+              :src="applicationGroupDetails.logo"
+              class="h-4 w-4 rounded-sm"
+              alt="logo" />
             {{ applicationGroupDetails.name }}
           </div>
         </div>
       </div>
-      <!--   right side   -->
-      <div class="flex flex-col items-end">
-        <div class="mt-2 flex w-full items-center gap-2 text-center font-medium text-gray-800">
-          <!--          <UptimeChart-->
-          <!--            v-if="!isNaN(realtimeReplicaCountPercentage) && deploymentMode === 'replicated'"-->
-          <!--            :percentage="realtimeReplicaCountPercentage"-->
-          <!--            :label="`(${realtimeInfo.RunningReplicas ?? 0} / ${applicationDetails.replicas})`" />-->
+      <!--     Status   -->
+      <div class="text-center font-medium text-gray-800">
+        <div class="flex flex-row items-center gap-5 px-3 text-center">
+          <div class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-boxes-stacked" class="me-1 text-info-500" />
+            {{ totalServiceCount }}&nbsp;Services
+          </div>
+          <div class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-heart-circle-check" class="me-1 text-success-500" />
+            {{ healthyServiceCount }}&nbsp;Healthy
+          </div>
+          <div class="flex flex-row items-center text-sm text-gray-700">
+            <font-awesome-icon icon="fa-solid fa-heart-circle-exclamation" class="me-1 text-danger-500" />
+            {{ unhealthyServiceCount }}&nbsp;Unhealthy
+          </div>
         </div>
+      </div>
+    </div>
+    <!--  Second line  -->
+    <div class="mt-3.5 flex w-full flex-row items-center justify-between">
+      <div class="flex gap-2">
+        <div class="flex items-center gap-2 text-gray-800">
+          <div
+            v-if="ingressRules.length > 0"
+            class="deployment-head max-w-[40vw]"
+            :class="{
+              '!pr-0.5': ingressRules.length > 0
+            }">
+            <font-awesome-icon icon="fa-solid fa-globe" />
+            <span v-for="(ingressRule, index) in ingressRules" :key="index">
+              <a
+                :href="
+                  ingressRule.protocol +
+                  '://' +
+                  ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
+                  ':' +
+                  ingressRule.port.toString()
+                "
+                target="_blank"
+                class="has-popover rounded-full bg-primary-500 px-2 py-1 text-secondary-100">
+                <font-awesome-icon icon="fa-solid fa-link" class="mr-0.5 text-xs" />
+                Link {{ index + 1 }}
+                <div class="popover">
+                  {{
+                    ingressRule.protocol +
+                    '://' +
+                    ((ingressRule.domain?.name || null) ?? 'proxy_server_ip') +
+                    ':' +
+                    ingressRule.port.toString()
+                  }}
+                </div>
+              </a>
+            </span>
+          </div>
+          <div v-else class="has-popover flex gap-2">
+            <div class="deployment-head">
+              <font-awesome-icon icon="fa-solid fa-globe" />
+              <p class="text-warning-600">Not Exposed</p>
+              <RouterLink
+                :to="{
+                  name: 'Application Details Ingress Rules',
+                  params: { id: $route.params.id }
+                }"
+                class="font-semibold hover:cursor-pointer hover:text-primary-600">
+                <font-awesome-icon icon="fa-solid fa-plus" />
+              </RouterLink>
+            </div>
+            <div class="popover w-60">
+              No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
+              application to the internet.
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--    Quick Actions    -->
+      <div class="quick-actions">
+        <div class="divider"></div>
+        <div class="button">
+          <font-awesome-icon icon="fa-solid fa-hammer" class="mr-1" />
+          Rebuild All
+        </div>
+        <div class="divider"></div>
+        <div class="button">
+          <font-awesome-icon icon="fa-solid fa-rotate-right" class="mr-1" />
+          Restart All
+        </div>
+        <div class="divider"></div>
+        <div class="button text-danger-500">
+          <font-awesome-icon icon="fa-solid fa-trash" class="mr-1" />
+          Delete All
+        </div>
+      </div>
+    </div>
+    <!--  main section  -->
+    <div class="mt-8 flex w-full flex-row gap-5">
+      <!--   navbar   -->
+      <div class="navbar">
+        <div
+          class="nav-element"
+          :class="{
+            'router-link-exact-active': pageName === 'deployed-apps'
+          }"
+          @click="pageName = 'deployed-apps'">
+          Deployed Apps
+        </div>
+        <div
+          class="nav-element"
+          :class="{ 'router-link-exact-active': pageName === 'persistent-volume' }"
+          @click="pageName = 'persistent-volume'">
+          Persistent Volume
+        </div>
+        <div
+          class="nav-element"
+          :class="{ 'router-link-exact-active': pageName === 'environment-variables' }"
+          @click="pageName = 'environment-variables'">
+          Environment Variables
+        </div>
+        <div
+          class="nav-element"
+          :class="{ 'router-link-exact-active': pageName === 'static-app-config' }"
+          @click="pageName = 'static-app-config'">
+          Static App Config
+        </div>
+      </div>
+
+      <!--    content  -->
+      <div class="w-full">
+        <Table>
+          <template v-slot:header>
+            <TableHeader align="left">Application Name</TableHeader>
+            <TableHeader align="center">Health Status</TableHeader>
+            <TableHeader align="center">Replicas</TableHeader>
+            <TableHeader align="center">Deploy Status</TableHeader>
+            <TableHeader align="center">Last Deployment</TableHeader>
+            <TableHeader align="right">View Details</TableHeader>
+          </template>
+          <template v-slot:message>
+            <TableMessage v-if="applications.length === 0">
+              No applications found, in this project.<br />
+              You can attach your app to new project by in application details page.
+            </TableMessage>
+          </template>
+          <template v-slot:body>
+            <ApplicationListRow v-for="application in applications" :key="application.id" :application="application" />
+          </template>
+        </Table>
       </div>
     </div>
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.deployment-head {
+  @apply relative flex items-center justify-center gap-2.5  rounded-full border border-secondary-300 px-2 py-1 text-sm font-normal;
+}
+
+.quick-actions {
+  @apply flex overflow-hidden rounded-full border border-secondary-300 text-sm  text-secondary-700;
+
+  .button {
+    @apply cursor-pointer px-2.5 py-1 hover:bg-secondary-200;
+  }
+
+  .divider {
+    @apply h-auto w-[1px] bg-secondary-300;
+  }
+}
+
+.navbar {
+  @apply flex h-min select-none flex-col flex-wrap gap-1 rounded-lg border border-secondary-200 p-1.5;
+}
+
+.nav-element {
+  @apply min-w-max cursor-pointer rounded-md px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100;
+}
+
+.router-link-exact-active {
+  @apply bg-secondary-100 font-medium text-black;
+}
+</style>

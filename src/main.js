@@ -19,6 +19,7 @@ import {
   faBed,
   faBook,
   faBox,
+  faBoxesStacked,
   faBug,
   faCalendarDays,
   faCaretDown,
@@ -197,7 +198,8 @@ library.add(
   faHeartCircleCheck,
   faHeartCircleExclamation,
   faHeartCircleXmark,
-  faPause
+  faPause,
+  faBoxesStacked
 )
 
 // Environment variables
