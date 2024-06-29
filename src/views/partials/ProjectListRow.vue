@@ -33,6 +33,13 @@ const healthyServiceCount = computed(() => {
   return props.project.applications.filter((app) => app.realtimeInfo.HealthStatus === 'healthy').length
 })
 
+const unhealthyServiceCount = computed(() => {
+  if (props.project.applications.length === 0) {
+    return 0
+  }
+  return props.project.applications.filter((app) => app.realtimeInfo.HealthStatus === 'unhealthy').length
+})
+
 const viewApplicationGroupDetails = () => {
   router.push(`/application_group/${props.project.id}`)
 }
@@ -64,7 +71,7 @@ const viewApplicationGroupDetails = () => {
       <div class="text-sm text-success-600">{{ healthyServiceCount }}&nbsp;Healthy</div>
     </TableRow>
     <TableRow align="center">
-      <div class="text-sm text-danger-600">{{ project.applications.length - healthyServiceCount }}&nbsp;Unhealthy</div>
+      <div class="text-sm text-danger-600">{{ unhealthyServiceCount }}&nbsp;Unhealthy</div>
     </TableRow>
     <TableRow align="right" flex>
       <FilledButton :click="viewApplicationGroupDetails" slim type="primary">View Details</FilledButton>
