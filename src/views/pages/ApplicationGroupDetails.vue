@@ -10,6 +10,9 @@ import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
+import DeleteApplicationsModal from '@/views/partials/DeleteApplicationsModal.vue'
+import RestartApplicationsModal from '@/views/partials/RestartApplicationsModal.vue'
+import RebuildApplicationsModal from '@/views/partials/RebuildApplicationsModal.vue'
 
 const toast = useToast()
 
@@ -112,6 +115,32 @@ const unhealthyServiceCount = computed(() => {
     .length
 })
 
+const applicationIds = computed(() => {
+  return applicationGroupDetails.value.applications.map((app) => app.id)
+})
+
+const deleteApplicationsModal = ref(null)
+const restartApplicationsModal = ref(null)
+const rebuildApplicationsModal = ref(null)
+
+function deleteApplications() {
+  if (deleteApplicationsModal.value) {
+    deleteApplicationsModal.value.openModal()
+  }
+}
+
+function restartApplications() {
+  if (restartApplicationsModal.value) {
+    restartApplicationsModal.value.openModal()
+  }
+}
+
+function rebuildApplications() {
+  if (rebuildApplicationsModal.value) {
+    rebuildApplicationsModal.value.openModal()
+  }
+}
+
 // page
 const pageName = ref('deployed-apps')
 </script>
@@ -122,6 +151,16 @@ const pageName = ref('deployed-apps')
     <p>Loading...</p>
   </div>
   <section v-else class="mx-auto w-full max-w-7xl">
+    <!--  Modals  -->
+    <DeleteApplicationsModal ref="deleteApplicationsModal" :application-ids="applicationIds" />
+    <RestartApplicationsModal
+      ref="restartApplicationsModal"
+      :application-ids="applicationIds"
+      :on-done="refetchGroupApplicationDetails" />
+    <RebuildApplicationsModal
+      ref="rebuildApplicationsModal"
+      :application-ids="applicationIds"
+      :on-done="refetchGroupApplicationDetails" />
     <!--  First line  -->
     <div class="flex w-full flex-row items-center justify-between">
       <!--   App name     -->
@@ -214,17 +253,17 @@ const pageName = ref('deployed-apps')
       <!--    Quick Actions    -->
       <div class="quick-actions">
         <div class="divider"></div>
-        <div class="button">
+        <div class="button" @click="rebuildApplications">
           <font-awesome-icon icon="fa-solid fa-hammer" class="mr-1" />
-          Rebuild All
+          Rebuild & Deploy
         </div>
         <div class="divider"></div>
-        <div class="button">
+        <div class="button" @click="restartApplications">
           <font-awesome-icon icon="fa-solid fa-rotate-right" class="mr-1" />
           Restart All
         </div>
         <div class="divider"></div>
-        <div class="button text-danger-500">
+        <div class="button text-danger-500" @click="deleteApplications">
           <font-awesome-icon icon="fa-solid fa-trash" class="mr-1" />
           Delete All
         </div>
