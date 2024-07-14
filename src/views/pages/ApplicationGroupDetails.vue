@@ -230,22 +230,14 @@ const pageName = ref('deployed-apps')
               </a>
             </span>
           </div>
-          <div v-else class="has-popover flex gap-2">
+          <div v-else class="has-popover flex cursor-pointer gap-2">
             <div class="deployment-head">
               <font-awesome-icon icon="fa-solid fa-globe" />
               <p class="text-warning-600">Not Exposed</p>
-              <RouterLink
-                :to="{
-                  name: 'Application Details Ingress Rules',
-                  params: { id: $route.params.id }
-                }"
-                class="font-semibold hover:cursor-pointer hover:text-primary-600">
-                <font-awesome-icon icon="fa-solid fa-plus" />
-              </RouterLink>
             </div>
             <div class="popover w-60">
-              No Ingress Rules available. Click the <b>plus</b> button to add ingress rules if you want to expose the
-              application to the internet.
+              No Ingress Rules available. Please open the <b>application details</b> page and create ingress rule to
+              expose your application to the internet.
             </div>
           </div>
         </div>
@@ -301,9 +293,9 @@ const pageName = ref('deployed-apps')
         </div>
       </div>
 
-      <!--    content  -->
+      <!--    Deployed Apps  -->
       <div class="w-full">
-        <Table>
+        <Table v-if="pageName === 'deployed-apps'">
           <template v-slot:header>
             <TableHeader align="left">Application Name</TableHeader>
             <TableHeader align="center">Health Status</TableHeader>
