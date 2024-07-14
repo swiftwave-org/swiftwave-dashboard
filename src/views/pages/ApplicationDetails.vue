@@ -257,7 +257,7 @@ const openApplicationGroupUpdateModal = () => {
         <div class="flex flex-row items-center gap-2 overflow-hidden">
           <div
             @click="openApplicationGroupUpdateModal"
-            class="flex cursor-pointer items-center justify-center rounded-full bg-secondary-600 px-3 py-1 text-sm font-medium italic text-white hover:bg-secondary-700">
+            class="flex cursor-pointer items-center justify-center rounded-full bg-secondary-600 px-3 py-1 text-sm font-medium text-white hover:bg-secondary-700">
             <span v-if="applicationDetails.applicationGroup">{{ applicationDetails.applicationGroup.name }}</span>
             <span v-else>no project</span>
             &nbsp;&nbsp;
