@@ -49,13 +49,13 @@ const isDisabled = computed(() => {
       'cursor-not-allowed opacity-50': disabled,
       'hover:bg-[type]-600/80': !disabled,
       'cursor-progress': loading,
-      'py-2 text-sm': !slim,
-      'px-1.5 py-1 text-xs': slim,
+      'px-3 py-2 text-sm': !slim,
+      'px-2 py-1 text-xs': slim,
       'rounded-full': rounded,
       'rounded-md': !rounded
     }"
     :disabled="isDisabled"
-    class="flex items-center justify-center px-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+    class="flex items-center justify-center shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
     type="button"
     @click.stop="click">
     <!--    spinner -->

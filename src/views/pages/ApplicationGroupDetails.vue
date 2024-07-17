@@ -4,7 +4,7 @@ import { useQuery } from '@vue/apollo-composable'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import gql from 'graphql-tag'
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
@@ -13,6 +13,8 @@ import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
 import DeleteApplicationsModal from '@/views/partials/DeleteApplicationsModal.vue'
 import RestartApplicationsModal from '@/views/partials/RestartApplicationsModal.vue'
 import RebuildApplicationsModal from '@/views/partials/RebuildApplicationsModal.vue'
+import EnvironmentVariablesEditor from '@/views/partials/DeployApplication/EnvironmentVariablesEditor.vue'
+import { v4 as uuidv4 } from 'uuid'
 
 const toast = useToast()
 
@@ -25,6 +27,7 @@ const {
   result: applicationGroupDetailsRaw,
   loading: applicationGroupDetailsLoading,
   refetch: refetchGroupApplicationDetails,
+  onResult: onResultGroupApplicationDetails,
   onError: onErrorGroupApplicationDetails
 } = useQuery(
   gql`
@@ -82,6 +85,27 @@ const {
 onErrorGroupApplicationDetails(() => {
   toast.error('Failed to fetch application group details')
 })
+
+onResultGroupApplicationDetails(() => {
+  for (const application of applications.value) {
+    let map = {}
+    application.environmentVariables.forEach((variable) => {
+      const z = uuidv4()
+      map[z] = {
+        name: variable.key,
+        value: variable.value
+      }
+    })
+    environmentVariableDetails[application.id] = {
+      keys: Object.keys(map),
+      map: map
+    }
+  }
+  if (applications.value.length > 0 && pageInfo.currentSelectedEnvironmentVariableApplicationId === '') {
+    pageInfo.currentSelectedEnvironmentVariableApplicationId = applications.value[0].id
+  }
+})
+const environmentVariableDetails = reactive({})
 
 const applicationGroupDetails = computed(() => applicationGroupDetailsRaw.value?.applicationGroup ?? {})
 const applications = computed(() => applicationGroupDetailsRaw.value?.applicationGroup?.applications ?? [])
@@ -143,6 +167,34 @@ function rebuildApplications() {
 
 // page
 const pageName = ref('deployed-apps')
+const pageInfo = reactive({
+  currentSelectedEnvironmentVariableApplicationId: ''
+})
+
+const environmentVairableKeys = (app) => {
+  return environmentVariableDetails[app.id].keys
+}
+const environmentVairableMap = (app) => {
+  return environmentVariableDetails[app.id].map
+}
+const addEnvironmentVariable = (app) => {
+  const key = uuidv4()
+  environmentVariableDetails[app.id].map[key] = {
+    name: '',
+    value: ''
+  }
+  environmentVariableDetails[app.id].keys.push(key)
+}
+const deleteEnvironmentVariable = (app, key) => {
+  delete environmentVariableDetails[app.id].map[key]
+  environmentVariableDetails[app.id].keys = environmentVariableDetails[app.id].keys.filter((k) => k !== key)
+}
+const onEnvironmentVariableValueChange = (app, key, value) => {
+  environmentVariableDetails[app.id].map[key].value = value
+}
+const onEnvironmentVariableNameChange = (app, key, name) => {
+  environmentVariableDetails[app.id].map[key].name = name
+}
 </script>
 
 <template>
@@ -275,8 +327,8 @@ const pageName = ref('deployed-apps')
         </div>
         <div
           class="nav-element"
-          :class="{ 'router-link-exact-active': pageName === 'persistent-volume' }"
-          @click="pageName = 'persistent-volume'">
+          :class="{ 'router-link-exact-active': pageName === 'persistent-volumes' }"
+          @click="pageName = 'persistent-volumes'">
           Persistent Volume
         </div>
         <div
@@ -287,7 +339,7 @@ const pageName = ref('deployed-apps')
         </div>
         <div
           class="nav-element"
-          :class="{ 'router-link-exact-active': pageName === 'static-app-config' }"
+          :class="{ 'router-link-exact-active': pageName === 'static-app-configs' }"
           @click="pageName = 'static-app-config'">
           Static App Config
         </div>
@@ -314,6 +366,34 @@ const pageName = ref('deployed-apps')
             <ApplicationListRow v-for="application in applications" :key="application.id" :application="application" />
           </template>
         </Table>
+        <div v-else-if="pageName === 'environment-variables'" class="flex w-full flex-col gap-3">
+          <div class="flex flex-row flex-wrap gap-2">
+            <div class="w-min cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-secondary-700">
+              Applications
+            </div>
+            <div
+              v-for="application in applications"
+              v-bind:key="application.id"
+              class="w-min cursor-pointer rounded-md border border-secondary-200 px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+              :class="{
+                'border-secondary-400 bg-secondary-50':
+                  pageInfo.currentSelectedEnvironmentVariableApplicationId === application.id
+              }"
+              @click="pageInfo.currentSelectedEnvironmentVariableApplicationId = application.id">
+              {{ application.name }}
+            </div>
+          </div>
+          <EnvironmentVariablesEditor
+            v-for="application in applications"
+            v-bind:key="application.id"
+            v-show="pageInfo.currentSelectedEnvironmentVariableApplicationId === application.id"
+            :on-variable-value-change="(key, value) => onEnvironmentVariableValueChange(application, key, value)"
+            :on-variable-name-change="(key, name) => onEnvironmentVariableNameChange(application, key, name)"
+            :delete-environment-variable="(key) => deleteEnvironmentVariable(application, key)"
+            :add-environment-variable="() => addEnvironmentVariable(application)"
+            :environment-variables-map="environmentVairableMap(application)"
+            :environment-variables-keys="environmentVairableKeys(application)" />
+        </div>
       </div>
     </div>
   </section>
