@@ -47,7 +47,6 @@ const newApplicationState = reactive({
   reservedResource: {
     memoryMb: 0
   },
-  group: '',
   customHealthCheck: {
     enabled: false,
     test_command: '',

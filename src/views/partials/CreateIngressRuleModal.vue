@@ -137,7 +137,7 @@ const {
   refetch: refetchApplications
 } = useLazyQuery(gql`
   query {
-    applications {
+    applications(includeGroupedApplications: true) {
       id
       name
     }

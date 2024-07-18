@@ -35,7 +35,7 @@ const valueHidden = ref(true)
 
 <template>
   <tr :key="variableKey">
-    <TableRow>
+    <TableRow class="!py-3">
       <input
         :key="`name-${variableKey}`"
         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
@@ -44,7 +44,7 @@ const valueHidden = ref(true)
         v-bind:value="variableName"
         @input="(event) => onVariableNameChange(variableKey, event.target.value)" />
     </TableRow>
-    <TableRow>
+    <TableRow class="!py-3">
       <div class="relative w-full">
         <input
           :key="`value-${variableKey}`"
@@ -64,14 +64,14 @@ const valueHidden = ref(true)
         </div>
       </div>
     </TableRow>
-    <TableRow align="right" class="flex">
+    <TableRow align="right" class="flex !py-3">
       <FilledButton
         :key="`delete-${variableKey}`"
         :click="() => deleteVariable(variableKey)"
         class="w-full"
         type="danger">
         <font-awesome-icon class="mr-2" icon="fa-solid fa-trash" />
-        Delete Variable
+        Delete
       </FilledButton>
     </TableRow>
   </tr>
