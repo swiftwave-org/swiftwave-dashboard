@@ -79,7 +79,7 @@ watch(selectedOptionValue, (newValue) => {
         :display-value="(i) => getDisplayValue(i)"
         @change="query = $event.target.value"
         placeholder="Start typing to filter..."
-        class="w-full border-none focus:ring-0" />
+        class="w-full border-none text-sm focus:ring-0" />
       <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
         <font-awesome-icon icon="fa-solid fa-caret-down" class="h-5 w-5 text-gray-400" aria-hidden="true" />
       </ComboboxButton>

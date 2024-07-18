@@ -57,7 +57,7 @@ onApplicationGroupLoadFail((error) => {
 
 const applicationGroups = computed(() => {
   let l = applicationGroupsRaw?.value?.applicationGroups ?? []
-  l.push({ id: null, name: 'No Group' })
+  l.push({ id: null, name: 'No Project' })
   return l
 })
 
@@ -125,9 +125,9 @@ defineExpose({
 
 <template>
   <ModalDialog :close-modal="closeModal" :is-open="isModalOpen">
-    <template v-slot:header>Update application group</template>
+    <template v-slot:header>Update application project</template>
     <template v-slot:body>
-      <p class="mb-4">Create a new group or pick an existing group to assign your application to.</p>
+      <p class="mb-4 mt-2 text-sm">Create a new project or pick an project group to assign your application to it.</p>
       <ComboBoxComponent
         :value="selectedGroupId"
         :options="applicationGroups"
@@ -143,7 +143,7 @@ defineExpose({
         :click="updateApplicationGroup"
         :loading="isDomainRegistering || isApplicationGroupCreating"
         type="primary"
-        >Assign Application to Group
+        >Assign Application to Project
       </FilledButton>
     </template>
   </ModalDialog>

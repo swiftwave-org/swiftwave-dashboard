@@ -34,6 +34,7 @@ import ServerLogsPage from '@/views/pages/ServerLogs.vue'
 import ServerAnalyticsPage from '@/views/pages/ServerAnalytics.vue'
 import SystemLogsPage from '@/views/pages/SystemLogs.vue'
 import AppAuthBasicAccessControlList from '@/views/pages/AppAuthBasicAccessControlList.vue'
+import ApplicationGroupDetailsPage from '@/views/pages/ApplicationGroupDetails.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -159,6 +160,11 @@ const router = createRouter({
           component: ApplicationDetailsResourceStatsPage
         }
       ]
+    },
+    {
+      path: '/application_group/:id',
+      name: 'Application Group Details',
+      component: ApplicationGroupDetailsPage
     },
     {
       path: '/app_auth',

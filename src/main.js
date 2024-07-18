@@ -19,6 +19,7 @@ import {
   faBed,
   faBook,
   faBox,
+  faBoxesStacked,
   faBug,
   faCalendarDays,
   faCaretDown,
@@ -53,6 +54,9 @@ import {
   faHammer,
   faHandshakeAngle,
   faHardDrive,
+  faHeartCircleCheck,
+  faHeartCircleExclamation,
+  faHeartCircleXmark,
   faKey,
   faLayerGroup,
   faLink,
@@ -61,6 +65,7 @@ import {
   faLocationArrow,
   faMagnifyingGlass,
   faNetworkWired,
+  faPause,
   faPeopleGroup,
   faPersonDigging,
   faPlay,
@@ -189,7 +194,12 @@ library.add(
   faPersonDigging,
   faShieldHalved,
   faUserShield,
-  faKey
+  faKey,
+  faHeartCircleCheck,
+  faHeartCircleExclamation,
+  faHeartCircleXmark,
+  faPause,
+  faBoxesStacked
 )
 
 // Environment variables
@@ -269,7 +279,7 @@ pinia.use(({ store }) => {
 app.use(router)
 app.use(pinia)
 app.use(Toast, {
-  position: 'top-right',
+  position: 'top-center',
   timeout: 5000,
   closeOnClick: true,
   pauseOnFocusLoss: true,
