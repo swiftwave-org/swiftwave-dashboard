@@ -1,6 +1,6 @@
 <script setup>
 // Toast
-import { useQuery } from '@vue/apollo-composable'
+import { useMutation, useQuery } from '@vue/apollo-composable'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import gql from 'graphql-tag'
@@ -15,6 +15,9 @@ import RestartApplicationsModal from '@/views/partials/RestartApplicationsModal.
 import RebuildApplicationsModal from '@/views/partials/RebuildApplicationsModal.vue'
 import EnvironmentVariablesEditor from '@/views/partials/DeployApplication/EnvironmentVariablesEditor.vue'
 import { v4 as uuidv4 } from 'uuid'
+import PersistentVolumeBindingEditor from '@/views/partials/DeployApplication/PersistentVolumeBindingEditor.vue'
+import ConfigMountsEditor from '@/views/partials/DeployApplication/ConfigMountsEditor.vue'
+import FilledButton from '@/views/components/FilledButton.vue'
 
 const toast = useToast()
 
@@ -39,12 +42,47 @@ const {
         applications {
           id
           name
+          deploymentMode
+          command
           replicas
           isSleeping
+          resourceLimit {
+            memoryMb
+          }
+          reservedResource {
+            memoryMb
+          }
+          environmentVariables {
+            key
+            value
+          }
+          persistentVolumeBindings {
+            id
+            persistentVolumeID
+            mountingPath
+          }
+          configMounts {
+            content
+            mountingPath
+            uid
+            gid
+          }
           latestDeployment {
             upstreamType
-            status
-            createdAt
+            dockerfile
+            buildArgs {
+              key
+              value
+            }
+            gitEndpoint
+            gitProvider
+            gitCredentialID
+            repositoryUrl
+            repositoryBranch
+            codePath
+            imageRegistryCredentialID
+            dockerImage
+            sourceCodeCompressedFileName
           }
           realtimeInfo {
             InfoFound
@@ -53,10 +91,6 @@ const {
             RunningReplicas
             HealthStatus
           }
-          environmentVariables {
-            key
-            value
-          }
           ingressRules {
             domain {
               name
@@ -64,11 +98,46 @@ const {
             protocol
             port
           }
-          configMounts {
-            content
-            mountingPath
-            uid
-            gid
+          capabilities
+          sysctls
+          applicationGroupID
+          customHealthCheck {
+            enabled
+            test_command
+            interval_seconds
+            timeout_seconds
+            start_period_seconds
+            start_interval_seconds
+            retries
+          }
+          preferredServerHostnames
+          dockerProxyConfig {
+            enabled
+            permission {
+              ping
+              version
+              info
+              events
+              auth
+              secrets
+              build
+              commit
+              configs
+              containers
+              distribution
+              exec
+              grpc
+              images
+              networks
+              nodes
+              plugins
+              services
+              session
+              swarm
+              system
+              tasks
+              volumes
+            }
           }
         }
       }
@@ -88,24 +157,56 @@ onErrorGroupApplicationDetails(() => {
 
 onResultGroupApplicationDetails(() => {
   for (const application of applications.value) {
-    let map = {}
+    let envVariablesMap = {}
     application.environmentVariables.forEach((variable) => {
       const z = uuidv4()
-      map[z] = {
+      envVariablesMap[z] = {
         name: variable.key,
         value: variable.value
       }
     })
     environmentVariableDetails[application.id] = {
-      keys: Object.keys(map),
-      map: map
+      keys: Object.keys(envVariablesMap),
+      map: envVariablesMap
     }
+    let persistentVolumeBindingsMap = {}
+    application.persistentVolumeBindings.forEach((binding) => {
+      const z = uuidv4()
+      persistentVolumeBindingsMap[z] = {
+        persistentVolumeID: binding.persistentVolumeID,
+        mountingPath: binding.mountingPath
+      }
+    })
+    persistentVolumeBindingDetails[application.id] = {
+      keys: Object.keys(persistentVolumeBindingsMap),
+      map: persistentVolumeBindingsMap
+    }
+    let configMountsMap = {}
+    application.configMounts.forEach((configMount) => {
+      const z = uuidv4()
+      configMountsMap[z] = {
+        content: configMount.content,
+        mountingPath: configMount.mountingPath,
+        uid: configMount.uid,
+        gid: configMount.gid
+      }
+    })
+    configMountDetails[application.id] = {
+      keys: Object.keys(configMountsMap),
+      map: configMountsMap
+    }
+    isAppInfoChanged[application.id] = false
   }
   if (applications.value.length > 0 && pageInfo.currentSelectedEnvironmentVariableApplicationId === '') {
     pageInfo.currentSelectedEnvironmentVariableApplicationId = applications.value[0].id
+    pageInfo.currentSelectedPersistentVolumeApplicationId = applications.value[0].id
+    pageInfo.currentSelectedConfigMountApplicationId = applications.value[0].id
   }
 })
+
+const persistentVolumeBindingDetails = reactive({})
 const environmentVariableDetails = reactive({})
+const configMountDetails = reactive({})
 
 const applicationGroupDetails = computed(() => applicationGroupDetailsRaw.value?.applicationGroup ?? {})
 const applications = computed(() => applicationGroupDetailsRaw.value?.applicationGroup?.applications ?? [])
@@ -168,13 +269,26 @@ function rebuildApplications() {
 // page
 const pageName = ref('deployed-apps')
 const pageInfo = reactive({
-  currentSelectedEnvironmentVariableApplicationId: ''
+  currentSelectedPersistentVolumeApplicationId: '',
+  currentSelectedEnvironmentVariableApplicationId: '',
+  currentSelectedConfigMountApplicationId: ''
+})
+const isAppInfoChanged = reactive({})
+const isAnyAppInfoChanged = computed(() => {
+  for (const app of applications.value) {
+    if (isAppInfoChanged[app.id]) {
+      return true
+    }
+  }
+  return false
 })
 
-const environmentVairableKeys = (app) => {
+// Environment Variables Editor Related
+const environmentVariableKeys = (app) => {
+  console.log(environmentVariableDetails)
   return environmentVariableDetails[app.id].keys
 }
-const environmentVairableMap = (app) => {
+const environmentVariableMap = (app) => {
   return environmentVariableDetails[app.id].map
 }
 const addEnvironmentVariable = (app) => {
@@ -184,16 +298,149 @@ const addEnvironmentVariable = (app) => {
     value: ''
   }
   environmentVariableDetails[app.id].keys.push(key)
+  isAppInfoChanged[app.id] = true
 }
 const deleteEnvironmentVariable = (app, key) => {
   delete environmentVariableDetails[app.id].map[key]
   environmentVariableDetails[app.id].keys = environmentVariableDetails[app.id].keys.filter((k) => k !== key)
+  isAppInfoChanged[app.id] = true
 }
 const onEnvironmentVariableValueChange = (app, key, value) => {
   environmentVariableDetails[app.id].map[key].value = value
+  isAppInfoChanged[app.id] = true
 }
 const onEnvironmentVariableNameChange = (app, key, name) => {
   environmentVariableDetails[app.id].map[key].name = name
+  isAppInfoChanged[app.id] = true
+}
+
+// Persistent Volume Binding Editor Related
+const persistentVolumeBindingKeys = (app) => {
+  return persistentVolumeBindingDetails[app.id].keys
+}
+const persistentVolumeBindingMap = (app) => {
+  return persistentVolumeBindingDetails[app.id].map
+}
+const addPersistentVolumeBinding = (app) => {
+  const key = uuidv4()
+  persistentVolumeBindingDetails[app.id].map[key] = {
+    persistentVolumeID: -1,
+    mountingPath: ''
+  }
+  persistentVolumeBindingDetails[app.id].keys.push(key)
+  isAppInfoChanged[app.id] = true
+}
+const deletePersistentVolumeBinding = (app, key) => {
+  delete persistentVolumeBindingDetails[app.id].map[key]
+  persistentVolumeBindingDetails[app.id].keys = persistentVolumeBindingDetails[app.id].keys.filter((k) => k !== key)
+  isAppInfoChanged[app.id] = true
+}
+const onPersistentVolumeChange = (app, key, value) => {
+  persistentVolumeBindingDetails[app.id].map[key].persistentVolumeID = value
+  isAppInfoChanged[app.id] = true
+}
+const onPersistentVolumeMountingPathChange = (app, key, value) => {
+  persistentVolumeBindingDetails[app.id].map[key].mountingPath = value
+  isAppInfoChanged[app.id] = true
+}
+
+// Config Mount Editor Related
+const configMountKeys = (app) => {
+  return configMountDetails[app.id].keys
+}
+const configMountMap = (app) => {
+  return configMountDetails[app.id].map
+}
+const addConfigMount = (app, details) => {
+  const key = uuidv4()
+  configMountDetails[app.id].map[key] = details
+  configMountDetails[app.id].keys.push(key)
+  isAppInfoChanged[app.id] = true
+}
+const deleteConfigMount = (app, key) => {
+  delete configMountDetails[app.id].map[key]
+  configMountDetails[app.id].keys = configMountDetails[app.id].keys.filter((k) => k !== key)
+  isAppInfoChanged[app.id] = true
+}
+const onConfigMountContentChange = (app, key, content) => {
+  configMountDetails[app.id].map[key].content = content
+  isAppInfoChanged[app.id] = true
+}
+
+// Apply Changes
+
+const isApplyingChanges = ref(false)
+const { mutate: deployApplication } = useMutation(gql`
+  mutation ($id: String!, $input: ApplicationInput!) {
+    updateApplication(id: $id, input: $input) {
+      id
+      name
+    }
+  }
+`)
+const applyChanges = async () => {
+  isApplyingChanges.value = true
+  for (const appId in isAppInfoChanged) {
+    if (!isAppInfoChanged[appId]) continue
+    for (const application of applications.value) {
+      if (application.id === appId) {
+        let updatedPayload = {
+          name: application.name,
+          upstreamType: application.latestDeployment.upstreamType, // TODO Not allowed to change
+          command: application.command,
+          deploymentMode: application.deploymentMode,
+          replicas: application.replicas,
+          resourceLimit: {
+            memoryMb: application.resourceLimit.memoryMb
+          },
+          reservedResource: {
+            memoryMb: application.reservedResource.memoryMb
+          },
+          buildArgs: application.latestDeployment.buildArgs,
+          environmentVariables: environmentVariableKeys(application).map((key) => {
+            return {
+              key: environmentVariableMap(application)[key].name,
+              value: environmentVariableMap(application)[key].value
+            }
+          }),
+          configMounts: configMountKeys(application).map((key) => configMountMap(application)[key]),
+          persistentVolumeBindings: persistentVolumeBindingKeys(application).map(
+            (key) => persistentVolumeBindingMap(application)[key]
+          ),
+          // update this part
+          gitCredentialID:
+            application.latestDeployment.gitCredentialID === 0 ? null : application.latestDeployment.gitCredentialID,
+          repositoryUrl: application.latestDeployment.repositoryUrl,
+          repositoryBranch: application.latestDeployment.repositoryBranch,
+          codePath: application.latestDeployment.codePath,
+          imageRegistryCredentialID:
+            application.latestDeployment.imageRegistryCredentialID === 0
+              ? null
+              : application.latestDeployment.imageRegistryCredentialID,
+          dockerImage: application.latestDeployment.dockerImage,
+          sourceCodeCompressedFileName: application.latestDeployment.sourceCodeCompressedFileName,
+          dockerfile: application.latestDeployment.dockerfile,
+          capabilities: application.capabilities,
+          sysctls: application.sysctls,
+          applicationGroupID: application.applicationGroupID === 0 ? null : application.applicationGroupID,
+          customHealthCheck: application.customHealthCheck,
+          preferredServerHostnames: application.preferredServerHostnames,
+          dockerProxyConfig: application.dockerProxyConfig
+        }
+        try {
+          await deployApplication({
+            input: updatedPayload,
+            id: application.id
+          })
+        } catch (e) {
+          toast.error(e.message)
+        }
+      }
+    }
+  }
+  isApplyingChanges.value = false
+  toast.success('Changes applied successfully')
+  refetchGroupApplicationDetails()
 }
 </script>
 
@@ -345,27 +592,65 @@ const onEnvironmentVariableNameChange = (app, key, name) => {
         </div>
       </div>
 
-      <!--    Deployed Apps  -->
       <div class="w-full">
-        <Table v-if="pageName === 'deployed-apps'">
-          <template v-slot:header>
-            <TableHeader align="left">Application Name</TableHeader>
-            <TableHeader align="center">Health Status</TableHeader>
-            <TableHeader align="center">Replicas</TableHeader>
-            <TableHeader align="center">Deploy Status</TableHeader>
-            <TableHeader align="center">Last Deployment</TableHeader>
-            <TableHeader align="right">View Details</TableHeader>
-          </template>
-          <template v-slot:message>
-            <TableMessage v-if="applications.length === 0">
-              No applications found, in this project.<br />
-              You can attach your app to new project by in application details page.
-            </TableMessage>
-          </template>
-          <template v-slot:body>
-            <ApplicationListRow v-for="application in applications" :key="application.id" :application="application" />
-          </template>
-        </Table>
+        <!--    Deployed Apps  -->
+        <div class="w-full" v-if="pageName === 'deployed-apps'">
+          <Table>
+            <template v-slot:header>
+              <TableHeader align="left">Application Name</TableHeader>
+              <TableHeader align="center">Health Status</TableHeader>
+              <TableHeader align="center">Replicas</TableHeader>
+              <TableHeader align="center">Deploy Status</TableHeader>
+              <TableHeader align="center">Last Deployment</TableHeader>
+              <TableHeader align="right">View Details</TableHeader>
+            </template>
+            <template v-slot:message>
+              <TableMessage v-if="applications.length === 0">
+                No applications found, in this project.<br />
+                You can attach your app to new project by in application details page.
+              </TableMessage>
+            </template>
+            <template v-slot:body>
+              <ApplicationListRow
+                v-for="application in applications"
+                :key="application.id"
+                :application="application" />
+            </template>
+          </Table>
+        </div>
+        <!--  Persistent Volume    -->
+        <div v-else-if="pageName === 'persistent-volumes'" class="flex w-full flex-col gap-3">
+          <div class="flex flex-row flex-wrap gap-2">
+            <div class="w-min cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-secondary-700">
+              Applications
+            </div>
+            <div
+              v-for="application in applications"
+              v-bind:key="application.id"
+              class="w-min cursor-pointer rounded-md border border-secondary-200 px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+              :class="{
+                'border-secondary-400 bg-secondary-50':
+                  pageInfo.currentSelectedPersistentVolumeApplicationId === application.id
+              }"
+              @click="pageInfo.currentSelectedPersistentVolumeApplicationId = application.id">
+              {{ application.name }}
+            </div>
+          </div>
+          <div
+            class="w-full"
+            v-for="application in applications"
+            v-bind:key="application.id"
+            v-show="pageInfo.currentSelectedPersistentVolumeApplicationId === application.id">
+            <PersistentVolumeBindingEditor
+              :on-mounting-path-change="(key, value) => onPersistentVolumeMountingPathChange(application, key, value)"
+              :on-persistent-volume-change="(key, value) => onPersistentVolumeChange(application, key, value)"
+              :delete-persistent-volume-binding="(key) => deletePersistentVolumeBinding(application, key)"
+              :add-persistent-volume-binding="() => addPersistentVolumeBinding(application)"
+              :persistent-volume-bindings-map="persistentVolumeBindingMap(application)"
+              :persistent-volume-binding-keys="persistentVolumeBindingKeys(application)" />
+          </div>
+        </div>
+        <!--  Environment Variables  -->
         <div v-else-if="pageName === 'environment-variables'" class="flex w-full flex-col gap-3">
           <div class="flex flex-row flex-wrap gap-2">
             <div class="w-min cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-secondary-700">
@@ -391,8 +676,47 @@ const onEnvironmentVariableNameChange = (app, key, name) => {
             :on-variable-name-change="(key, name) => onEnvironmentVariableNameChange(application, key, name)"
             :delete-environment-variable="(key) => deleteEnvironmentVariable(application, key)"
             :add-environment-variable="() => addEnvironmentVariable(application)"
-            :environment-variables-map="environmentVairableMap(application)"
-            :environment-variables-keys="environmentVairableKeys(application)" />
+            :environment-variables-map="environmentVariableMap(application)"
+            :environment-variables-keys="environmentVariableKeys(application)" />
+        </div>
+        <!--   Config Mounts   -->
+        <div v-else-if="pageName === 'static-app-config'" class="flex w-full flex-col gap-3">
+          <div class="flex flex-row flex-wrap gap-2">
+            <div class="w-min cursor-pointer rounded-md px-2 py-2 text-sm font-medium text-secondary-700">
+              Applications
+            </div>
+            <div
+              v-for="application in applications"
+              v-bind:key="application.id"
+              class="w-min cursor-pointer rounded-md border border-secondary-200 px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+              :class="{
+                'border-secondary-400 bg-secondary-50':
+                  pageInfo.currentSelectedConfigMountApplicationId === application.id
+              }"
+              @click="pageInfo.currentSelectedConfigMountApplicationId = application.id">
+              {{ application.name }}
+            </div>
+          </div>
+          <div
+            class="w-full"
+            v-for="application in applications"
+            v-bind:key="application.id"
+            v-show="pageInfo.currentSelectedConfigMountApplicationId === application.id">
+            <ConfigMountsEditor
+              :on-config-content-change="(key, content) => onConfigMountContentChange(application, key, content)"
+              :delete-config-mount="(key) => deleteConfigMount(application, key)"
+              :add-config-mount="(details) => addConfigMount(application, details)"
+              :config-mounts-map="configMountMap(application)"
+              :config-mounts-keys="configMountKeys(application)" />
+          </div>
+        </div>
+        <!--  Update Config Notify bar  -->
+        <div
+          v-if="isAnyAppInfoChanged"
+          class="mt-4 flex flex-row items-center justify-end gap-2 rounded-md border border-gray-300 p-2">
+          <span class="mr-4 font-medium">You have updated some of the configuration</span>
+          <FilledButton type="primary" :click="applyChanges" :loading="isApplyingChanges"> Apply Changes</FilledButton>
+          <FilledButton type="secondary" :click="refetchGroupApplicationDetails"> Cancel</FilledButton>
         </div>
       </div>
     </div>
