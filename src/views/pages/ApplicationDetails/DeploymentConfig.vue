@@ -6,6 +6,7 @@ import DockerProxyPermissionChoose from '@/views/partials/DockerProxyPermissionC
 import Disclosure from '@/views/components/Disclosure.vue'
 import ConfigureDeploymentPreferredServers from '@/views/partials/ConfigureDeploymentPreferredServers.vue'
 import { ref } from 'vue'
+import { preventSpaceInput } from '@/vendor/utils'
 
 const router = useRouter()
 const applicationUpdater = newApplicationUpdater(router.currentRoute.value.params.id)()
@@ -56,6 +57,19 @@ const openConfigureDeploymentPreferredServers = () => {
         @click="openConfigureDeploymentPreferredServers"
         v-model="applicationUpdater.preferredServerHostnamesStr"
         readonly />
+    </div>
+  </div>
+  <!--   Container Hostname    -->
+  <div class="mt-3">
+    <p class="font-medium text-black">Container Hostname</p>
+    <div class="mt-1">
+      <input
+        class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        placeholder="Provide container hostname"
+        type="text"
+        v-model="applicationUpdater.deploymentConfigurationDetails.hostname"
+        @change="applicationUpdater.triggerUpdateHook"
+        @keydown="preventSpaceInput" />
     </div>
   </div>
   <!-- Memory Config -->

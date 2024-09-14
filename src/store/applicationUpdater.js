@@ -62,6 +62,7 @@ export default function newApplicationUpdater(applicationId) {
             deploymentMode
             replicas
             command
+            hostname
             resourceLimit {
               memoryMb
             }
@@ -210,6 +211,7 @@ export default function newApplicationUpdater(applicationId) {
       const applicationConfiguration = applicationDetailsRaw.value?.application ?? {}
       deploymentConfigurationDetails.deploymentMode = applicationConfiguration.deploymentMode
       deploymentConfigurationDetails.replicas = applicationConfiguration.replicas
+      deploymentConfigurationDetails.hostname = applicationConfiguration.hostname
       deploymentConfigurationDetails.resourceLimit.memoryMb = applicationConfiguration.resourceLimit.memoryMb
       deploymentConfigurationDetails.reservedResource.memoryMb = applicationConfiguration.reservedResource.memoryMb
       deploymentConfigurationDetails.preferredServerHostnames = applicationConfiguration.preferredServerHostnames
@@ -310,6 +312,7 @@ export default function newApplicationUpdater(applicationId) {
     const deploymentConfigurationDetails = reactive({
       deploymentMode: '',
       replicas: 0,
+      hostname: '',
       resourceLimit: {
         memoryMb: 0
       },
@@ -521,6 +524,7 @@ export default function newApplicationUpdater(applicationId) {
             name
             deploymentMode
             command
+            hostname
             replicas
             resourceLimit {
               memoryMb
@@ -622,6 +626,10 @@ export default function newApplicationUpdater(applicationId) {
       }
       // check if replica count is changed
       if (applicationExistingDetails.replicas.toString() !== deploymentConfigurationDetails.replicas.toString()) {
+        return true
+      }
+      // check if container hostname is changed
+      if (applicationExistingDetails.hostname !== deploymentConfigurationDetails.hostname) {
         return true
       }
       // check if deploy proxy config changed
@@ -862,6 +870,7 @@ export default function newApplicationUpdater(applicationId) {
         command: sourceConfigurationRef.command,
         deploymentMode: deploymentConfigurationDetails.deploymentMode,
         replicas: deploymentConfigurationDetails.replicas,
+        hostname: deploymentConfigurationDetails.hostname,
         resourceLimit: {
           memoryMb: deploymentConfigurationDetails.resourceLimit.memoryMb
         },
