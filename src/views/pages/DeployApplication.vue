@@ -24,6 +24,7 @@ const changeTab = (index) => {
 const newApplicationState = reactive({
   name: '',
   upstreamType: '',
+  hostname: '',
   command: '',
   deploymentMode: '',
   replicas: 0,
@@ -175,6 +176,7 @@ const finalizeApplicationAdditionalSettings = (additionalSettings) => {
   // NOTE: Don't modify as configuration is a reference to the state of `ApplicationAdditionalSettings.vue`
   newApplicationState.deploymentMode = additionalSettings.deploymentMode
   newApplicationState.replicas = additionalSettings.replicas
+  newApplicationState.hostname = additionalSettings.hostname
   newApplicationState.environmentVariables = additionalSettings.environmentVariables
   newApplicationState.persistentVolumeBindings = additionalSettings.persistentVolumeBindings
   newApplicationState.configMounts = additionalSettings.configMounts
