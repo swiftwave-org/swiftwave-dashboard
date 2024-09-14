@@ -10,6 +10,7 @@ import Disclosure from '@/views/components/Disclosure.vue'
 import ConfigMountsEditor from '@/views/partials/DeployApplication/ConfigMountsEditor.vue'
 import ConfigureDeploymentPreferredServers from '@/views/partials/ConfigureDeploymentPreferredServers.vue'
 import DockerProxyPermissionChoose from '@/views/partials/DockerProxyPermissionChoose.vue'
+import { preventSpaceInput } from '@/vendor/utils'
 
 const props = defineProps({
   finalizeApplicationAdditionalSettingsAndDeploy: {
@@ -24,6 +25,7 @@ const props = defineProps({
 const stateRef = reactive({
   replicas: 1,
   deploymentStrategy: 'replicated',
+  hostname: '',
   // replicate -> false, global -> true,
   environmentVariablesKeys: [],
   environmentVariablesMap: {},
@@ -167,6 +169,7 @@ const submitDetails = () => {
   let details = {
     deploymentMode: stateRef.deploymentStrategy,
     replicas: stateRef.replicas,
+    hostname: stateRef.hostname,
     environmentVariables: environmentVariables,
     persistentVolumeBindings: Object.values(stateRef.persistentVolumeBindingsMap),
     configMounts: Object.values(stateRef.configMountsMap),
@@ -264,6 +267,18 @@ const openConfigureDeploymentPreferredServers = () => {
             :add-config-mount="addConfigMount"
             :delete-config-mount="deleteConfigMount"
             :on-config-content-change="onConfigMountContentChange" />
+        </div>
+        <!--   Container Hostname    -->
+        <div class="mt-3">
+          <p class="font-medium text-black">Container Hostname</p>
+          <div class="mt-1">
+            <input
+              class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Provide container hostname"
+              type="text"
+              v-model="stateRef.hostname"
+              @keydown="preventSpaceInput" />
+          </div>
         </div>
         <!--   Healthcheck     -->
         <div class="mt-3 w-full">
