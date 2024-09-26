@@ -155,7 +155,7 @@ defineExpose({
           <!-- Private Key Field -->
           <div class="mt-4" v-if="newGitCredential.type === 'ssh'">
             <label class="block text-sm font-medium text-gray-700" for="ssh_private_key">
-              ED25519 Private Key (In OpenSSH Format)
+              Private Key (In OpenSSH Format)
             </label>
             <p class="mt-1 text-sm text-gray-500">
               <b class="text-danger-500">NOTE:</b> Leave the input blank if you like to auto-generate the private key
@@ -165,7 +165,7 @@ defineExpose({
                 id="ssh_private_key"
                 v-model="newGitCredential.sshPrivateKey"
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                placeholder="ECDSA Private Key (In OpenSSH Format)"
+                placeholder="Private Key (In OpenSSH Format)"
                 type="text"
                 rows="5" />
             </div>
