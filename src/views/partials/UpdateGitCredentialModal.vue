@@ -192,7 +192,7 @@ onGitCredentialUpdateSuccess(() => {
         <!-- Private Key Field -->
         <div class="mt-4" v-if="gitCredentialDetails.type === 'ssh'">
           <label class="block text-sm font-medium text-gray-700" for="ssh_private_key">
-            ED25519 Private Key (In OpenSSH Format)
+            Private Key (In OpenSSH Format)
           </label>
           <p class="mt-1 text-sm text-gray-500">Leave the input blank to keep the existing private key</p>
           <div class="mt-2">
@@ -200,7 +200,7 @@ onGitCredentialUpdateSuccess(() => {
               id="ssh_private_key"
               v-model="gitCredentialDetails.sshPrivateKey"
               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="ECDSA Private Key (In OpenSSH Format)"
+              placeholder="Private Key (In OpenSSH Format)"
               type="text"
               rows="5" />
           </div>
