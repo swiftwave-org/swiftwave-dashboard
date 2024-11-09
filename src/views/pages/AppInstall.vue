@@ -1,36 +1,36 @@
 <!--suppress ALL -->
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
-import { computed, onMounted, reactive, ref, shallowRef, toRaw } from 'vue'
-import { parse } from 'yaml'
-import { useToast } from 'vue-toastification'
-import DotLoader from '@/views/components/DotLoader.vue'
-import MarkdownRenderer from '@/views/components/MarkdownRenderer.vue'
-import FilledButton from '@/views/components/FilledButton.vue'
-import ModalDialog from '@/views/components/ModalDialog.vue'
-import PersistentVolumeSelector from '@/views/partials/PersistentVolumeSelector.vue'
-import { useLazyQuery, useMutation, useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { preventSpaceInput } from '@/vendor/utils.js'
-import Divider from '@/views/components/Divider.vue'
-import CreateDomainModal from '@/views/partials/CreateDomainModal.vue'
-import OutlinedButton from '@/views/components/OutlinedButton.vue'
-import ServerSelector from '@/views/partials/ServerSelector.vue'
+import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, reactive, ref, shallowRef, toRaw } from 'vue';
+import { parse } from 'yaml';
+import { useToast } from 'vue-toastification';
+import DotLoader from '@/views/components/DotLoader.vue';
+import MarkdownRenderer from '@/views/components/MarkdownRenderer.vue';
+import FilledButton from '@/views/components/FilledButton.vue';
+import ModalDialog from '@/views/components/ModalDialog.vue';
+import PersistentVolumeSelector from '@/views/partials/PersistentVolumeSelector.vue';
+import { useLazyQuery, useMutation, useQuery } from '@vue/apollo-composable';
+import gql from 'graphql-tag';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { preventSpaceInput } from '@/vendor/utils.js';
+import Divider from '@/views/components/Divider.vue';
+import CreateDomainModal from '@/views/partials/CreateDomainModal.vue';
+import OutlinedButton from '@/views/components/OutlinedButton.vue';
+import ServerSelector from '@/views/partials/ServerSelector.vue';
 
-const route = useRoute()
-const router = useRouter()
-const toast = useToast()
-const stackUrl = route.query.stack
-const stackDetailsYamlString = shallowRef('')
-const stackDetails = ref(null)
-const isLoadingStack = ref(true)
-const isInstallNowModalOpen = ref(false)
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const stackUrl = route.query.stack;
+const stackDetailsYamlString = shallowRef('');
+const stackDetails = ref(null);
+const isLoadingStack = ref(true);
+const isInstallNowModalOpen = ref(false);
 const formStateRef = reactive({
   STACK_NAME: ''
-}) // will be filled with stack values
-const isAllIngressRulesCreationAttempted = ref(false)
-const suggestedIngressRules = reactive({})
+}); // will be filled with stack values
+const isAllIngressRulesCreationAttempted = ref(false);
+const suggestedIngressRules = reactive({});
 /*
 {
   "${STACK_NAME}_app": {
@@ -49,44 +49,44 @@ const suggestedIngressRules = reactive({})
 }
 */
 const ignoredIngressRules = computed(() => {
-  let rulesMap = {}
+  let rulesMap = {};
   for (let app in suggestedIngressRules) {
-    let ingressRules = {}
+    let ingressRules = {};
     for (let ingressRuleName of Object.keys(suggestedIngressRules[app])) {
       if (suggestedIngressRules[app][ingressRuleName].ignored) {
-        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName]
+        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName];
       }
     }
     if (Object.keys(ingressRules).length !== 0) {
-      rulesMap[app] = ingressRules
+      rulesMap[app] = ingressRules;
     }
   }
-  return rulesMap
-})
+  return rulesMap;
+});
 const configuredIngressRules = computed(() => {
-  let rulesMap = {}
+  let rulesMap = {};
   for (let app in suggestedIngressRules) {
-    let ingressRules = {}
+    let ingressRules = {};
     for (let ingressRuleName of Object.keys(suggestedIngressRules[app])) {
       if (!suggestedIngressRules[app][ingressRuleName].ignored) {
-        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName]
+        ingressRules[ingressRuleName] = suggestedIngressRules[app][ingressRuleName];
       }
     }
     if (Object.keys(ingressRules).length !== 0) {
-      rulesMap[app] = ingressRules
+      rulesMap[app] = ingressRules;
     }
   }
-  return rulesMap
-})
+  return rulesMap;
+});
 const ignoreIngressRule = (app, ingressRuleName) => {
-  suggestedIngressRules[app][ingressRuleName].ignored = true
-}
+  suggestedIngressRules[app][ingressRuleName].ignored = true;
+};
 const configureIngressRule = (app, ingressRuleName) => {
-  suggestedIngressRules[app][ingressRuleName].ignored = false
-}
-const ingressRuleMutations = ref([])
-const ingressRuleMutationAppIngressList = ref([])
-const ingressRuleMutationIndex = ref(0)
+  suggestedIngressRules[app][ingressRuleName].ignored = false;
+};
+const ingressRuleMutations = ref([]);
+const ingressRuleMutationAppIngressList = ref([]);
+const ingressRuleMutationIndex = ref(0);
 
 const {
   mutate: createIngressRuleRaw,
@@ -98,41 +98,41 @@ const {
       id
     }
   }
-`)
+`);
 
 const createIngressRule = (index) => {
   if (index >= ingressRuleMutationAppIngressList.value.length) {
-    isAllIngressRulesCreationAttempted.value = true
-    return
+    isAllIngressRulesCreationAttempted.value = true;
+    return;
   }
-  createIngressRuleRaw(ingressRuleMutations.value[index])
-}
+  createIngressRuleRaw(ingressRuleMutations.value[index]);
+};
 
 onIngressRuleCreateSuccess(() => {
-  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value]
-  suggestedIngressRules[record[0]][record[1]].info.status = 'success'
-  ingressRuleMutationIndex.value++
-  createIngressRule(ingressRuleMutationIndex.value)
-})
+  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value];
+  suggestedIngressRules[record[0]][record[1]].info.status = 'success';
+  ingressRuleMutationIndex.value++;
+  createIngressRule(ingressRuleMutationIndex.value);
+});
 
 onIngressRuleCreateFail((err) => {
-  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value]
-  suggestedIngressRules[record[0]][record[1]].info.status = 'failed'
-  ingressRuleMutationIndex.value++
-  createIngressRule(ingressRuleMutationIndex.value)
-})
+  const record = ingressRuleMutationAppIngressList.value[ingressRuleMutationIndex.value];
+  suggestedIngressRules[record[0]][record[1]].info.status = 'failed';
+  ingressRuleMutationIndex.value++;
+  createIngressRule(ingressRuleMutationIndex.value);
+});
 
 const createIngressRules = async () => {
-  if (!deployedApplicationsResult.value) return
-  let appNameIDMap = {}
-  let deployedApplicationsResultValue = deployedApplicationsResult.value
+  if (!deployedApplicationsResult.value) return;
+  let appNameIDMap = {};
+  let deployedApplicationsResultValue = deployedApplicationsResult.value;
   for (const i in deployedApplicationsResultValue) {
     appNameIDMap[deployedApplicationsResultValue[i].application.name] =
-      deployedApplicationsResultValue[i].application.id
+      deployedApplicationsResultValue[i].application.id;
   }
   // create ingress rules
-  let configuredIngressRulesValue = configuredIngressRules.value
-  if (configuredIngressRulesValue.length === 0) return
+  let configuredIngressRulesValue = configuredIngressRules.value;
+  if (configuredIngressRulesValue.length === 0) return;
   for (const app in configuredIngressRulesValue) {
     for (const ingressRuleName in configuredIngressRulesValue[app]) {
       ingressRuleMutations.value.push({
@@ -148,63 +148,63 @@ const createIngressRules = async () => {
           applicationId: appNameIDMap[replaceStackName(app, formStateRef.STACK_NAME)],
           externalService: ''
         }
-      })
-      ingressRuleMutationAppIngressList.value.push([app, ingressRuleName])
+      });
+      ingressRuleMutationAppIngressList.value.push([app, ingressRuleName]);
     }
   }
-  createIngressRule(0)
-}
+  createIngressRule(0);
+};
 
-const deployedApplicationsResult = ref(null)
+const deployedApplicationsResult = ref(null);
 
 onMounted(() => {
   if (!stackUrl) {
-    router.push({ name: 'App Store' })
+    router.push({ name: 'App Store' });
   }
-  fetchStackDetails()
-})
+  fetchStackDetails();
+});
 
 const fetchStackDetails = async () => {
-  if (!stackUrl) return
+  if (!stackUrl) return;
   fetch(stackUrl.toString())
     .then((response) => response.text())
     .then((data) => {
-      stackDetailsYamlString.value = data
-      stackDetails.value = parse(data)
+      stackDetailsYamlString.value = data;
+      stackDetails.value = parse(data);
       if ('services' in stackDetails.value && 'docs' in stackDetails.value) {
         // check if `iframe_video_embed` have any `<script` tag
         if (stackDetails.value.docs.iframe_video_embed.includes('<script')) {
-          throw new Error('Invalid stack file')
+          throw new Error('Invalid stack file');
         }
-        setupSystem()
+        setupSystem();
       } else {
-        throw new Error('Invalid stack file')
+        throw new Error('Invalid stack file');
       }
     })
     .catch((error) => {
-      console.error(error)
-      toast.error('Invalid stack file')
-      router.push({ name: 'App Store' })
-    })
-}
+      console.error(error);
+      toast.error('Invalid stack file');
+      router.push({ name: 'App Store' });
+    });
+};
 
 const setupSystem = () => {
-  let variables = stackDetails.value?.docs?.variables ?? {}
-  formStateRef.STACK_NAME = ''
+  let variables = stackDetails.value?.docs?.variables ?? {};
+  formStateRef.STACK_NAME = '';
   for (const [key, value] of Object.entries(variables)) {
-    formStateRef[key] = value.default
+    formStateRef[key] = value.default;
   }
   for (const [serviceName, serviceConfig] of Object.entries(stackDetails.value?.services ?? {})) {
     if ('expose' in serviceConfig) {
-      const ingressRules = serviceConfig.expose ?? []
-      let rulesMap = {}
+      const ingressRules = serviceConfig.expose ?? [];
+      let rulesMap = {};
       for (const ingressRule of ingressRules) {
-        let splitted = ingressRule.split('/')
+        let splitted = ingressRule.split('/');
         if (splitted.length !== 3) {
-          continue
+          continue;
         }
-        const port = splitted[0]
-        const protocol = splitted[1]
+        const port = splitted[0];
+        const protocol = splitted[1];
         rulesMap[`${port}/${protocol}`] = {
           description: splitted[2],
           ignored: false,
@@ -217,22 +217,22 @@ const setupSystem = () => {
             exists: false,
             status: 'pending'
           }
-        }
+        };
       }
-      suggestedIngressRules[serviceName] = rulesMap
+      suggestedIngressRules[serviceName] = rulesMap;
     }
   }
-  isLoadingStack.value = false
-}
+  isLoadingStack.value = false;
+};
 
 const isFormFilled = computed(() => {
-  let variables = toRaw(formStateRef)
+  let variables = toRaw(formStateRef);
   for (const [key, value] of Object.entries(variables)) {
     if (key.startsWith('IGNORE_')) {
-      continue
+      continue;
     }
     if (!formStateRef[key]) {
-      return false
+      return false;
     }
   }
   for (const app in suggestedIngressRules) {
@@ -246,25 +246,25 @@ const isFormFilled = computed(() => {
             suggestedIngressRules[app][ingressRuleName].info.domainId === null ||
             suggestedIngressRules[app][ingressRuleName].info.domainId === '')
         ) {
-          return false
+          return false;
         }
       }
     }
   }
-  return true
-})
-const replaceStackName = (originalName, stackName) => originalName.replace('{{STACK_NAME}}', stackName)
+  return true;
+});
+const replaceStackName = (originalName, stackName) => originalName.replace('{{STACK_NAME}}', stackName);
 
 const openInstallNowModal = () => {
-  isInstallNowModalOpen.value = true
-}
+  isInstallNowModalOpen.value = true;
+};
 
 const closeModal = () => {
   if (confirm('Are you sure you want to cancel?')) {
-    isInstallNowModalOpen.value = false
-    setupSystem()
+    isInstallNowModalOpen.value = false;
+    setupSystem();
   }
-}
+};
 
 const {
   mutate: deployStack,
@@ -282,42 +282,42 @@ const {
       }
     }
   }
-`)
+`);
 
 onDeployStackDone((res) => {
-  if (!res?.data?.deployStack) return
-  deployedApplicationsResult.value = res?.data?.deployStack ?? []
-  isInstallNowModalOpen.value = false
-  isResultModalOpen.value = true
-  createIngressRules()
-})
+  if (!res?.data?.deployStack) return;
+  deployedApplicationsResult.value = res?.data?.deployStack ?? [];
+  isInstallNowModalOpen.value = false;
+  isResultModalOpen.value = true;
+  createIngressRules();
+});
 
 onDeployStackError((err) => {
-  toast.error(err.message)
-})
+  toast.error(err.message);
+});
 
 const deployStackHelper = async () => {
   // verify ingress rules
-  const isValid = await validateIngressRules()
+  const isValid = await validateIngressRules();
   if (!isValid) {
-    toast.error('Please fix the ingress rules before deploying')
-    return
+    toast.error('Please fix the ingress rules before deploying');
+    return;
   }
-  let variablesForSubmission = []
-  const stateRef = toRaw(formStateRef)
+  let variablesForSubmission = [];
+  const stateRef = toRaw(formStateRef);
   for (const [key, value] of Object.entries(stateRef)) {
     variablesForSubmission.push({
       name: key,
       value: stateRef[key]
-    })
+    });
   }
   deployStack({
     input: {
       content: stackDetailsYamlString.value,
       variables: variablesForSubmission
     }
-  })
-}
+  });
+};
 
 // Domain list
 const {
@@ -337,27 +337,27 @@ const {
   {
     pollInterval: 10000
   }
-)
+);
 
 onDomainListError((err) => {
-  toast.error(err.message)
-})
+  toast.error(err.message);
+});
 
-const domainList = computed(() => domainListResult.value?.domains ?? [])
+const domainList = computed(() => domainListResult.value?.domains ?? []);
 const getDomainName = (domainId) => {
   for (const domain of domainList.value) {
     if (domain.id === domainId) {
-      return domain.name
+      return domain.name;
     }
   }
-  return ''
-}
-const createDomainModalRef = ref(null)
+  return '';
+};
+const createDomainModalRef = ref(null);
 const openNewDomainModal = () => {
-  if (!createDomainModalRef.value?.openModal) return
-  isInstallNowModalOpen.value = false
-  createDomainModalRef.value.openModal()
-}
+  if (!createDomainModalRef.value?.openModal) return;
+  isInstallNowModalOpen.value = false;
+  createDomainModalRef.value.openModal();
+};
 
 const { load: validateIngressRulesRaw, refetch: refetchValidateIngressRules } = useLazyQuery(
   gql`
@@ -373,19 +373,19 @@ const { load: validateIngressRulesRaw, refetch: refetchValidateIngressRules } = 
     keepPreviousResult: false,
     enabled: true
   }
-)
+);
 
 function validateIngressRulesQuery(val) {
-  return validateIngressRulesRaw(null, val, null) || refetchValidateIngressRules(val)
+  return validateIngressRulesRaw(null, val, null) || refetchValidateIngressRules(val);
 }
 
 const validateIngressRules = async () => {
-  let isValidRules = true
+  let isValidRules = true;
   for (const app in suggestedIngressRules) {
-    const rules = suggestedIngressRules[app]
+    const rules = suggestedIngressRules[app];
     for (const ingressRuleName in rules) {
       if (!rules[ingressRuleName].ignored) {
-        let isValid = true
+        let isValid = true;
         try {
           const res = await validateIngressRulesQuery({
             input: {
@@ -393,81 +393,81 @@ const validateIngressRules = async () => {
               protocol: rules[ingressRuleName].info.protocol,
               port: rules[ingressRuleName].info.port
             }
-          })
+          });
           if (res.isNewIngressRuleValid || res.data.isNewIngressRuleValid) {
-            isValid = true
+            isValid = true;
           } else {
-            isValid = false
+            isValid = false;
           }
         } catch (e) {
-          console.log(e.message)
-          isValid = false
+          console.log(e.message);
+          isValid = false;
         }
-        isValidRules = isValidRules && isValid
-        suggestedIngressRules[app][ingressRuleName].info.exists = !isValid
+        isValidRules = isValidRules && isValid;
+        suggestedIngressRules[app][ingressRuleName].info.exists = !isValid;
       }
     }
   }
-  return isValidRules
-}
+  return isValidRules;
+};
 
 const onChangeProtocol = (app, ingressRuleName) => {
   if (suggestedIngressRules[app][ingressRuleName].info.protocol === 'http') {
-    suggestedIngressRules[app][ingressRuleName].info.port = 80
-    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true
+    suggestedIngressRules[app][ingressRuleName].info.port = 80;
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true;
   } else if (suggestedIngressRules[app][ingressRuleName].info.protocol === 'https') {
-    suggestedIngressRules[app][ingressRuleName].info.port = 443
-    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = false
+    suggestedIngressRules[app][ingressRuleName].info.port = 443;
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = false;
   } else {
-    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true
+    suggestedIngressRules[app][ingressRuleName].info.allowPortSelection = true;
   }
-}
+};
 
 // Result modal
-const isResultModalOpen = ref(false)
+const isResultModalOpen = ref(false);
 const closeResultModal = () => {
-  isResultModalOpen.value = false
-  setupSystem()
-}
+  isResultModalOpen.value = false;
+  setupSystem();
+};
 
 const openUrlInNewPage = (url) => {
-  window.open(url)
-}
+  window.open(url);
+};
 
 // Form page routing
-const currentPage = ref(1)
+const currentPage = ref(1);
 const noOfPages = computed(() => {
-  if (!stackDetails.value) return 0
-  return Math.ceil((Object.keys(stackDetails.value.docs.variables).length + 1) / 6)
-})
+  if (!stackDetails.value) return 0;
+  return Math.ceil((Object.keys(stackDetails.value.docs.variables).length + 1) / 6);
+});
 const nextPage = () => {
-  if (currentPage.value === noOfPages.value) return
-  currentPage.value++
-}
+  if (currentPage.value === noOfPages.value) return;
+  currentPage.value++;
+};
 const previousPage = () => {
-  if (currentPage.value === 1) return
-  currentPage.value--
-}
-const isFirstPage = computed(() => currentPage.value === 1)
-const isLastPage = computed(() => currentPage.value === noOfPages.value)
+  if (currentPage.value === 1) return;
+  currentPage.value--;
+};
+const isFirstPage = computed(() => currentPage.value === 1);
+const isLastPage = computed(() => currentPage.value === noOfPages.value);
 const formVariables = computed(() => {
-  if (!stackDetails.value) return []
-  const variables = Object.keys(stackDetails.value.docs.variables)
+  if (!stackDetails.value) return [];
+  const variables = Object.keys(stackDetails.value.docs.variables);
   // for first page, send first 5 variables
   if (currentPage.value === 1) {
-    return variables.slice(0, 5)
+    return variables.slice(0, 5);
   }
   // for other pages, send next 6 variables
-  return variables.slice(5, variables.length).slice((currentPage.value - 2) * 6, (currentPage.value - 1) * 6)
-})
+  return variables.slice(5, variables.length).slice((currentPage.value - 2) * 6, (currentPage.value - 1) * 6);
+});
 const pagePercentage = computed(() => {
-  if (noOfPages.value == 0) return 0
-  return Math.min(100, Math.ceil((currentPage.value / noOfPages.value) * 100))
-})
+  if (noOfPages.value == 0) return 0;
+  return Math.min(100, Math.ceil((currentPage.value / noOfPages.value) * 100));
+});
 const noOfBlankFields = computed(() => {
-  if (currentPage.value === 1) return Math.max(0, 5 - formVariables.value.length)
-  return Math.max(0, 6 - formVariables.value.length)
-})
+  if (currentPage.value === 1) return Math.max(0, 5 - formVariables.value.length);
+  return Math.max(0, 6 - formVariables.value.length);
+});
 </script>
 
 <template>
