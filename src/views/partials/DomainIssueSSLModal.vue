@@ -23,7 +23,6 @@ const isModalOpen = ref(false);
 const details = reactive({
     domainId: 0,
     mode: 'letsencrypt', // letsencrypt, custom
-    sslIssuer: '',
     sslFullChain: '',
     sslPrivateKey: ''
 });
@@ -77,8 +76,7 @@ const {
             id: '',
             input: {
                 fullChain: '',
-                privateKey: '',
-                sslIssuer: ''
+                privateKey: ''
             }
         }
     }
@@ -97,18 +95,16 @@ const issueSSL = () => {
     if (details.mode === 'letsencrypt') {
         issueAutoSsl({ id: details.domainId });
     } else {
-        details.sslIssuer = details.sslIssuer.trim();
         details.sslFullChain = details.sslFullChain.trim();
         details.sslPrivateKey = details.sslPrivateKey.trim();
-        if (details.sslIssuer === '' || details.sslFullChain === '' || details.sslPrivateKey === '') {
+        if (details.sslFullChain === '' || details.sslPrivateKey === '') {
             toast.error('Please fill all the required fields');
             return;
         }
         addCustomSSL({
             id: details.domainId, input: {
                 fullChain: details.sslFullChain,
-                privateKey: details.sslPrivateKey,
-                sslIssuer: details.sslIssuer
+                privateKey: details.sslPrivateKey
             }
         });
     }
@@ -117,7 +113,6 @@ const issueSSL = () => {
 const openModal = (id) => {
     details.domainId = id;
     details.mode = 'letsencrypt';
-    details.sslIssuer = '';
     details.sslFullChain = '';
     details.sslPrivateKey = '';
     isModalOpen.value = true;
@@ -155,17 +150,6 @@ defineExpose({
                                     Custom SSL Certificate
                                 </option>
                             </select>
-                        </div>
-                    </div>
-                    <!--  SSL Issuer   -->
-                    <div class="mt-4" v-if="details.mode === 'custom'">
-                        <label class="block text-sm font-medium text-gray-700" for="name">
-                            SSL Issuer Name
-                        </label>
-                        <div class="mt-1">
-                            <input autocomplete="off" v-model="details.sslIssuer"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                placeholder="GoDaddy, Digicert, Self-signed etc." type="text" />
                         </div>
                     </div>
                     <!-- Private Key -->
