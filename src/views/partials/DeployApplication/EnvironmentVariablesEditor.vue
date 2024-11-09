@@ -39,13 +39,15 @@ const environmentVariablesKeys = toRef(props, 'environmentVariablesKeys')
 const handlePaste = (event) => {
   const oldLength = props.environmentVariablesKeys.length
   const clipboardText = event.clipboardData.getData('text')
-  const lines = clipboardText.split('\n')
-  const env_variables = lines.map((line) => line.split('='))
+  const lines = clipboardText.split('\n').filter(line => line.trim())
+  const env_variables = lines
+    .map(line => line.split('='))
+    .filter(parts => parts.length === 2 && parts[0].trim())
+
   env_variables.forEach(([name, value], index) => {
     props.addEnvironmentVariable()
-    console.log(props.environmentVariablesKeys[oldLength + index])
-    props.onVariableNameChange(props.environmentVariablesKeys[oldLength + index], name)
-    props.onVariableValueChange(props.environmentVariablesKeys[oldLength + index], value)
+    props.onVariableNameChange(props.environmentVariablesKeys[oldLength + index], name.trim())
+    props.onVariableValueChange(props.environmentVariablesKeys[oldLength + index], value.trim())
   })
 }
 </script>
@@ -69,14 +71,9 @@ const handlePaste = (event) => {
       </div>
     </template>
     <template v-slot:body>
-      <EnvironmentVariableRow
-        v-for="key in environmentVariablesKeys"
-        :key="key"
-        :variable-key="key"
-        :variable-name="environmentVariablesMap[key]?.name"
-        :delete-variable="deleteEnvironmentVariable"
-        :on-variable-value-change="onVariableValueChange"
-        :on-variable-name-change="onVariableNameChange"
+      <EnvironmentVariableRow v-for="key in environmentVariablesKeys" :key="key" :variable-key="key"
+        :variable-name="environmentVariablesMap[key]?.name" :delete-variable="deleteEnvironmentVariable"
+        :on-variable-value-change="onVariableValueChange" :on-variable-name-change="onVariableNameChange"
         :variable-value="environmentVariablesMap[key]?.value" />
     </template>
   </Table>
