@@ -35,10 +35,24 @@ const props = defineProps({
 })
 
 const environmentVariablesKeys = toRef(props, 'environmentVariablesKeys')
+
+const handlePaste = (event) => {
+  const oldLength = props.environmentVariablesKeys.length
+  const clipboardText = event.clipboardData.getData('text')
+  const lines = clipboardText.split('\n').filter(line => line.trim())
+  const env_variables = lines
+    .map(line => line.split('='))
+    .filter(parts => parts.length === 2 && parts[0].trim())
+  env_variables.forEach(([name, value], index) => {
+    props.addEnvironmentVariable()
+    props.onVariableNameChange(props.environmentVariablesKeys[oldLength + index], name.trim())
+    props.onVariableValueChange(props.environmentVariablesKeys[oldLength + index], value.trim())
+  })
+}
 </script>
 
 <template>
-  <Table :divider-between-rows="false">
+  <Table :divider-between-rows="false" @paste="handlePaste">
     <template v-slot:header>
       <TableHeader align="center">Variable Name</TableHeader>
       <TableHeader align="center">Value</TableHeader>
