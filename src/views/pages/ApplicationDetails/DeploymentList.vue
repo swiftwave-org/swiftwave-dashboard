@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
@@ -13,8 +13,6 @@ import TableRow from '@/views/components/Table/TableRow.vue'
 import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 
 const router = useRouter()
-const toast = useToast()
-
 const applicationId = router.currentRoute.value.params.id
 
 // Fetch ingress rules

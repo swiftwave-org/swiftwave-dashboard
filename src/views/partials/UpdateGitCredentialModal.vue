@@ -1,13 +1,11 @@
 <script setup>
 import { useLazyQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { reactive, ref } from 'vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import { preventSpaceInput } from '@/vendor/utils.js'
 import FilledButton from '@/views/components/FilledButton.vue'
-
-const toast = useToast()
 
 const props = defineProps({
   gitCredentialId: {

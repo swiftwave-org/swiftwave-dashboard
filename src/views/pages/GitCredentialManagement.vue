@@ -1,7 +1,7 @@
 <script setup>
 import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { computed, ref } from 'vue'
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
@@ -10,8 +10,6 @@ import { useMutation, useQuery } from '@vue/apollo-composable'
 import GitCredentialListRow from '@/views/partials/GitCredentialListRow.vue'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import CreateGitCredentialModal from '@/views/partials/CreateGitCredentialModal.vue'
-
-const toast = useToast()
 
 // Create Git Credential
 const createGitCredentialModalRef = ref(null)

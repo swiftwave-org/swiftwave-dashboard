@@ -9,14 +9,13 @@ import Badge from '@/views/components/Badge.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import StatusPulse from '@/views/components/StatusPulse.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
 
 const router = useRouter()
 const deploymentId = router.currentRoute.value.params.deployment_id
-const toast = useToast()
 
 // Fetch the deployment details
 const { result: deploymentRaw, loading: deploymentLoading } = useQuery(

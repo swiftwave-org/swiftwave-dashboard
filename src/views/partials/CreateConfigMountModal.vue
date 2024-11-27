@@ -3,7 +3,7 @@ import FilledButton from '@/views/components/FilledButton.vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import { computed, reactive, ref } from 'vue'
 import { preventSpaceInput } from '@/vendor/utils.js'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   createConfigMount: {
@@ -13,7 +13,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const isModalOpen = ref(false)
 // Create persistent volume
 const newConfigMountDetails = reactive({

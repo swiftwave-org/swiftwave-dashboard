@@ -5,7 +5,7 @@ import { useLazyQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -15,7 +15,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const router = useRouter()
 const isOpen = ref(false)
 const openModal = () => {

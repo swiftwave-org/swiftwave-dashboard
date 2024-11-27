@@ -2,12 +2,10 @@
 import Badge from '@/views/components/Badge.vue'
 import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { computed, ref } from 'vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import Code from '@/views/components/Code.vue'
-
-const toast = useToast()
 
 const props = defineProps({
   gitCredentialId: {

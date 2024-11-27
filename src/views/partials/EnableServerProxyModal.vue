@@ -1,6 +1,6 @@
 <script setup>
 // Modal related methods
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { ref } from 'vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import Divider from '@/views/components/Divider.vue'
@@ -20,7 +20,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const isModalOpen = ref(false)
 const proxyType = ref('active')
 

@@ -3,7 +3,7 @@
 import { useRoute, useRouter } from 'vue-router';
 import { computed, onMounted, reactive, ref, shallowRef, toRaw } from 'vue';
 import { parse } from 'yaml';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue-sonner'
 import DotLoader from '@/views/components/DotLoader.vue';
 import MarkdownRenderer from '@/views/components/MarkdownRenderer.vue';
 import FilledButton from '@/views/components/FilledButton.vue';
@@ -20,7 +20,6 @@ import ServerSelector from '@/views/partials/ServerSelector.vue';
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 const stackUrl = route.query.stack;
 const stackDetailsYamlString = shallowRef('');
 const stackDetails = ref(null);

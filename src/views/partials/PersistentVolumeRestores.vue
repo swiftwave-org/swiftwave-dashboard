@@ -3,7 +3,7 @@ import Drawer from '@/views/components/Drawer.vue'
 import { ref, watch } from 'vue'
 import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import Badge from '@/views/components/Badge.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import DotLoader from '@/views/components/DotLoader.vue'
@@ -15,7 +15,6 @@ const props = defineProps({
   persistentVolumeName: String
 })
 
-const toast = useToast()
 const persistentVolumeNameRef = ref(props.persistentVolumeName)
 const restores = ref([])
 

@@ -3,8 +3,8 @@ import PageBar from '@/views/components/PageBar.vue';
 import FilledButton from '@/views/components/FilledButton.vue';
 import { useLazyQuery, useMutation, useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
-import { computed, reactive, ref } from 'vue';
-import { useToast } from 'vue-toastification';
+import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner'
 import TableMessage from '@/views/components/Table/TableMessage.vue';
 import Table from '@/views/components/Table/Table.vue';
 import TableHeader from '@/views/components/Table/TableHeader.vue';
@@ -14,8 +14,6 @@ import Disclosure from '@/views/components/Disclosure.vue';
 import moment from 'moment';
 import CreateDomainModal from '@/views/partials/CreateDomainModal.vue';
 import DomainIssueSSLModal from '../partials/DomainIssueSSLModal.vue';
-
-const toast = useToast();
 
 const isDetailsModalOpen = ref(false);
 const openDetailsModal = () => {
@@ -135,6 +133,7 @@ const viewDomainSSLDetails = async (domain_id) => {
 const {
     result: verifyDnsResult,
     load: verifyDns,
+    refetch: refetchVerifyDns,
     variables: verifyDnsVars
 } = useLazyQuery(
     gql`
@@ -155,8 +154,18 @@ const {
 
 const verifyDomainDNS = async (domain_name) => {
     verifyDnsVars.value.name = domain_name;
-    await verifyDns();
-    return verifyDnsResult.value.verifyDomainConfiguration;
+    const response = verifyDns();
+    if ((typeof response) == 'boolean') {
+        const result = await refetchVerifyDns({
+            variables: {
+                name: domain_name
+            }
+        });
+        return result.data.verifyDomainConfiguration;
+    } else {
+        const result = await response;
+        return result.verifyDomainConfiguration;
+    }
 };
 
 // Create Domain

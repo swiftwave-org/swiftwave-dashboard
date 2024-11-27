@@ -3,13 +3,12 @@ import { useRouter } from 'vue-router'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useLazyQuery, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import moment from 'moment'
 
 const router = useRouter()
-const toast = useToast()
 const serverId = router.currentRoute.value.query.id
 const serverName = router.currentRoute.value.query.name
 

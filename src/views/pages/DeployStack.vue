@@ -7,9 +7,8 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 
-const toast = useToast()
 const editor = ref()
 const editorInstance = shallowRef()
 const stateRef = reactive({

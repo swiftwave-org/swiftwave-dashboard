@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth.js'
 import { TabPanel } from '@headlessui/vue'
 import { useLazyQuery, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import FilledButton from '@/views/components/FilledButton.vue'
 import createTar from '@swiftwave/tartplus'
 import DockerfileEditor from '@/views/partials/DeployApplication/DockerfileEditor.vue'
@@ -27,7 +27,6 @@ const props = defineProps({
 })
 
 const authStore = useAuthStore()
-const toast = useToast()
 
 const sourceCodeFileFieldRef = ref(null)
 const availableGitBranches = ref([])
