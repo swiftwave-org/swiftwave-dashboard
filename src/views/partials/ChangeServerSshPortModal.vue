@@ -4,7 +4,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { ref } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { preventSpaceInput } from '@/vendor/utils.js'
 import { useRouter } from 'vue-router'
 
@@ -19,7 +19,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const router = useRouter()
 const isModalOpen = ref(false)
 const ipChanged = ref(false)

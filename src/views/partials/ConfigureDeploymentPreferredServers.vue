@@ -4,7 +4,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { computed, ref } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   hostnames: {
@@ -17,7 +17,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const isModalOpen = ref(false)
 const { result: serversDetailsRaw, onError: onServersDetailsError } = useQuery(
   gql`

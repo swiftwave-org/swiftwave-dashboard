@@ -95,13 +95,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 import { useAuthStore } from '@/store/auth.js'
-import Toast, { TYPE } from 'vue-toastification'
 import VueApexCharts from 'vue3-apexcharts'
 
 import App from './App.vue'
 import router from './router'
 import './assets/css/base.css'
-import 'vue-toastification/dist/index.css'
 import { faDocker } from '@fortawesome/free-brands-svg-icons/faDocker'
 import { faGit, faGithub } from '@fortawesome/free-brands-svg-icons'
 import { createClient } from 'graphql-ws'
@@ -278,32 +276,6 @@ pinia.use(({ store }) => {
 })
 app.use(router)
 app.use(pinia)
-app.use(Toast, {
-  position: 'top-center',
-  timeout: 5000,
-  closeOnClick: true,
-  pauseOnFocusLoss: true,
-  pauseOnHover: true,
-  draggable: true,
-  draggablePercent: 0.6,
-  showCloseButtonOnHover: false,
-  hideProgressBar: false,
-  closeButton: 'button',
-  icon: true,
-  rtl: false,
-  toastDefaults: {
-    // ToastOptions object for each type of toast
-    [TYPE.ERROR]: {
-      timeout: 5000
-    },
-    [TYPE.SUCCESS]: {
-      timeout: 2000
-    },
-    [TYPE.INFO]: {
-      timeout: 2000
-    }
-  }
-})
 app.use(VueApexCharts)
 app.directive('debounce', vueDebounce({ lock: true }))
 app.mount('#app')

@@ -6,7 +6,7 @@ import gql from 'graphql-tag'
 import { computed, ref } from 'vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { round } from 'lodash'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import Badge from '@/views/components/Badge.vue'
 
@@ -36,8 +36,6 @@ const props = defineProps({
     required: true
   }
 })
-
-const toast = useToast()
 
 const sizeFetched = ref(false)
 

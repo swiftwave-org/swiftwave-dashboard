@@ -2,7 +2,7 @@
 import 'xterm/css/xterm.css'
 
 import { computed, onMounted, ref, watch } from 'vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { Terminal } from 'xterm'
 import { useRouter } from 'vue-router'
 import { useSubscription } from '@vue/apollo-composable'
@@ -11,7 +11,6 @@ import { FitAddon } from 'xterm-addon-fit'
 import StatusPulse from '@/views/components/StatusPulse.vue'
 import PageBar from '@/views/components/PageBar.vue'
 
-const toast = useToast()
 const router = useRouter()
 
 const showRuntimeLog = ref(false)

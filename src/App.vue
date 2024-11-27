@@ -6,6 +6,7 @@ import SideBar from '@/views/partials/SideBar.vue'
 import LoadingPage from '@/views/pages/LoadingPage.vue'
 import NotAvailableOnMobile from '@/views/pages/NotAvailableOnMobile.vue'
 import GlobalWarning from '@/views/partials/GlobalWarning.vue'
+import { Toaster } from 'vue-sonner'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -27,6 +28,7 @@ const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
 </script>
 
 <template>
+  <Toaster position="top-center" theme="light" richColors />
   <LoadingPage :show="authStore.IsLoggingInProgress" />
   <div class="app">
     <SideBar class="w-80" />

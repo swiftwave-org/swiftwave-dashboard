@@ -2,7 +2,7 @@
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
 import Table from '@/views/components/Table/Table.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed, ref, watch } from 'vue'
@@ -19,7 +19,6 @@ const props = defineProps({
     default: ''
   }
 })
-const toast = useToast()
 
 // Queries
 const fetchAllIngressRulesQuery = gql`

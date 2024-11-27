@@ -4,7 +4,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { computed, reactive, ref } from 'vue'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { preventSpaceInput } from '@/vendor/utils.js'
 
 const props = defineProps({
@@ -19,8 +19,6 @@ const props = defineProps({
     default: () => {}
   }
 })
-
-const toast = useToast()
 
 const isModalOpen = ref(false)
 // Create persistent volume

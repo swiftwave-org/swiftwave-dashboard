@@ -7,12 +7,11 @@ import { computed, onMounted, ref } from 'vue'
 import SideBarOption from '@/views/partials/SideBarOption.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const toast = useToast()
 
 const isChangePasswordModalOpen = ref(false)
 const swVersion = ref('')

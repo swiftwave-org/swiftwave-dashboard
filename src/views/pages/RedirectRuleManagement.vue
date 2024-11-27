@@ -1,7 +1,7 @@
 <script setup>
 import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import Table from '@/views/components/Table/Table.vue'
@@ -14,7 +14,6 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import Badge from '@/views/components/Badge.vue'
 import CreateDomainModal from '@/views/partials/CreateDomainModal.vue'
 
-const toast = useToast()
 const isModalOpen = ref(false)
 const openModal = () => {
   isModalOpen.value = true

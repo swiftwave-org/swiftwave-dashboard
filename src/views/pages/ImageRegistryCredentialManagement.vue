@@ -1,7 +1,7 @@
 <script setup>
 import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { computed, ref } from 'vue'
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
@@ -10,8 +10,6 @@ import { useMutation, useQuery } from '@vue/apollo-composable'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import ImageRegistryCredentialListRow from '@/views/partials/ImageRegistryCredentialListRow.vue'
 import CreateImageRegistryCredentialModal from '@/views/partials/CreateImageRegistryCredentialModal.vue'
-
-const toast = useToast()
 
 // Create Image Registry Credential
 const createImageRegistryCredentialModalRef = ref(null)

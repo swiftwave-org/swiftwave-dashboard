@@ -4,7 +4,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/store/auth.js'
 import { useLazyQuery, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import FilledButton from '@/views/components/FilledButton.vue'
 import createTar from '@swiftwave/tartplus'
 import DockerfileEditor from '@/views/partials/DeployApplication/DockerfileEditor.vue'
@@ -18,7 +18,6 @@ import ChooseOtherDockerConfigurationModal from '@/views/partials/ChooseOtherDoc
 
 const router = useRouter()
 const authStore = useAuthStore()
-const toast = useToast()
 const applicationUpdater = newApplicationUpdater(router.currentRoute.value.params.id)()
 
 const applicationSourceType = computed(() => {

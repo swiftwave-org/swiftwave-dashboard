@@ -3,11 +3,10 @@ import { useRouter } from 'vue-router'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
 
 const router = useRouter()
-const toast = useToast()
 
 // Restart Application
 const {

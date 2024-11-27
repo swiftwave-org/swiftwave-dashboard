@@ -4,7 +4,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue';
 import { reactive, ref } from 'vue';
 import { useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue-sonner'
 import { preventSpaceInput } from '@/vendor/utils.js';
 
 const props = defineProps({
@@ -20,7 +20,6 @@ const props = defineProps({
     }
 });
 
-const toast = useToast();
 const isModalOpen = ref(false);
 const isInvalidDomainName = ref(false);
 const domainRegex = /^((?:[-a-z0-9]+\.)+)([a-z]{2,63})\/?$/i;

@@ -1,5 +1,5 @@
 <script setup>
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { ref } from 'vue'
 
 defineProps({
@@ -9,7 +9,6 @@ defineProps({
   }
 })
 
-const toast = useToast()
 const showCopyBorder = ref(false)
 const textDivRef = ref(null)
 const copyToClipboard = () => {
