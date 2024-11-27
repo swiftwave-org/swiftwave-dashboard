@@ -2,14 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import moment from 'moment'
 import axios from 'axios'
 import { getHttpBaseUrl } from '@/vendor/utils.js'
 
-const toast = useToast()
 const systemLogsContent = ref('')
 const logFileName = ref('')
 const systemLogsContentRef = ref(null)

@@ -3,7 +3,7 @@ import FilledButton from '@/views/components/FilledButton.vue'
 import PageBar from '@/views/components/PageBar.vue'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { computed, reactive, ref, watch } from 'vue'
 import Table from '@/views/components/Table/Table.vue'
 import TableHeader from '@/views/components/Table/TableHeader.vue'
@@ -12,8 +12,6 @@ import TableRow from '@/views/components/Table/TableRow.vue'
 import TextButton from '@/views/components/TextButton.vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import { preventSpaceInput } from '@/vendor/utils.js'
-
-const toast = useToast()
 
 const {
   result: appBasicAuthAccessControlListsRaw,

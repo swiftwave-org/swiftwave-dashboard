@@ -3,7 +3,7 @@ import { preventSpaceInput } from '@/vendor/utils.js'
 import { reactive, ref } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 
@@ -20,7 +20,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const isModalOpen = ref(false)
 
 const openModal = () => {

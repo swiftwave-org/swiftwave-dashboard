@@ -2,7 +2,7 @@
 // Toast
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import gql from 'graphql-tag'
 import { computed, reactive, ref } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -18,8 +18,6 @@ import { v4 as uuidv4 } from 'uuid'
 import PersistentVolumeBindingEditor from '@/views/partials/DeployApplication/PersistentVolumeBindingEditor.vue'
 import ConfigMountsEditor from '@/views/partials/DeployApplication/ConfigMountsEditor.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
-
-const toast = useToast()
 
 // Get the application ID from the URL
 const router = useRouter()

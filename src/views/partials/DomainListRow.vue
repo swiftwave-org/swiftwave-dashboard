@@ -3,10 +3,8 @@ import Badge from '@/views/components/Badge.vue'
 import TableRow from '@/views/components/Table/TableRow.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import TextButton from '@/views/components/TextButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { ref } from 'vue'
-
-const toast = useToast()
 
 const props = defineProps({
   domain: {
@@ -35,14 +33,29 @@ const verifyingDns = ref(false)
 
 const verifyDnsPointing = async () => {
   verifyingDns.value = true
-  toast.info(`Verifying DNS for ${props.domain.name}`)
-  const isPointed = await props.verifyDns(props.domain.name)
-  verifyingDns.value = false
-  if (isPointed) {
-    toast.success(`DNS for ${props.domain.name} is pointed correctly`)
-  } else {
-    toast.error(`DNS for ${props.domain.name} is not pointed correctly`)
-  }
+
+  const verifyPromise = new Promise(function(resolve, reject) {
+    props.verifyDns(props.domain.name)
+    .then((isVerified) => {
+      if (isVerified) {
+        resolve()
+      } else {
+        reject()
+      }
+    })
+  })
+
+  toast.promise(verifyPromise, {
+    loading: `Verifying DNS for ${props.domain.name}`,
+    success: (_) => {
+      verifyingDns.value = false
+      return `DNS for ${props.domain.name} is pointed correctly`
+    },
+    error: (_) => {
+      verifyingDns.value = false
+      return `DNS for ${props.domain.name} is not pointed correctly`
+    }
+  });
 }
 </script>
 

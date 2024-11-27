@@ -8,12 +8,11 @@ import Table from '@/views/components/Table/Table.vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import ApplicationListRow from '@/views/partials/ApplicationListRow.vue'
 import ProjectListRow from '@/views/partials/ProjectListRow.vue'
 
 const router = useRouter()
-const toast = useToast()
 
 const deployNewApplication = () => {
   router.push('/deploy/application')

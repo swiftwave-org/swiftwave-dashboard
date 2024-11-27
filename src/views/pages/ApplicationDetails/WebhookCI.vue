@@ -3,11 +3,10 @@ import { useRouter } from 'vue-router'
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import FilledButton from '@/views/components/FilledButton.vue'
 
 const router = useRouter()
-const toast = useToast()
 const applicationId = router.currentRoute.value.params.id
 
 const {

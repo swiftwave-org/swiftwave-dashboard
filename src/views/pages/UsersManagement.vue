@@ -5,7 +5,7 @@ import { computed, reactive, ref } from 'vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import PageBar from '@/views/components/PageBar.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import VueQrcode from 'vue-qrcode'
 
 import Table from '@/views/components/Table/Table.vue'
@@ -16,7 +16,6 @@ import { preventSpaceInput } from '@/vendor/utils.js'
 import Code from '@/views/components/Code.vue'
 import Divider from '@/views/components/Divider.vue'
 
-const toast = useToast()
 const isModalOpen = ref(false)
 const openModal = () => {
   isModalOpen.value = true

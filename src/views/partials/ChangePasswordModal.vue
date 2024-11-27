@@ -5,7 +5,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { onMounted, reactive } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 
 
 const props = defineProps({
@@ -19,7 +19,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const passwordDetails = reactive({
   newPassword: '',
   oldPassword: ''

@@ -5,12 +5,11 @@ import PageBar from '@/views/components/PageBar.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import AreaChartTimeSeries from '@/views/components/AreaChartTimeSeries.vue'
 import { humanizeDiskGB, humanizeMemoryGB, humanizeNetworkSpeed } from '@/vendor/utils.js'
 
 const router = useRouter()
-const toast = useToast()
 const serverInfo = reactive({
   id: router.currentRoute.value.query.id,
   hostname: '',

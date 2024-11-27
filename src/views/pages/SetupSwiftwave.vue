@@ -3,12 +3,11 @@ import Switch from '@/views/components/Switch.vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import ModalDialog from '@/views/components/ModalDialog.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
 import { useSystemConfigStore } from '@/store/systemConfig.js'
 import { preventSpaceInput } from '@/vendor/utils.js'
 
-const toast = useToast()
 const router = useRouter()
 const systemConfigStore = useSystemConfigStore()
 const isUpdateRequired = router.currentRoute.value.query.update === '1'
