@@ -4,7 +4,7 @@ import ModalDialog from '@/views/components/ModalDialog.vue'
 import { computed, ref } from 'vue'
 import { useLazyQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import ComboBoxComponent from '@/views/components/ComboBoxComponent.vue'
 
 const props = defineProps({
@@ -23,7 +23,6 @@ const props = defineProps({
   }
 })
 
-const toast = useToast()
 const isModalOpen = ref(false)
 const selectedGroupId = ref(null)
 const newGroupName = ref('')

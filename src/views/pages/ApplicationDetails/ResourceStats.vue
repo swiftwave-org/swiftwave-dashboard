@@ -3,13 +3,12 @@ import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { humanizeMemoryMB, humanizeNetworkSpeed } from '@/vendor/utils.js'
 import AreaChartTimeSeries from '@/views/components/AreaChartTimeSeries.vue'
 import FilledButton from '@/views/components/FilledButton.vue'
 import PageBar from '@/views/components/PageBar.vue'
 
-const toast = useToast()
 const router = useRouter()
 const applicationId = router.currentRoute.value.params.id
 const statsTimeframe = ref('last_1_hour')

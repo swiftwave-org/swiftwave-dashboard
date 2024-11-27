@@ -8,14 +8,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ApplicationDetailsNavbar from '@/views/partials/ApplicationDetailsNavbar.vue'
 import NewApplicationUpdaterStore from '@/store/applicationUpdater.js'
 import FilledButton from '@/views/components/FilledButton.vue'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { isNaN } from 'lodash'
 import UptimeChart from '@/views/components/UptimeChart.vue'
 import UpdateApplicationGroupModal from '@/views/partials/UpdateApplicationGroupModal.vue'
 import { camelCaseToSpacedCapitalized } from '@/vendor/utils.js'
-
-// Toast
-const toast = useToast()
 
 // Get the application ID from the URL
 const router = useRouter()

@@ -7,10 +7,9 @@ import TableRow from '@/views/components/Table/TableRow.vue'
 import { computed, ref, toRef } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import CreatePersistentVolumeModal from '@/views/partials/CreatePersistentVolumeModal.vue'
 
-const toast = useToast()
 const props = defineProps({
   persistentVolumeBindingKeys: {
     type: Array,

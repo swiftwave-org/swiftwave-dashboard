@@ -6,12 +6,11 @@ import PageBar from '@/views/components/PageBar.vue'
 import { computed, ref } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import TableMessage from '@/views/components/Table/TableMessage.vue'
 import ServerRow from '@/views/partials/ServerRow.vue'
 import CreateServerModal from '@/views/partials/CreateServerModal.vue'
 
-const toast = useToast()
 const createServerModal = ref(null)
 
 const {

@@ -9,7 +9,7 @@ import SetupServerModal from '@/views/partials/SetupServerModal.vue'
 import EnableServerProxyModal from '@/views/partials/EnableServerProxyModal.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import SetupResourceMonitoring from '@/views/partials/SetupResourceMonitoring.vue'
 import ChangeServerIpModal from '@/views/partials/ChangeServerIpModal.vue'
 import ChangeServerSshPortModal from '@/views/partials/ChangeServerSshPortModal.vue'
@@ -27,7 +27,6 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const toast = useToast()
 const actionsBtnRef = ref(null)
 const actionsMenuRef = ref(null)
 const setupModalRef = ref(null)

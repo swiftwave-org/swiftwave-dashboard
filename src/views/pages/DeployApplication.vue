@@ -7,11 +7,10 @@ import ApplicationSourceConfiguration from '@/views/partials/DeployApplication/A
 import ApplicationAdditionalSettings from '@/views/partials/DeployApplication/ApplicationAdditionalSettings.vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
 import ModalDialog from '@/views/components/ModalDialog.vue'
 
-const toast = useToast()
 const router = useRouter()
 const sectionNames = ['Application Name', 'Select Source', 'Application Source', 'Deploy Configuration']
 const isApplicationDeployedSuccessfulModalOpen = ref(false)

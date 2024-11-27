@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue-sonner'
 import ModalDialog from '../components/ModalDialog.vue';
 import { useMutation } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
@@ -15,7 +15,6 @@ const props = defineProps({
     }
 });
 
-const toast = useToast();
 const isModalOpen = ref(false);
 
 
